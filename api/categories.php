@@ -1,0 +1,84 @@
+<?php
+require_once __DIR__ . '/auth_check.php';
+$uid = requireAuth();
+
+require_once __DIR__ . '/db.php';
+
+$db     = getDB();
+$method = $_SERVER['REQUEST_METHOD'];
+$input  = getInput();
+
+try {
+    switch ($method) {
+        case 'GET':
+            $stmt = $db->prepare("
+                SELECT c.*, COUNT(i.id) AS item_count
+                FROM categories c
+                LEFT JOIN items i ON c.id = i.category_id
+                WHERE c.user_uid = ?
+                GROUP BY c.id
+                ORDER BY c.created_at DESC
+            ");
+            $stmt->execute([$uid]);
+            jsonResponse(true, $stmt->fetchAll());
+            break;
+
+        case 'POST':
+            if (empty($input['name'])) {
+                jsonResponse(false, null, 'Nome da categoria é obrigatório', 400);
+            }
+            $stmt = $db->prepare("
+                INSERT INTO categories (user_uid, name, icon, color, template_type)
+                VALUES (:user_uid, :name, :icon, :color, :template_type)
+            ");
+            $stmt->execute([
+                'user_uid'      => $uid,
+                'name'          => $input['name'],
+                'icon'          => $input['icon']          ?? 'folder',
+                'color'         => $input['color']         ?? '#3498db',
+                'template_type' => $input['template_type'] ?? 'simple',
+            ]);
+            $id   = $db->lastInsertId();
+            $stmt = $db->prepare("SELECT * FROM categories WHERE id = ?");
+            $stmt->execute([$id]);
+            jsonResponse(true, $stmt->fetch());
+            break;
+
+        case 'PUT':
+            if (empty($input['id'])) {
+                jsonResponse(false, null, 'ID da categoria é obrigatório', 400);
+            }
+            $stmt = $db->prepare("
+                UPDATE categories
+                SET name = :name, icon = :icon, color = :color, template_type = :template_type
+                WHERE id = :id AND user_uid = :user_uid
+            ");
+            $stmt->execute([
+                'id'            => $input['id'],
+                'user_uid'      => $uid,
+                'name'          => $input['name'],
+                'icon'          => $input['icon'],
+                'color'         => $input['color'],
+                'template_type' => $input['template_type'],
+            ]);
+            $stmt = $db->prepare("SELECT * FROM categories WHERE id = ? AND user_uid = ?");
+            $stmt->execute([$input['id'], $uid]);
+            jsonResponse(true, $stmt->fetch());
+            break;
+
+        case 'DELETE':
+            $id = $_GET['id'] ?? null;
+            if (empty($id)) {
+                jsonResponse(false, null, 'ID da categoria é obrigatório', 400);
+            }
+            $stmt = $db->prepare("DELETE FROM categories WHERE id = ? AND user_uid = ?");
+            $stmt->execute([$id, $uid]);
+            jsonResponse(true, ['message' => 'Categoria eliminada com sucesso']);
+            break;
+
+        default:
+            jsonResponse(false, null, 'Método não suportado', 405);
+    }
+} catch (Exception $e) {
+    jsonResponse(false, null, $e->getMessage(), 500);
+}

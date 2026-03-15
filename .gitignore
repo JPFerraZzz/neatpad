@@ -1,0 +1,16 @@
+# Ambiente
+.env
+.env.local
+
+# Logs e temporários
+*.log
+/tmp/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

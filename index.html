@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FerrazNest — O teu cantinho digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // Aplicar tema antes do render para evitar flash
+        (function() {
+            const t = localStorage.getItem('ferraznest-theme');
+            if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        })();
+    </script>
+</head>
+<body>
+    <!-- Verificação de sessão antes de renderizar a página -->
+    <script>
+        (async () => {
+            try {
+                const r = await fetch('api/auth.php', { credentials: 'same-origin' });
+                const d = await r.json();
+                if (!d.success) window.location.replace('login.html');
+                else {
+                    window.__currentUser = d.data;
+                }
+            } catch (e) {
+                window.location.replace('login.html');
+            }
+        })();
+    </script>
+    <!-- Header -->
+    <header class="main-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-feather-alt"></i>
+                    <h1>Ferraz<span>Nest</span></h1>
+                </div>
+                <div style="display:flex;gap:10px;align-items:center;">
+                    <button class="btn btn-secondary btn-sm" id="versionManagerBtn" title="Gestão de Versões">
+                        <i class="fas fa-history"></i> Versões
+                    </button>
+                    <button class="btn btn-primary" id="newCategoryBtn">
+                        <i class="fas fa-plus"></i> Nova Categoria
+                    </button>
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema">
+                        <div class="theme-toggle-knob">
+                            <span class="sun-icon">☀️</span>
+                            <span class="moon-icon">🌙</span>
+                        </div>
+                    </button>
+                    <div id="userMenu" style="display:flex;align-items:center;gap:8px;border-left:1.5px solid var(--border-color);padding-left:12px;">
+                        <span id="userDisplayName" style="color:var(--text-secondary);font-size:13px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;"></span>
+                        <button class="btn btn-secondary btn-sm" onclick="logout()" title="Terminar sessão">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Categories Grid -->
+            <div class="categories-section">
+                <h2 class="section-title">Os meus espaços</h2>
+                <div class="categories-grid" id="categoriesGrid">
+                    <!-- Categorias serão carregadas aqui dinamicamente -->
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>A carregar categorias...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal: Nova/Editar Categoria -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="categoryModalTitle">Nova Categoria</h3>
+                <button class="modal-close" onclick="closeCategoryModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId">
+                    
+                    <div class="form-group">
+                        <label for="categoryName">Nome da Categoria</label>
+                        <input type="text" id="categoryName" class="form-control" required placeholder="Ex: Projetos, Ideias...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="categoryTemplate">Template</label>
+                        <select id="categoryTemplate" class="form-control" required>
+                            <option value="simple">Simples - Lista básica</option>
+                            <option value="notes">Notas - Editor de texto</option>
+                            <option value="tasks">Tarefas - Gestor de tarefas</option>
+                            <option value="course">Cursos - Progresso e módulos</option>
+                            <option value="excel">Excel - Tabela/Spreadsheet</option>
+                            <option value="notebooks">Cadernos - Cadernos digitais para escrever</option>
+                        </select>
+                        <small class="form-help">Escolhe o tipo de conteúdo que esta categoria vai ter</small>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoryIcon">Ícone</label>
+                            <select id="categoryIcon" class="form-control">
+                                <option value="folder">📁 Pasta</option>
+                                <option value="briefcase">💼 Projetos</option>
+                                <option value="lightbulb">💡 Ideias</option>
+                                <option value="box">📦 Coisas</option>
+                                <option value="sticky-note">📝 Notas</option>
+                                <option value="graduation-cap">🎓 Cursos</option>
+                                <option value="shield-alt">🛡️ Segurança</option>
+                                <option value="code">💻 Código</option>
+                                <option value="book">📚 Livros</option>
+                                <option value="star">⭐ Favoritos</option>
+                                <option value="heart">❤️ Importantes</option>
+                                <option value="video">🎥 Vídeos</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="categoryColor">Cor</label>
+                            <input type="color" id="categoryColor" class="form-control-color" value="#3498db">
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeCategoryModal()">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Itens da Categoria -->
+    <div class="modal modal-large" id="itemsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="category-icon-display" id="currentCategoryIcon"></span>
+                    <h3 id="itemsModalTitle">Itens</h3>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary btn-sm" id="newItemBtn">
+                        <i class="fas fa-plus"></i> Novo
+                    </button>
+                    <button class="btn btn-secondary btn-sm" id="editCategoryBtn">
+                        <i class="fas fa-edit"></i> Editar Categoria
+                    </button>
+                    <button class="btn btn-danger btn-sm" id="deleteCategoryBtn">
+                        <i class="fas fa-trash"></i> Eliminar Categoria
+                    </button>
+                    <button class="modal-close" onclick="closeItemsModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="itemsContainer">
+                    <!-- Items will be loaded dynamically based on template -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editor de Item -->
+    <div class="modal" id="itemEditorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="itemEditorTitle">Novo Item</h3>
+                <button class="modal-close" onclick="closeItemEditor()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="itemEditorContent">
+                    <!-- Editor content will be loaded based on template type -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Gestão de Versões -->
+    <div class="modal modal-large" id="versionManagerModal">
+        <div class="modal-content" style="max-width:900px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#1a1f36,#2d3561);color:#fff;border-radius:12px 12px 0 0;">
+                <h3 style="color:#fff;display:flex;align-items:center;gap:10px;">
+                    <i class="fas fa-history"></i> Gestão de Versões
+                </h3>
+                <button class="modal-close" onclick="closeVersionManager()" style="color:#fff;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" style="padding:0;">
+                <div id="versionManagerContent">
+                    <div class="loading"><i class="fas fa-spinner fa-spin"></i><p>A carregar...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/app.js"></script>
+    <script src="assets/js/autosave.js"></script>
+    <script src="assets/js/templates.js"></script>
+    <script>
+        function toggleTheme() {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            if (isDark) {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('ferraznest-theme', 'light');
+            } else {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('ferraznest-theme', 'dark');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.__currentUser) {
+                const nameEl = document.getElementById('userDisplayName');
+                if (nameEl) nameEl.textContent = window.__currentUser.name || window.__currentUser.email;
+            }
+        });
+    </script>
+</body>
+</html>

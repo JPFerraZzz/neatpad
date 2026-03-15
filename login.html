@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FerrazNest — Entrar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            background-color: #F4F0EB;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Blobs decorativos */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(72px);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .blob-1 { width: 480px; height: 480px; background: #C8C3FF; opacity: 0.45; top: -160px; right: -100px; }
+        .blob-2 { width: 320px; height: 320px; background: #FFD8A8; opacity: 0.50; bottom: -80px; left: -60px; }
+        .blob-3 { width: 220px; height: 220px; background: #B5EDD8; opacity: 0.38; top: 55%; left: 18%; }
+
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 448px;
+        }
+
+        /* Marca */
+        .brand {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .brand-icon {
+            width: 76px;
+            height: 76px;
+            background: linear-gradient(145deg, #6C63FF 0%, #9D97FF 100%);
+            border-radius: 24px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 18px;
+            box-shadow:
+                0 0 0 6px rgba(108, 99, 255, 0.12),
+                0 12px 32px rgba(108, 99, 255, 0.28);
+        }
+
+        .brand-icon i {
+            font-size: 30px;
+            color: #fff;
+        }
+
+        .brand h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1B1830;
+            letter-spacing: -0.6px;
+        }
+
+        .brand h1 span { color: #6C63FF; }
+
+        .brand p {
+            color: #9896B0;
+            font-size: 14px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        /* Card */
+        .card {
+            background: #fff;
+            border-radius: 28px;
+            padding: 36px;
+            box-shadow:
+                0 1px 2px rgba(27, 24, 48, 0.04),
+                0 6px 28px rgba(108, 99, 255, 0.09),
+                0 0 0 1px rgba(27, 24, 48, 0.05);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            background: #F4F0EB;
+            border-radius: 14px;
+            padding: 4px;
+            margin-bottom: 28px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: #9896B0;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-btn.active {
+            background: #6C63FF;
+            color: #fff;
+            box-shadow: 0 3px 10px rgba(108, 99, 255, 0.35);
+        }
+
+        /* Formulários */
+        .form-section { display: none; }
+        .form-section.active { display: block; }
+
+        .form-group { margin-bottom: 16px; }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1B1830;
+            margin-bottom: 8px;
+            letter-spacing: 0.1px;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-wrap i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #C8C5DC;
+            font-size: 13px;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            padding: 13px 14px 13px 42px;
+            background: #FAFAF9;
+            border: 1.5px solid #EAE6DF;
+            border-radius: 13px;
+            color: #1B1830;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+            outline: none;
+        }
+
+        .input-wrap input::placeholder { color: #C8C5DC; }
+
+        .input-wrap input:focus {
+            border-color: #6C63FF;
+            background: #FDFCFF;
+            box-shadow: 0 0 0 4px rgba(108, 99, 255, 0.10);
+        }
+
+        /* Botão principal */
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(145deg, #6C63FF 0%, #8D87FF 100%);
+            border: none;
+            border-radius: 13px;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 4px 18px rgba(108, 99, 255, 0.38);
+            letter-spacing: 0.1px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(108, 99, 255, 0.45);
+        }
+        .btn-primary:active { transform: translateY(0px); }
+        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* Divisor */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 22px 0;
+            color: #D5D1E0;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1.5px;
+            background: #EAE6DF;
+        }
+
+        /* Botão Google */
+        .btn-google {
+            width: 100%;
+            padding: 13px;
+            background: #fff;
+            border: 1.5px solid #EAE6DF;
+            border-radius: 13px;
+            color: #1B1830;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.15s ease;
+            box-shadow: 0 1px 4px rgba(27, 24, 48, 0.06);
+        }
+
+        .btn-google:hover {
+            border-color: #6C63FF;
+            box-shadow: 0 2px 10px rgba(108, 99, 255, 0.14);
+            transform: translateY(-1px);
+        }
+        .btn-google:active { transform: translateY(0); }
+
+        .google-icon { width: 18px; height: 18px; flex-shrink: 0; }
+
+        /* Erro */
+        .error-msg {
+            background: #FFF3F5;
+            border: 1.5px solid #FFCCD4;
+            color: #D63E59;
+            border-radius: 11px;
+            padding: 11px 14px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 14px;
+            display: none;
+            line-height: 1.4;
+        }
+        .error-msg.visible { display: block; }
+
+        /* Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2.5px solid rgba(255,255,255,0.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.65s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            margin-top: 22px;
+            color: #C8C5DC;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .footer-note strong {
+            color: #9896B0;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="wrapper">
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fas fa-feather-alt"></i>
+            </div>
+            <h1>Ferraz<span>Nest</span></h1>
+            <p>O teu cantinho digital</p>
+        </div>
+
+        <div class="card">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('login')">Entrar</button>
+                <button class="tab-btn" onclick="switchTab('register')">Criar conta</button>
+            </div>
+
+            <!-- Login -->
+            <div class="form-section active" id="loginSection">
+                <div class="form-group">
+                    <label>Email</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="loginEmail" placeholder="o.teu@email.com" autocomplete="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="loginPassword" placeholder="A tua password" autocomplete="current-password">
+                    </div>
+                </div>
+                <button class="btn-primary" id="loginBtn" onclick="loginEmail()">
+                    Entrar <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <div class="divider">ou</div>
+
+                <button class="btn-google" onclick="loginGoogle()">
+                    <svg class="google-icon" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continuar com Google
+                </button>
+
+                <div class="error-msg" id="loginError"></div>
+            </div>
+
+            <!-- Registo -->
+            <div class="form-section" id="registerSection">
+                <div class="form-group">
+                    <label>Nome</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="registerName" placeholder="O teu nome" autocomplete="name">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="registerEmail" placeholder="o.teu@email.com" autocomplete="email">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres" autocomplete="new-password">
+                    </div>
+                </div>
+                <button class="btn-primary" id="registerBtn" onclick="registerEmail()">
+                    Criar conta <i class="fas fa-arrow-right"></i>
+                </button>
+
+                <div class="divider">ou</div>
+
+                <button class="btn-google" onclick="loginGoogle()">
+                    <svg class="google-icon" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continuar com Google
+                </button>
+
+                <div class="error-msg" id="registerError"></div>
+            </div>
+        </div>
+
+        <p class="footer-note"><strong>FerrazWeb</strong> &copy; 2026 · FerrazNest</p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach((b, i) =>
+                b.classList.toggle('active', (tab === 'login') === (i === 0))
+            );
+            document.getElementById('loginSection').classList.toggle('active', tab === 'login');
+            document.getElementById('registerSection').classList.toggle('active', tab === 'register');
+        }
+
+        document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') loginEmail(); });
+        document.getElementById('registerPassword').addEventListener('keydown', e => { if (e.key === 'Enter') registerEmail(); });
+    </script>
+</body>
+</html>
