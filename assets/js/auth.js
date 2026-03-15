@@ -14,8 +14,16 @@ async function createPhpSession(user) {
         credentials: 'same-origin',
         body: JSON.stringify({ token }),
     });
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Erro ao criar sessão');
+    let data;
+    try {
+        data = await res.json();
+    } catch (_) {
+        throw new Error('Resposta inválida do servidor (HTTP ' + res.status + '). Verifica os logs do Railway.');
+    }
+    if (!data.success) {
+        const errMsg = data.error || 'Erro ao criar sessão';
+        throw new Error(res.status === 401 ? errMsg : '[' + res.status + '] ' + errMsg);
+    }
     return data;
 }
 
@@ -60,8 +68,10 @@ async function loginEmail() {
         await createPhpSession(cred.user);
         window.location.replace('index.html');
     } catch (err) {
-        showError('loginError', translateFirebaseError(err.code));
+        const msg = err.code ? translateFirebaseError(err.code) : (err.message || 'Ocorreu um erro. Tenta novamente.');
+        showError('loginError', msg);
         setLoading('loginBtn', false);
+        if (!err.code) console.error('Erro login/sessão:', err);
     }
 }
 
@@ -88,8 +98,10 @@ async function registerEmail() {
         await createPhpSession(cred.user);
         window.location.replace('index.html');
     } catch (err) {
-        showError('registerError', translateFirebaseError(err.code));
+        const msg = err.code ? translateFirebaseError(err.code) : (err.message || 'Ocorreu um erro. Tenta novamente.');
+        showError('registerError', msg);
         setLoading('registerBtn', false);
+        if (!err.code) console.error('Erro registo/sessão:', err);
     }
 }
 
@@ -104,7 +116,9 @@ async function loginGoogle() {
         window.location.replace('index.html');
     } catch (err) {
         if (err.code !== 'auth/popup-closed-by-user') {
-            showError('loginError', translateFirebaseError(err.code));
+            const msg = err.code ? translateFirebaseError(err.code) : (err.message || 'Ocorreu um erro. Tenta novamente.');
+            showError('loginError', msg);
+            if (!err.code) console.error('Erro Google/sessão:', err);
         }
     }
 }
@@ -130,6 +144,8 @@ function translateFirebaseError(code) {
         'auth/network-request-failed':   'Sem ligação à internet.',
         'auth/invalid-credential':       'Credenciais inválidas.',
         'auth/popup-blocked':            'O popup foi bloqueado pelo browser.',
+        'auth/operation-not-allowed':    'Método de login não ativado no Firebase.',
+        'auth/requires-recent-login':    'Sessão expirada. Faz logout e entra de novo.',
     };
-    return map[code] || 'Ocorreu um erro. Tenta novamente.';
+    return map[code] || (code ? 'Erro: ' + code : 'Ocorreu um erro. Tenta novamente.');
 }

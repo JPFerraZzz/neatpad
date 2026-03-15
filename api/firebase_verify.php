@@ -37,12 +37,23 @@ function verifyFirebaseToken(string $idToken, string $projectId): ?array {
     }
 
     if (!$keys) {
-        $raw = @file_get_contents(
-            'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com'
-        );
+        $url = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+        $raw = @file_get_contents($url);
+        if (!$raw && function_exists('curl_init')) {
+            $ch = curl_init($url);
+            curl_setopt_array($ch, [
+                CURLOPT_RETURNTRANSFER => true,
+                CURLOPT_TIMEOUT => 10,
+                CURLOPT_FOLLOWLOCATION => true,
+            ]);
+            $raw = curl_exec($ch);
+            curl_close($ch);
+        }
         if (!$raw) return null;
         $keys = json_decode($raw, true);
-        @file_put_contents($cacheFile, $raw);
+        if (is_array($keys)) {
+            @file_put_contents($cacheFile, $raw);
+        }
     }
 
     $kid = $header['kid'] ?? '';
