@@ -1076,7 +1076,7 @@ window.Templates = {
                 content.innerHTML = `
                     <div class="items-list">
                         ${notebooks.map(nb => `
-                            <div class="item-card" onclick="Templates.course.openNotebook(${nb.id})">
+                            <div class="item-card" onclick="event.stopPropagation(); event.preventDefault(); Templates.course.openNotebook(${nb.id})">
                                 <div class="item-header">
                                     <h4 class="item-title">
                                         <i class="fas fa-book-open"></i> ${escapeHtml(nb.title)}
@@ -1245,12 +1245,10 @@ window.Templates = {
         },
 
         async openNotebook(notebookId) {
-            // Fechar modal de cadernos do curso
             const modal = document.getElementById('courseNotebooksModal');
             if (modal) modal.remove();
-
-            // Abrir editor do caderno
-            openItemEditor(notebookId);
+            // Pequeno atraso para o clique não ser interpretado no modal por baixo (ex.: Editar Categoria)
+            setTimeout(() => openItemEditor(notebookId), 50);
         },
 
         async unlinkNotebook(courseId, notebookId) {
@@ -1802,7 +1800,7 @@ window.Templates = {
                                 <div class="nb-list-item ${i === 0 ? 'active' : ''} nb-p-${item.priority}"
                                      data-notebook-id="${item.id}"
                                      data-title="${escapeHtml(item.title).toLowerCase()}"
-                                     onclick="Templates.notebooks.showNotebook(${item.id})">
+                                     onclick="event.stopPropagation(); event.preventDefault(); Templates.notebooks.showNotebook(${item.id})">
                                     <div class="nb-item-accent" style="background:${p.color}"></div>
                                     <div class="nb-item-icon" style="color:${p.color}">
                                         <i class="fas ${p.icon}"></i>
@@ -1981,8 +1979,16 @@ window.Templates = {
                     padding: 4px 12px; border-radius: 20px;
                     font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
                 }
-                .nb-view-meta { display: flex; gap: 18px; font-size: 13px; color: #8892a4; }
+                .nb-view-meta { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: #8892a4; align-items: center; }
                 .nb-view-meta i { margin-right: 5px; }
+                .nb-view-linked-course {
+                    background: linear-gradient(135deg, rgba(155,89,182,0.15), rgba(108,99,255,0.12));
+                    color: #6C63FF;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
                 .nb-edit-btn {
                     display: flex; align-items: center; gap: 7px;
                     padding: 8px 18px; border-radius: 10px;
@@ -2248,6 +2254,7 @@ window.Templates = {
                                 <div class="nb-view-meta">
                                     <span><i class="fas fa-calendar-alt"></i>${new Date(notebook.created_at).toLocaleDateString('pt-PT')}</span>
                                     <span><i class="fas fa-clock"></i>Atualizado: ${new Date(notebook.updated_at).toLocaleDateString('pt-PT')}</span>
+                                    ${(notebook.metadata && notebook.metadata.linkedToCourseTitle) ? `<span class="nb-view-linked-course" title="Caderno associado a este curso"><i class="fas fa-link"></i> Associado: ${escapeHtml(notebook.metadata.linkedToCourseTitle)}</span>` : ''}
                                 </div>
                             </div>
                             <div style="display:flex;gap:8px;align-items:flex-start;" id="nbViewButtons">
