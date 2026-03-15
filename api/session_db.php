@@ -9,6 +9,11 @@ require_once __DIR__ . '/db.php';
 function initDbSession(): void {
     if (session_status() === PHP_SESSION_ACTIVE) return;
 
+    // Duração da sessão: 7 dias de inatividade (em segundos). Override com SESSION_MAX_LIFETIME no Railway.
+    $maxLifetime = (int) (getenv('SESSION_MAX_LIFETIME') ?: 604800);
+    ini_set('session.gc_maxlifetime', (string) $maxLifetime);
+    session_set_cookie_params(['lifetime' => $maxLifetime, 'path' => '/', 'samesite' => 'Lax']);
+
     $pdo = getDB();
 
     session_set_save_handler(
