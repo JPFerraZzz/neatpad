@@ -1,0 +1,7 @@
+{
+    "name": "ferrazweb/ferraznest",
+    "description": "FerrazNest - O teu cantinho digital",
+    "require": {
+        "php": ">=8.1"
+    }
+}
