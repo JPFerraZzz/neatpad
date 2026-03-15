@@ -846,8 +846,8 @@ window.Templates = {
                                 ${item.content ? `<div class="course-description">${escapeHtml(item.content)}</div>` : ''}
                                 
                                 <div class="course-notebooks-section">
-                                    <button class="btn btn-sm" style="background: #9b59b6; color: white;" onclick="event.stopPropagation(); Templates.course.showNotebooks(${item.id})">
-                                        <i class="fas fa-book"></i> Ver Cadernos (${(metadata.notebooks || []).length})
+                                    <button class="btn btn-sm" id="course-nb-count-btn-${item.id}" style="background: #9b59b6; color: white;" onclick="event.stopPropagation(); Templates.course.showNotebooks(${item.id})">
+                                        <i class="fas fa-book"></i> Ver Cadernos (<span class="course-nb-count">…</span>)
                                     </button>
                                     <button class="btn btn-sm" style="background: #3498db; color: white;"
                                             data-course-id="${item.id}" data-course-title="${escapeHtml(item.title)}"
@@ -986,6 +986,28 @@ window.Templates = {
                     }
                 </style>
             `;
+            Templates.course._updateNotebookCounts(container);
+        },
+
+        async _updateNotebookCounts(container) {
+            const notebookCats = AppState.categories.filter(c => c.template_type === 'notebooks');
+            let allNotebooks = [];
+            for (const cat of notebookCats) {
+                try {
+                    const items = await fetchItems(cat.id);
+                    allNotebooks = allNotebooks.concat(items);
+                } catch (_) {}
+            }
+            const countByCourse = {};
+            allNotebooks.forEach(nb => {
+                const cid = (nb.metadata || {}).linkedToCourse;
+                if (cid) countByCourse[cid] = (countByCourse[cid] || 0) + 1;
+            });
+            container.querySelectorAll('.course-nb-count').forEach(el => {
+                const card = el.closest('.course-card');
+                const id = card && card.id ? card.id.replace('course-card-', '') : null;
+                el.textContent = id ? (countByCourse[id] || 0) : '0';
+            });
         },
 
         async showNotebooks(courseId) {
@@ -1110,7 +1132,7 @@ window.Templates = {
             title.textContent = 'Novo Caderno para: ' + courseTitle;
 
             content.innerHTML = `
-                <form id="courseNotebookForm" onsubmit="Templates.course.handleNotebookSubmit(event, ${courseId})">
+                <form id="courseNotebookForm" data-course-title="${escapeHtml(courseTitle)}" onsubmit="Templates.course.handleNotebookSubmit(event, ${courseId})">
                     <div class="form-group">
                         <label for="notebookCategory">
                             <i class="fas fa-folder"></i> Guardar em que categoria de Cadernos?
@@ -1190,8 +1212,9 @@ window.Templates = {
                 status: 'pending',
                 priority: priority,
                 metadata: {
-                    linkedToCourse: courseId, // Ligação ao curso
-                    linkedToCourseCategory: AppState.currentCategory.id, // Categoria do curso
+                    linkedToCourse: courseId,
+                    linkedToCourseCategory: AppState.currentCategory.id,
+                    linkedToCourseTitle: (document.getElementById('courseNotebookForm') && document.getElementById('courseNotebookForm').dataset.courseTitle) || '',
                     type: 'notebook'
                 }
             };
@@ -1521,6 +1544,7 @@ window.Templates = {
     // ====================================
     excel: {
         render(container, items) {
+            window.__lastExcelItems = items;
             if (items.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -1546,6 +1570,9 @@ window.Templates = {
                                         <i class="fas fa-table"></i> ${escapeHtml(item.title)}
                                     </h4>
                                     <div class="excel-actions">
+                                        <button class="category-action-btn" onclick="Templates.excel.exportToCsv(${item.id})" title="Exportar para CSV">
+                                            <i class="fas fa-file-csv"></i> Exportar CSV
+                                        </button>
                                         <button class="category-action-btn" onclick="openItemEditor(${item.id})" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
@@ -1571,22 +1598,18 @@ window.Templates = {
                                                 `).join('')}
                                             </tbody>
                                         </table>
-                                        ${data.length > 5 ? `<p style="text-align: center; color: #7f8c8d; margin-top: 10px; font-size: 13px;">+${data.length - 5} linhas...</p>` : ''}
+                                        ${data.length > 5 ? `<p class="excel-more-rows">+${data.length - 5} linhas...</p>` : ''}
                                     </div>
-                                ` : '<p style="color: #95a5a6;">Tabela vazia</p>'}
+                                ` : '<p class="excel-empty-hint">Tabela vazia</p>'}
                             </div>
                         `;
                     }).join('')}
                 </div>
                 <style>
-                    .excel-list {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 20px;
-                    }
+                    .excel-list { display: flex; flex-direction: column; gap: 20px; }
                     .excel-card {
-                        background: white;
-                        border: 2px solid #ecf0f1;
+                        background: var(--bg-card);
+                        border: 2px solid var(--border-color);
                         border-radius: 12px;
                         padding: 25px;
                     }
@@ -1599,40 +1622,44 @@ window.Templates = {
                     .excel-title {
                         font-size: 18px;
                         font-weight: 600;
-                        color: #2c3e50;
+                        color: var(--text-primary);
                         display: flex;
                         align-items: center;
                         gap: 10px;
                     }
-                    .excel-actions {
-                        display: flex;
-                        gap: 8px;
-                    }
-                    .excel-table-container {
-                        overflow-x: auto;
-                    }
+                    .excel-actions { display: flex; gap: 8px; }
+                    .excel-table-container { overflow-x: auto; }
                     .excel-table {
                         width: 100%;
                         border-collapse: collapse;
                         font-size: 14px;
+                        color: var(--text-primary);
                     }
                     .excel-table th {
-                        background: #3498db;
-                        color: white;
+                        background: var(--primary-color);
+                        color: #fff;
                         padding: 12px;
                         text-align: left;
                         font-weight: 600;
                     }
                     .excel-table td {
                         padding: 10px 12px;
-                        border: 1px solid #ecf0f1;
+                        border: 1px solid var(--border-color);
+                        color: var(--text-primary);
+                        background: var(--bg-card);
                     }
-                    .excel-table tbody tr:nth-child(even) {
-                        background: #f8f9fa;
+                    .excel-table tbody tr:nth-child(even) td {
+                        background: var(--bg-input);
                     }
-                    .excel-table tbody tr:hover {
-                        background: #e8f4f8;
+                    .excel-table tbody tr:hover td {
+                        background: var(--bg-badge);
                     }
+                    .excel-more-rows, .excel-empty-hint {
+                        color: var(--text-secondary);
+                        margin-top: 10px;
+                        font-size: 13px;
+                    }
+                    .excel-empty-hint { margin: 0; }
                 </style>
             `;
         },
@@ -1698,6 +1725,32 @@ window.Templates = {
             };
 
             saveItem(itemData);
+        },
+
+        exportToCsv(itemId) {
+            const item = (AppState.currentCategory && window.__lastExcelItems) ?
+                window.__lastExcelItems.find(i => i.id == itemId) : null;
+            if (!item || !item.metadata) {
+                showNotification('Dados da tabela não disponíveis. Abre a categoria novamente.', 'error');
+                return;
+            }
+            const headers = item.metadata.headers || [];
+            const data = item.metadata.data || [];
+            const escapeCsv = (cell) => {
+                const s = String(cell ?? '');
+                if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+                return s;
+            };
+            const headerLine = headers.map(escapeCsv).join(',');
+            const dataLines = data.map(row => row.map(escapeCsv).join(','));
+            const csv = [headerLine, ...dataLines].join('\r\n');
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (item.title || 'tabela').replace(/[^\w\s-]/g, '') + '.csv';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            showNotification('CSV exportado', 'success');
         }
     },
 
@@ -1756,6 +1809,7 @@ window.Templates = {
                                     </div>
                                     <div class="nb-item-body">
                                         <div class="nb-item-title">${escapeHtml(item.title)}</div>
+                                        ${(item.metadata && item.metadata.linkedToCourseTitle) ? `<div class="nb-item-linked-course" title="Associado ao curso"><i class="fas fa-link"></i> Associado: ${escapeHtml(item.metadata.linkedToCourseTitle)}</div>` : ''}
                                         <div class="nb-item-preview">${escapeHtml(preview)}</div>
                                         <div class="nb-item-date"><i class="fas fa-clock"></i> ${new Date(item.updated_at).toLocaleDateString('pt-PT')}</div>
                                     </div>
@@ -1883,6 +1937,8 @@ window.Templates = {
                 }
                 .nb-item-date { font-size: 10px; color: rgba(255,255,255,0.3); }
                 .nb-item-date i { margin-right: 3px; }
+                .nb-item-linked-course { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+                .nb-item-linked-course i { margin-right: 4px; }
                 .nb-item-btns {
                     display: flex; flex-direction: column; gap: 4px;
                     opacity: 0; transition: opacity 0.2s; flex-shrink: 0;
@@ -2266,8 +2322,8 @@ window.Templates = {
             return `
                 <div class="nb-toolbar" id="nbToolbar">
                     <!-- Headings -->
-                    <select class="nb-tool-select" onchange="Templates.notebooks._formatBlock(this.value); this.value='';" title="Estilo">
-                        <option value="">Parágrafo</option>
+                    <select class="nb-tool-select" onchange="Templates.notebooks._formatBlock(this.value); this.value='p';" title="Estilo">
+                        <option value="p">Parágrafo</option>
                         <option value="h1">Título 1</option>
                         <option value="h2">Título 2</option>
                         <option value="h3">Título 3</option>
@@ -2306,13 +2362,13 @@ window.Templates = {
 
                     <div class="nb-tool-sep"></div>
 
-                    <!-- Text colors -->
-                    <span style="font-size:11px;color:#8892a4;margin-right:2px;">Cor:</span>
+                    <!-- Text colors (mousedown para não perder a seleção) -->
+                    <span style="font-size:11px;color:var(--text-secondary);margin-right:2px;">Cor:</span>
                     ${['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1a1f36'].map(c =>
-                        `<span class="nb-color-btn" style="background:${c}" title="${c}" onclick="Templates.notebooks._exec('foreColor','${c}')"></span>`
+                        `<span class="nb-color-btn" style="background:${c}" title="${c}" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','${c}')"></span>`
                     ).join('')}
-                    <span class="nb-color-btn" style="background:#000" title="Preto" onclick="Templates.notebooks._exec('foreColor','#000')"></span>
-                    <span class="nb-color-btn" style="background:#fff;box-shadow:0 0 0 1px #bbb" title="Branco" onclick="Templates.notebooks._exec('foreColor','#fff')"></span>
+                    <span class="nb-color-btn" style="background:#000" title="Preto" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','#000')"></span>
+                    <span class="nb-color-btn" style="background:#fff;box-shadow:0 0 0 1px #bbb" title="Branco" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','#fff')"></span>
                 </div>
             `;
         },
@@ -2324,9 +2380,11 @@ window.Templates = {
         },
 
         _formatBlock(tag) {
-            if (!tag) return;
-            document.getElementById('notebookRichEditor').focus();
-            document.execCommand('formatBlock', false, tag);
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            // 'p' = parágrafo (texto normal); formatBlock com tag vazia não limpa em alguns browsers
+            document.execCommand('formatBlock', false, tag === 'p' || !tag ? 'p' : tag);
             this._updateWordCount();
         },
 
@@ -2535,7 +2593,8 @@ window.Templates = {
                     }),
                 });
 
-                // Then snapshot that saved content as a version
+                // Then snapshot that saved content as a version (com nome opcional)
+                const versionName = window.prompt('Nome para esta versão (opcional):', '') || undefined;
                 const resp = await fetch(`${API_URL}/save_note.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -2543,6 +2602,7 @@ window.Templates = {
                         item_id: Number(itemId),
                         content: null,
                         saved_by: 'manual_snapshot',
+                        version_name: versionName,
                     }),
                 });
                 const data = await resp.json();
@@ -2560,6 +2620,7 @@ window.Templates = {
         },
 
         async saveCurrentVersion(itemId) {
+            const versionName = window.prompt('Nome para esta versão (opcional):', '') || undefined;
             const btn = event.currentTarget;
             const origHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…';
@@ -2573,6 +2634,7 @@ window.Templates = {
                         item_id: Number(itemId),
                         content: null,
                         saved_by: 'manual_snapshot',
+                        version_name: versionName,
                     }),
                 });
                 const data = await resp.json();

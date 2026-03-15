@@ -42,7 +42,7 @@
                     <h1>Ferraz<span>Nest</span></h1>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
-                    <button class="btn btn-secondary btn-sm" id="versionManagerBtn" title="Gestão de Versões">
+                    <button class="btn btn-secondary btn-sm" id="versionManagerBtn" title="Gestão de Versões (apenas cadernos)">
                         <i class="fas fa-history"></i> Versões
                     </button>
                     <button class="btn btn-primary" id="newCategoryBtn">
@@ -111,6 +111,12 @@
                             <option value="notebooks">Cadernos - Cadernos digitais para escrever</option>
                         </select>
                         <small class="form-help">Escolhe o tipo de conteúdo que esta categoria vai ter</small>
+                    </div>
+
+                    <div class="form-group" id="excelImportGroup" style="display: none;">
+                        <label><i class="fas fa-file-csv"></i> Importar dados de ficheiro CSV</label>
+                        <input type="file" id="categoryExcelImport" class="form-control" accept=".csv" />
+                        <small class="form-help">Opcional. Primeira linha = cabeçalhos; linhas seguintes = dados (separados por vírgula).</small>
                     </div>
 
                     <div class="form-row">

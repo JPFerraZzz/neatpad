@@ -37,7 +37,7 @@ try {
             jsonResponse(true, $row);
         } else {
             $stmt = $db->prepare("
-                SELECT id, item_id, version, saved_by, LENGTH(content) AS content_length, created_at
+                SELECT id, item_id, version, saved_by, version_name, LENGTH(content) AS content_length, created_at
                 FROM note_versions
                 WHERE item_id = ?
                 ORDER BY version DESC

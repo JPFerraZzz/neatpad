@@ -63,6 +63,7 @@ CREATE TABLE note_versions (
     content LONGTEXT NOT NULL,
     version INT NOT NULL DEFAULT 1,
     saved_by ENUM('manual','autosave') NOT NULL DEFAULT 'autosave',
+    version_name VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
     INDEX idx_item_version (item_id, version DESC),

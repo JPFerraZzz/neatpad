@@ -268,6 +268,12 @@ function openCategoryModal(categoryId = null) {
         document.getElementById('categoryId').value = '';
     }
 
+    const excelImportGroup = document.getElementById('excelImportGroup');
+    const templateSelect = document.getElementById('categoryTemplate');
+    if (excelImportGroup) {
+        excelImportGroup.style.display = (templateSelect && templateSelect.value === 'excel' && !categoryId) ? 'block' : 'none';
+        document.getElementById('categoryExcelImport').value = '';
+    }
     modal.classList.add('active');
 }
 
@@ -595,7 +601,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('newCategoryBtn').addEventListener('click', () => openCategoryModal());
     document.getElementById('versionManagerBtn').addEventListener('click', () => openVersionManager());
 
-    document.getElementById('categoryForm').addEventListener('submit', (e) => {
+    document.getElementById('categoryTemplate').addEventListener('change', () => {
+        const excelImportGroup = document.getElementById('excelImportGroup');
+        const categoryId = document.getElementById('categoryId').value;
+        if (excelImportGroup) {
+            excelImportGroup.style.display = (document.getElementById('categoryTemplate').value === 'excel' && !categoryId) ? 'block' : 'none';
+        }
+    });
+
+    document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const categoryData = {
@@ -605,6 +619,60 @@ document.addEventListener('DOMContentLoaded', () => {
             color: document.getElementById('categoryColor').value,
             template_type: document.getElementById('categoryTemplate').value,
         };
+
+        const fileInput = document.getElementById('categoryExcelImport');
+        const isNewExcelWithFile = !categoryData.id && categoryData.template_type === 'excel' && fileInput && fileInput.files && fileInput.files[0];
+
+        if (isNewExcelWithFile) {
+            try {
+                const res = await fetch(`${API_URL}/categories.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(categoryData),
+                    credentials: 'same-origin',
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    showNotification(data.error || 'Erro ao criar categoria', 'error');
+                    return;
+                }
+                const newCat = data.data;
+                const text = await fileInput.files[0].text();
+                const lines = text.split(/\r?\n/).filter(l => l.trim());
+                if (lines.length >= 1) {
+                    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+                    const dataRows = lines.slice(1).map(line => {
+                        const row = [];
+                        let cur = '', inQuotes = false;
+                        for (let i = 0; i < line.length; i++) {
+                            if (line[i] === '"') { inQuotes = !inQuotes; continue; }
+                            if (!inQuotes && line[i] === ',') { row.push(cur.trim()); cur = ''; continue; }
+                            cur += line[i];
+                        }
+                        row.push(cur.trim());
+                        return row;
+                    });
+                    await fetch(`${API_URL}/items.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            category_id: newCat.id,
+                            title: newCat.name + ' (importado)',
+                            status: 'pending',
+                            priority: 'medium',
+                            metadata: { headers, data: dataRows },
+                        }),
+                    });
+                }
+                showNotification('Categoria criada' + (lines.length >= 1 ? ' e dados importados' : '') + '!', 'success');
+                closeCategoryModal();
+                await fetchCategories();
+            } catch (err) {
+                showNotification('Erro: ' + (err.message || 'ao criar categoria'), 'error');
+            }
+            return;
+        }
 
         saveCategory(categoryData);
     });
@@ -662,10 +730,11 @@ async function loadVersionManager() {
 
         if (items.length === 0) {
             container.innerHTML = `
-                <div style="text-align:center;padding:60px 20px;color:#8892a4;">
+                <div style="text-align:center;padding:60px 20px;color:var(--text-secondary);">
                     <i class="fas fa-inbox" style="font-size:48px;opacity:0.3;display:block;margin-bottom:15px;"></i>
-                    <h3 style="color:#2c3e50;margin-bottom:8px;">Sem versões guardadas</h3>
-                    <p>As versões são criadas automaticamente quando guardas cadernos e notas.</p>
+                    <h3 style="color:var(--text-primary);margin-bottom:8px;">Sem versões guardadas</h3>
+                    <p><strong>A gestão de versões aplica-se apenas a cadernos.</strong></p>
+                    <p style="margin-top:8px;">As versões são criadas quando guardas um caderno ou quando usas "Guardar versão" dentro de um caderno.</p>
                 </div>`;
             return;
         }
@@ -676,6 +745,9 @@ async function loadVersionManager() {
         };
 
         container.innerHTML = `
+            <p class="vm-notice" style="background:var(--bg-badge);color:var(--text-secondary);padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
+                <i class="fas fa-info-circle"></i> <strong>Versões apenas para cadernos.</strong> Só os cadernos têm historial de versões. Podes guardar versões manualmente com um nome dentro de cada caderno.
+            </p>
             <div class="vm-stats">
                 <div class="vm-stat">
                     <i class="fas fa-layer-group"></i>
@@ -756,7 +828,7 @@ async function toggleItemVersions(itemId) {
                             <i class="fas ${v.saved_by === 'manual' ? 'fa-save' : 'fa-robot'}"></i>
                         </div>
                         <div class="vm-ver-info">
-                            <strong>v${v.version}</strong> · ${v.saved_by === 'manual' ? 'Manual' : 'Auto'} ·
+                            <strong>v${v.version}</strong> · ${v.saved_by === 'manual' ? 'Manual' : 'Auto'}${v.version_name ? ' · ' + escapeHtml(v.version_name) : ''} ·
                             ${new Date(v.created_at).toLocaleString('pt-PT')} ·
                             ${Math.round(v.content_length / 1024 * 10) / 10} KB
                         </div>

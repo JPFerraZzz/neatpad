@@ -9,7 +9,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'GET') {
-        // Apenas versões de itens do utilizador autenticado
+        // Apenas versões de itens do utilizador (apenas categorias do tipo cadernos)
         $stmt = $db->prepare("
             SELECT
                 i.id AS item_id,
@@ -24,7 +24,7 @@ try {
             FROM note_versions nv
             JOIN items i ON i.id = nv.item_id
             JOIN categories c ON c.id = i.category_id
-            WHERE c.user_uid = ?
+            WHERE c.user_uid = ? AND c.template_type = 'notebooks'
             GROUP BY nv.item_id
             ORDER BY last_version_at DESC
         ");

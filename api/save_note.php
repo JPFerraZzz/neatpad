@@ -46,12 +46,21 @@ try {
             $db->rollBack();
             jsonResponse(false, null, 'Item sem conteúdo para guardar como versão', 400);
         }
+        $versionName = isset($input['version_name']) ? trim((string) $input['version_name']) : null;
+        if ($versionName === '') $versionName = null;
+
         $stmt = $db->prepare("SELECT COALESCE(MAX(version), 0) + 1 AS next_version FROM note_versions WHERE item_id = ?");
         $stmt->execute([$itemId]);
         $nextVersion = (int) $stmt->fetch()['next_version'];
 
-        $stmt = $db->prepare("INSERT INTO note_versions (item_id, content, version, saved_by) VALUES (:item_id, :content, :version, :saved_by)");
-        $stmt->execute(['item_id' => $itemId, 'content' => $item['content'], 'version' => $nextVersion, 'saved_by' => 'manual']);
+        $stmt = $db->prepare("INSERT INTO note_versions (item_id, content, version, saved_by, version_name) VALUES (:item_id, :content, :version, :saved_by, :version_name)");
+        $stmt->execute([
+            'item_id' => $itemId,
+            'content' => $item['content'],
+            'version' => $nextVersion,
+            'saved_by' => 'manual',
+            'version_name' => $versionName,
+        ]);
 
         $db->commit();
         jsonResponse(true, ['item_id' => $itemId, 'version' => $nextVersion, 'saved_at' => date('c'), 'message' => "Versão $nextVersion guardada"]);

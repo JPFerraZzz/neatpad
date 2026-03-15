@@ -387,6 +387,11 @@ body {
     z-index: 2000;
 }
 
+/* Modal de categoria deve ficar à frente do modal de itens (Editar Categoria) */
+#categoryModal {
+    z-index: 2100;
+}
+
 .modal.active {
     display: flex;
     justify-content: center;
