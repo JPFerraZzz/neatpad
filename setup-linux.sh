@@ -1,16 +1,16 @@
 #!/bin/bash
 # ================================================
-# FerrazNest — Setup Linux com LAMP
+# NeatPad — Setup Linux com LAMP
 # ================================================
 
 set -e
 
-PROJECT_DIR="/home/jpferraz/Documentos/dev/ferraznest"
-WEBROOT="/var/www/html/ferraznest"
+PROJECT_DIR="/home/jpferraz/Documentos/dev/neatpad"
+WEBROOT="/var/www/html/neatpad"
 APACHE_CONF="/etc/apache2/sites-available/000-default.conf"
 
 echo ""
-echo "=== FerrazNest — Setup Linux ==="
+echo "=== NeatPad — Setup Linux ==="
 echo ""
 
 # 1. Garantir que os serviços estão ativos
@@ -23,14 +23,14 @@ echo "      OK"
 echo ""
 echo "[2/5] A configurar utilizador MySQL..."
 mysql -u root -e "CREATE USER IF NOT EXISTS 'organizer'@'localhost' IDENTIFIED BY 'organizer123';" 2>/dev/null || true
-mysql -u root -e "GRANT ALL PRIVILEGES ON ferraznest.* TO 'organizer'@'localhost'; FLUSH PRIVILEGES;" 2>/dev/null || true
+mysql -u root -e "GRANT ALL PRIVILEGES ON neatpad.* TO 'organizer'@'localhost'; FLUSH PRIVILEGES;" 2>/dev/null || true
 echo "      OK"
 
 # 3. Criar a base de dados
 echo ""
 echo "[3/5] A criar a base de dados..."
 mysql -u root < "$PROJECT_DIR/database.sql"
-echo "      OK — Base de dados 'ferraznest' criada."
+echo "      OK — Base de dados 'neatpad' criada."
 
 # 4. Criar symlink no webroot
 echo ""
@@ -49,7 +49,7 @@ ln -s "$PROJECT_DIR" "$WEBROOT"
 echo "      OK — Symlink criado em $WEBROOT"
 
 # 5. Permissões para o Apache seguir symlinks
-if ! grep -q "ferraznest" "$APACHE_CONF"; then
+if ! grep -q "neatpad" "$APACHE_CONF"; then
     # Remover bloco antigo organizer-ferraz se existir
     sed -i '/organizer-ferraz/,/<\/Directory>/d' "$APACHE_CONF"
 
@@ -69,8 +69,8 @@ echo "[5/5] Apache reiniciado."
 
 echo ""
 echo "================================================"
-echo " FERRAZNEST — SETUP CONCLUÍDO!"
+echo " NEATPAD — SETUP CONCLUÍDO!"
 echo "================================================"
 echo ""
-echo " Abre o browser em: http://localhost/ferraznest/"
+echo " Abre o browser em: http://localhost/neatpad/"
 echo ""

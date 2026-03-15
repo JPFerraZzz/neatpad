@@ -1,16 +1,16 @@
-# Relatório do Projeto FerrazNest
+# Relatório do Projeto NeatPad
 
 **Autor:** João Ferraz  
 **Data:** Março 2026  
-**URL em produção:** https://ferraznest.up.railway.app
+**URL em produção:** https://neatpad.up.railway.app
 
 ---
 
 ## 1. Resumo Executivo
 
-O **FerrazNest** é uma aplicação web de organização pessoal desenvolvida como projeto da marca FerrazWeb. Permite aos utilizadores criar categorias, gerir tarefas, notas, cursos e cadernos digitais, com autenticação multi-utilizador via Firebase e isolamento completo de dados por conta.
+O **NeatPad** é uma aplicação web de organização pessoal — o teu bloco de notas organizado na web. Foi desenvolvida como projeto da **FerrazWeb** (NeatPad by FerrazWeb). Permite aos utilizadores criar categorias, gerir tarefas, notas, cursos e cadernos digitais, com autenticação multi-utilizador via Firebase e isolamento completo de dados por conta.
 
-A aplicação foi desenvolvida em PHP, MySQL e JavaScript vanilla, e está em produção na plataforma Railway com domínio personalizado.
+O nome **NeatPad** junta **Neat** (organizado, arrumado) e **Pad** (de *notepad*): evoca um bloco de notas onde tudo fica em ordem e a escrita está no centro (notas, cadernos, tarefas). A aplicação foi desenvolvida em PHP, MySQL e JavaScript vanilla, e está em produção na plataforma Railway com domínio personalizado.
 
 ---
 
@@ -34,7 +34,7 @@ A aplicação foi desenvolvida em PHP, MySQL e JavaScript vanilla, e está em pr
 | Ficheiro | Descrição |
 |----------|-----------|
 | **index.html** | Página principal da aplicação. Verifica a sessão via API antes de renderizar; redireciona para login se não autenticado. Contém o header com logo, botões de ação, toggle Dark/Light mode, e a grelha de categorias. Inclui os modais de categorias, itens, editor e gestão de versões. |
-| **login.html** | Página de login e registo. Interface com tabs (Entrar / Criar conta), formulários para email/password, botão Google Sign-In. Design com blobs decorativos, card central e paleta FerrazNest (roxo #6C63FF, creme #F4F0EB). |
+| **login.html** | Página de login e registo. Interface com tabs (Entrar / Criar conta), formulários para email/password, botão Google Sign-In. Design com blobs decorativos, card central e paleta NeatPad (roxo #6C63FF, creme #F4F0EB). |
 | **config.php** | Configuração global: FIREBASE_PROJECT_ID, timezone (Europe/Lisbon), e flags de erro. Suporta variável de ambiente para o project ID. |
 | **database.sql** | Schema completo da base de dados para instalação local. Inclui DROP/CREATE DATABASE, tabelas categories (com user_uid), items, subtasks, note_versions. Usado no setup LAMP. |
 | **railway-db-setup.sql** | Versão do schema para Railway: sem DROP/CREATE DATABASE (o Railway já cria). Usado para criar tabelas após deploy. |
@@ -44,7 +44,7 @@ A aplicação foi desenvolvida em PHP, MySQL e JavaScript vanilla, e está em pr
 | **Procfile** | Comando de arranque para Railway: `php -S 0.0.0.0:$PORT -t .` |
 | **.env.example** | Exemplo de variáveis de ambiente (DB_*, FIREBASE_PROJECT_ID) para referência local. |
 | **.gitignore** | Ignora .env, logs, ficheiros temporários, pastas de IDE. |
-| **setup-linux.sh** | Script de setup automático para Linux com LAMP: inicia Apache/MariaDB, cria utilizador MySQL, importa database.sql, cria symlink em /var/www/html/ferraznest, configura permissões Apache. |
+| **setup-linux.sh** | Script de setup automático para Linux com LAMP: inicia Apache/MariaDB, cria utilizador MySQL, importa database.sql, cria symlink em /var/www/html/neatpad, configura permissões Apache. |
 | **README.md** | Documentação do projeto: funcionalidades, stack, instruções de setup e deploy. |
 
 ### 3.2 Pasta api/
@@ -99,7 +99,7 @@ Todas as categorias têm user_uid (Firebase UID). Itens, subtasks e versões her
 
 ### 5.1 Plataforma Escolhida: Railway
 
-- **URL:** https://ferraznest.up.railway.app  
+- **URL:** https://neatpad.up.railway.app  
 - **Motivo:** Suporte nativo a PHP + MySQL, $5 crédito/mês grátis, domínio personalizado (.up.railway.app), deploy automático via GitHub.
 
 ### 5.2 Passos Realizados
@@ -118,17 +118,17 @@ Todas as categorias têm user_uid (Firebase UID). Itens, subtasks e versões her
 
 3. **Railway**
    - Criação de conta e ligação ao GitHub
-   - New Project → Deploy from GitHub repo → seleção do repositório ferraznest
+   - New Project → Deploy from GitHub repo → seleção do repositório neatpad
    - Adição de serviço MySQL (Database → MySQL)
    - Variáveis: referência das variáveis MySQL (MYSQLHOST, MYSQLUSER, MYSQLPASSWORD, MYSQLDATABASE, MYSQLPORT) ao serviço web
-   - Domínio: Settings → Networking → definição de ferraznest.up.railway.app
+   - Domínio: Settings → Networking → definição de neatpad.up.railway.app
 
 4. **Base de dados**
    - Connect → Public Network → obtenção de credenciais
    - Execução local: `mysql -h gondola.proxy.rlwy.net -u root -p --port 47998 railway < railway-db-setup.sql`
 
 5. **Firebase**
-   - Authentication → Settings → Authorized domains → adição de ferraznest.up.railway.app
+   - Authentication → Settings → Authorized domains → adição de neatpad.up.railway.app
 
 ---
 
@@ -141,14 +141,14 @@ Todas as categorias têm user_uid (Firebase UID). Itens, subtasks e versões her
 - Sub-tarefas em itens do tipo tarefas
 - Historial de versões com autosave e snapshots manuais
 - Dark Mode / Light Mode com toggle animado e persistência em localStorage
-- Design responsivo e paleta FerrazNest (roxo, creme, blobs decorativos)
+- Design responsivo e paleta NeatPad (roxo, creme, blobs decorativos)
 - Deploy em produção com domínio personalizado
 
 ---
 
 ## 7. Conclusão
 
-O FerrazNest foi desenvolvido de raiz, integrado com Firebase e MySQL, e colocado em produção na Railway. O projeto demonstra competências em desenvolvimento full-stack, autenticação OAuth, gestão de estado, e deploy em cloud.
+O NeatPad foi desenvolvido de raiz, integrado com Firebase e MySQL, e colocado em produção na Railway. O projeto demonstra competências em desenvolvimento full-stack, autenticação OAuth, gestão de estado, e deploy em cloud.
 
 ---
 

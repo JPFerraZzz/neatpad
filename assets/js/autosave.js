@@ -1,5 +1,5 @@
 /* ======================================
-   FerrazNest - Autosave System
+   NeatPad - Autosave System
    Debounce + localStorage draft + API
    ====================================== */
 

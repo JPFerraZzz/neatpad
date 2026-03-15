@@ -1,5 +1,5 @@
 /* ======================================
-   FerrazNest - JavaScript Principal
+   NeatPad - JavaScript Principal
    ====================================== */
 
 // Estado global da aplicação

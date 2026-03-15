@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#6C63FF">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <title>FerrazNest — O teu cantinho digital</title>
+    <title>NeatPad — O teu bloco de notas organizado</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
     <script>
         // Aplicar tema antes do render para evitar flash
         (function() {
-            const t = localStorage.getItem('ferraznest-theme');
+            const t = localStorage.getItem('neatpad-theme');
             if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
         })();
     </script>
@@ -42,7 +42,7 @@
             <div class="header-content">
                 <div class="logo">
                     <i class="fas fa-feather-alt"></i>
-                    <h1>Ferraz<span>Nest</span></h1>
+                    <h1>Neat<span>Pad</span></h1>
                 </div>
                 <div style="display:flex;gap:10px;align-items:center;">
                     <button class="btn btn-secondary btn-sm" id="versionManagerBtn" title="Gestão de Versões (apenas cadernos)">
@@ -238,10 +238,10 @@
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             if (isDark) {
                 document.documentElement.removeAttribute('data-theme');
-                localStorage.setItem('ferraznest-theme', 'light');
+                localStorage.setItem('neatpad-theme', 'light');
             } else {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                localStorage.setItem('ferraznest-theme', 'dark');
+                localStorage.setItem('neatpad-theme', 'dark');
             }
         }
 

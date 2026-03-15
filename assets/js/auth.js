@@ -1,5 +1,5 @@
 // ================================================
-// FerrazNest — Autenticação Firebase
+// NeatPad — Autenticação Firebase
 // ================================================
 
 firebase.initializeApp(firebaseConfig);

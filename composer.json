@@ -1,6 +1,6 @@
 {
-    "name": "ferrazweb/ferraznest",
-    "description": "FerrazNest - O teu cantinho digital",
+    "name": "ferrazweb/neatpad",
+    "description": "NeatPad - O teu bloco de notas organizado",
     "require": {
         "php": ">=8.1",
         "ext-pdo": "*",

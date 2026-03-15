@@ -1,6 +1,13 @@
-# FerrazNest
+# NeatPad
 
-O teu cantinho digital para organizar tudo. Projeto da FerrazWeb.
+**NeatPad** é o teu bloco de notas organizado na web — aplicação de organização pessoal onde podes criar categorias, notas, tarefas, cursos e cadernos digitais. Projeto da **FerrazWeb** (NeatPad by FerrazWeb).
+
+## Porquê o nome NeatPad?
+
+- **Neat** (organizado, arrumado) — reflete o foco em manter notas, listas e cadernos em ordem e fáceis de encontrar.
+- **Pad** (de *notepad*) — evoca escrita, anotações e o bloco de notas como centro da experiência (notas, cadernos, tarefas).
+
+O NeatPad é um projeto conciliado da marca FerrazWeb; a referência “by FerrazWeb” identifica a origem do projeto sem fazer parte do nome oficial da aplicação.
 
 ## Funcionalidades
 
@@ -24,7 +31,7 @@ O teu cantinho digital para organizar tudo. Projeto da FerrazWeb.
 sudo ./setup-linux.sh
 
 # 2. Abrir no browser
-http://localhost/ferraznest/
+http://localhost/neatpad/
 ```
 
 ## Configuração Firebase
@@ -38,7 +45,7 @@ http://localhost/ferraznest/
 ## Estrutura
 
 ```
-ferraznest/
+neatpad/
 ├── index.html              # App principal
 ├── login.html              # Página de login
 ├── config.php              # Firebase config
@@ -73,8 +80,8 @@ Variáveis de ambiente suportadas em `api/db.php`:
 - `DB_HOST` (default: localhost)
 - `DB_USER` (default: organizer)
 - `DB_PASS` (default: organizer123)
-- `DB_NAME` (default: ferraznest)
+- `DB_NAME` (default: neatpad)
 
 ---
 
-FerrazWeb &copy; 2026
+NeatPad · FerrazWeb &copy; 2026

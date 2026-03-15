@@ -1,5 +1,5 @@
 /* ======================================
-   FerrazNest - Templates Personalizados
+   NeatPad - Templates Personalizados
    ====================================== */
 
 window.Templates = {

@@ -1,10 +1,10 @@
 -- ================================================
--- FerrazNest — Base de Dados
+-- NeatPad — Base de Dados
 -- ================================================
 
-DROP DATABASE IF EXISTS ferraznest;
-CREATE DATABASE ferraznest CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE ferraznest;
+DROP DATABASE IF EXISTS neatpad;
+CREATE DATABASE neatpad CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE neatpad;
 
 -- ── 1. Categorias ───────────────────────────────
 CREATE TABLE categories (
@@ -71,4 +71,4 @@ CREATE TABLE note_versions (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── Verificação ─────────────────────────────────
-SELECT 'Base de dados ferraznest criada com sucesso!' AS resultado;
+SELECT 'Base de dados neatpad criada com sucesso!' AS resultado;

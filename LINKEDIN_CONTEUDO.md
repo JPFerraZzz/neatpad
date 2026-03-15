@@ -1,4 +1,6 @@
-# FerrazNest — Conteúdo para LinkedIn
+# NeatPad — Conteúdo para LinkedIn
+
+NeatPad é um projeto da **FerrazWeb** (NeatPad by FerrazWeb). O nome junta **Neat** (organizado) e **Pad** (notepad — bloco de notas, escrita).
 
 ---
 
@@ -6,9 +8,9 @@
 
 ### Versão 1 (Mais técnica)
 
-**FerrazNest — O teu cantinho digital 🪺**
+**NeatPad — O teu bloco de notas organizado 📓**
 
-Acabei de colocar online o FerrazNest, uma aplicação web de organização pessoal que desenvolvi de raiz.
+Acabei de colocar online o NeatPad, uma aplicação web de organização pessoal que desenvolvi de raiz (projeto FerrazWeb).
 
 O que inclui:
 ✅ Autenticação com Firebase (Email + Google)
@@ -20,7 +22,7 @@ O que inclui:
 
 Stack: PHP, MySQL, JavaScript vanilla, Firebase Auth.
 
-Experimenta em: ferraznest.up.railway.app
+Experimenta em: neatpad.up.railway.app
 
 #webdevelopment #php #firebase #fullstack #ferrazweb
 
@@ -28,15 +30,15 @@ Experimenta em: ferraznest.up.railway.app
 
 ### Versão 2 (Mais pessoal)
 
-**O meu cantinho digital está no ar 🪺**
+**O meu bloco de notas organizado está no ar 📓**
 
-Criei o FerrazNest — uma app para organizar projetos, notas, tarefas e cursos num só sítio.
+Criei o NeatPad — uma app para organizar projetos, notas, tarefas e cursos num só sítio (NeatPad by FerrazWeb).
 
 Cada utilizador tem a sua conta (login com email ou Google), os seus dados ficam separados, e podes usar diferentes tipos de conteúdo: listas simples, notas, tarefas com sub-tarefas, progresso de cursos, cadernos digitais e tabelas tipo Excel.
 
 Tem Dark Mode, autosave e historial de versões. Está em produção na Railway.
 
-Link: ferraznest.up.railway.app
+Link: neatpad.up.railway.app
 
 #desenvolvimentoweb #php #firebase #projeto
 
@@ -44,7 +46,7 @@ Link: ferraznest.up.railway.app
 
 ### Versão 3 (Curta e direta)
 
-**FerrazNest — app de organização pessoal com login, multi-utilizador, 6 tipos de conteúdo e Dark Mode. PHP + MySQL + Firebase. Já online em ferraznest.up.railway.app 🪺**
+**NeatPad — app de organização pessoal com login, multi-utilizador, 6 tipos de conteúdo e Dark Mode. PHP + MySQL + Firebase. Já online em neatpad.up.railway.app 📓**
 
 #webdev #php #firebase
 
@@ -55,11 +57,11 @@ Link: ferraznest.up.railway.app
 Quando adicionas um projeto no LinkedIn, preenche assim:
 
 ### Nome do projeto
-**FerrazNest**
+**NeatPad**
 
 ### Descrição (até 2000 caracteres)
 ```
-FerrazNest é uma aplicação web de organização pessoal desenvolvida como projeto da FerrazWeb. Permite aos utilizadores criar categorias, gerir tarefas, notas, cursos e cadernos digitais, com autenticação multi-utilizador via Firebase e isolamento completo de dados por conta.
+NeatPad é uma aplicação web de organização pessoal — o teu bloco de notas organizado na web. Desenvolvida como projeto da FerrazWeb (NeatPad by FerrazWeb). O nome junta Neat (organizado) e Pad (notepad): tudo no sítio, com a escrita no centro. Permite criar categorias, gerir tarefas, notas, cursos e cadernos digitais, com autenticação multi-utilizador via Firebase e isolamento completo de dados por conta.
 
 Funcionalidades principais:
 • Autenticação Firebase (Email/Password + Google Sign-In)
@@ -70,12 +72,12 @@ Funcionalidades principais:
 • Dark Mode / Light Mode com persistência
 • Design responsivo e interface moderna
 
-Stack: PHP 8, MySQL, JavaScript vanilla, Firebase Authentication. Deploy na Railway com domínio personalizado (ferraznest.up.railway.app).
+Stack: PHP 8, MySQL, JavaScript vanilla, Firebase Authentication. Deploy na Railway com domínio personalizado (neatpad.up.railway.app).
 ```
 
 ### URL do projeto
 ```
-https://ferraznest.up.railway.app
+https://neatpad.up.railway.app
 ```
 
 ### Competências associadas (escolhe as que aplicam)
@@ -113,10 +115,10 @@ Março 2026 (ou "Em curso" se quiseres indicar que está ativo)
 
 ## REPOSITÓRIO GITHUB
 
-O projeto já está no GitHub. Para o tornares público (opcional):
+O projeto pode estar no GitHub como `neatpad`. Para o tornares público (opcional):
 
 1. Repositório → Settings → Danger Zone → Change repository visibility → Public
-2. Adiciona uma descrição curta: "FerrazNest — O teu cantinho digital. App de organização pessoal com PHP, MySQL e Firebase."
-3. Topics sugeridos: `php`, `mysql`, `firebase`, `javascript`, `organizer`, `ferrazweb`
+2. Adiciona uma descrição curta: "NeatPad — O teu bloco de notas organizado. App de organização pessoal com PHP, MySQL e Firebase. By FerrazWeb."
+3. Topics sugeridos: `php`, `mysql`, `firebase`, `javascript`, `organizer`, `ferrazweb`, `neatpad`
 
 **Nota:** Se o repositório tiver credenciais no firebase-config.js, cria um firebase-config.example.js com placeholders e adiciona firebase-config.js ao .gitignore antes de tornar público. (O firebase-config.js contém apenas a apiKey e projectId, que são considerados públicos pelo Firebase — mas verifica a documentação atual.)

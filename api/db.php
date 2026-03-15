@@ -1,6 +1,6 @@
 <?php
 /**
- * FerrazNest — Conexão à base de dados
+ * NeatPad — Conexão à base de dados
  */
 
 // Suporta variáveis do Railway (MYSQLHOST ou MYSQL_HOST, etc.) e variáveis próprias
@@ -8,7 +8,7 @@ define('DB_HOST', getenv('DB_HOST') ?: getenv('MYSQLHOST') ?: getenv('MYSQL_HOST
 define('DB_PORT', getenv('DB_PORT') ?: getenv('MYSQLPORT') ?: getenv('MYSQL_PORT')     ?: '3306');
 define('DB_USER', getenv('DB_USER') ?: getenv('MYSQLUSER') ?: getenv('MYSQL_USER')     ?: 'organizer');
 define('DB_PASS', getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: getenv('MYSQL_PASSWORD') ?: 'organizer123');
-define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: 'ferraznest');
+define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: 'neatpad');
 
 date_default_timezone_set('Europe/Lisbon');
 

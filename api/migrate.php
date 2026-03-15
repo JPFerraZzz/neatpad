@@ -1,6 +1,6 @@
 <?php
 /**
- * FerrazNest — Migração automática
+ * NeatPad — Migração automática
  */
 require_once __DIR__ . '/db.php';
 
