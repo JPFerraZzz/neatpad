@@ -11,6 +11,11 @@
 
 /* ── Light Mode (default) ────────────── */
 :root {
+    --touch-min: 44px;
+    --safe-top: env(safe-area-inset-top, 0);
+    --safe-bottom: env(safe-area-inset-bottom, 0);
+    --safe-left: env(safe-area-inset-left, 0);
+    --safe-right: env(safe-area-inset-right, 0);
     --primary-color: #6C63FF;
     --primary-hover: #5A52E0;
     --secondary-color: #1B1830;
@@ -92,6 +97,8 @@ body {
     max-width: 1400px;
     margin: 0 auto;
     padding: 0 20px;
+    padding-left: calc(20px + var(--safe-left, 0));
+    padding-right: calc(20px + var(--safe-right, 0));
 }
 
 /* ── Theme Toggle ────────────────────── */
@@ -675,33 +682,308 @@ textarea.form-control {
     white-space: pre-wrap;
 }
 
-/* ── Responsive ───────────────────────── */
+/* ========================================
+   MOBILE & TABLET — Heurísticas UX
+   Touch targets ≥44px, safe areas, consistência
+   ======================================== */
+
+/* Breakpoints */
+:root {
+    --break-sm: 480px;
+    --break-md: 768px;
+    --break-lg: 1024px;
+}
+
+/* Base: tap highlight e font size (evita zoom iOS em inputs) */
+html {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    padding-bottom: var(--safe-bottom);
+}
+
+/* Botões: área de toque mínima (Heurística 4 – Consistência) */
+.btn {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+    padding: 12px 24px;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-sm {
+    min-height: var(--touch-min);
+    min-width: var(--touch-min);
+    padding: 10px 16px;
+    font-size: 14px;
+}
+
+/* Ações em cards sempre visíveis em touch (Heurística 6 – Reconhecimento) */
+@media (hover: none) and (pointer: coarse) {
+    .category-actions {
+        opacity: 1;
+    }
+    .category-action-btn {
+        min-width: var(--touch-min);
+        min-height: var(--touch-min);
+        padding: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+/* Modais: full-viewport em mobile (Heurística 8 – Minimalista) */
 @media (max-width: 768px) {
+    .modal.active {
+        padding: 0;
+        align-items: flex-end;
+    }
+    .modal-content {
+        max-height: 92vh;
+        max-height: calc(92vh - var(--safe-bottom));
+        border-radius: 16px 16px 0 0;
+        margin: 0;
+        padding-bottom: var(--safe-bottom);
+    }
+    .modal-large .modal-content {
+        max-height: 95vh;
+        max-height: calc(95vh - var(--safe-bottom));
+    }
+    .modal-header {
+        padding: 20px 20px 16px;
+        padding-left: calc(20px + var(--safe-left));
+        padding-right: calc(20px + var(--safe-right));
+    }
+    .modal-header h3 {
+        font-size: 18px;
+    }
+    .modal-close {
+        min-width: var(--touch-min);
+        min-height: var(--touch-min);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: -8px -8px -8px 0;
+    }
+    .modal-body {
+        padding: 20px;
+        padding-left: calc(20px + var(--safe-left));
+        padding-right: calc(20px + var(--safe-right));
+    }
+    .modal-footer {
+        padding-bottom: calc(20px + var(--safe-bottom));
+    }
+}
+
+/* Formulários: inputs legíveis sem zoom (16px) */
+@media (max-width: 768px) {
+    .form-control {
+        font-size: 16px;
+        min-height: var(--touch-min);
+        padding: 14px 16px;
+    }
+    textarea.form-control {
+        min-height: 140px;
+    }
+    .form-control-color {
+        min-height: var(--touch-min);
+        min-width: var(--touch-min);
+    }
+}
+
+/* Header: compacto em mobile (Heurística 8) */
+@media (max-width: 768px) {
+    .main-header {
+        padding: 14px 0;
+        padding-top: calc(14px + var(--safe-top));
+        padding-left: calc(20px + var(--safe-left));
+        padding-right: calc(20px + var(--safe-right));
+    }
     .header-content {
-        flex-direction: column;
-        gap: 15px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
-
+    .header-content .container {
+        padding: 0;
+    }
+    .logo {
+        gap: 10px;
+    }
+    .logo i {
+        font-size: 26px;
+    }
     .logo h1 {
-        font-size: 20px;
+        font-size: 18px;
     }
+    .header-content > div[style*="display:flex"] {
+        display: flex !important;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+    }
+    #userMenu {
+        width: 100%;
+        border-left: none !important;
+        padding-left: 0 !important;
+        margin-top: 4px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border-color);
+    }
+    #versionManagerBtn,
+    #newCategoryBtn,
+    .theme-toggle {
+        min-height: var(--touch-min);
+        min-width: var(--touch-min);
+    }
+    #newCategoryBtn {
+        flex: 1;
+        min-width: 0;
+        justify-content: center;
+    }
+    #userDisplayName {
+        max-width: 180px;
+    }
+}
 
+/* Telefones muito pequenos: manter rótulos (reconhecimento) */
+@media (max-width: 380px) {
+    .header-content > div[style*="display:flex"] {
+        justify-content: flex-start;
+    }
+    #newCategoryBtn,
+    #versionManagerBtn {
+        font-size: 13px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+}
+
+/* Grid categorias: 1 col mobile, 2 cols tablet */
+@media (max-width: 767px) {
     .categories-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
     }
+    .category-card {
+        padding: 20px;
+    }
+    .category-card::before {
+        height: 4px;
+    }
+    .category-icon {
+        font-size: 32px;
+    }
+    .category-title {
+        font-size: 18px;
+    }
+    .main-content {
+        padding: 24px 0;
+        padding-bottom: calc(24px + var(--safe-bottom));
+    }
+    .section-title {
+        font-size: 22px;
+        margin-bottom: 20px;
+    }
+}
 
+@media (min-width: 768px) and (max-width: 1023px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+}
+
+/* Tablet landscape e desktop */
+@media (min-width: 1024px) {
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+/* Notificações (Heurística 1 – Visibilidade do estado) */
+.app-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 14px 20px;
+    color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+    max-width: 360px;
+}
+.app-notification--success { background: var(--success-color); }
+.app-notification--error   { background: var(--danger-color); }
+.app-notification--info   { background: var(--info-color); }
+
+@media (max-width: 768px) {
+    .app-notification {
+        left: 16px;
+        right: 16px;
+        left: calc(16px + var(--safe-left));
+        right: calc(16px + var(--safe-right));
+        bottom: calc(20px + var(--safe-bottom));
+        top: auto;
+        max-width: none;
+    }
+}
+
+/* Empty state e loading: mais compactos em mobile */
+@media (max-width: 768px) {
+    .empty-state,
+    .loading {
+        padding: 40px 20px;
+    }
+    .empty-state i,
+    .loading i {
+        font-size: 40px;
+    }
+}
+
+/* Item cards em listas: touch amigável */
+@media (max-width: 768px) {
+    .item-card {
+        padding: 16px;
+        min-height: auto;
+    }
+    .item-actions .category-action-btn,
+    .item-actions .btn {
+        min-width: var(--touch-min);
+        min-height: var(--touch-min);
+        padding: 10px;
+    }
+}
+
+/* Form row em modal: uma coluna em mobile */
+@media (max-width: 768px) {
     .form-row {
         grid-template-columns: 1fr;
+        gap: 16px;
     }
+}
 
+/* ── Responsive (legado, mantido) ─────── */
+@media (max-width: 768px) {
     .modal-actions {
         flex-wrap: wrap;
+        gap: 8px;
     }
-
+    .modal-actions .btn {
+        min-height: var(--touch-min);
+    }
     .modal-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+    .modal-title-group {
+        flex-wrap: wrap;
     }
 }
 

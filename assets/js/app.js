@@ -565,20 +565,10 @@ function getPriorityLabel(priority) {
 }
 
 function showNotification(message, type = 'info') {
-    // Criar elemento de notificação
     const notification = document.createElement('div');
-    notification.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 15px 25px;
-        background: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
-        color: white;
-        border-radius: 8px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        z-index: 10000;
-        animation: slideInRight 0.3s ease;
-    `;
+    notification.className = 'app-notification app-notification--' + type;
+    notification.setAttribute('role', 'status');
+    notification.setAttribute('aria-live', 'polite');
     notification.textContent = message;
 
     document.body.appendChild(notification);
