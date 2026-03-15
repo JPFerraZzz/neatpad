@@ -48,7 +48,15 @@ CREATE TABLE subtasks (
     INDEX idx_item (item_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── 4. Historial de versões ─────────────────────
+-- ── 4. Sessões PHP (para Railway multi-instância) ─
+CREATE TABLE php_sessions (
+    id VARCHAR(128) PRIMARY KEY,
+    data LONGTEXT NOT NULL,
+    last_activity INT UNSIGNED NOT NULL,
+    INDEX idx_last_activity (last_activity)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ── 5. Historial de versões ─────────────────────
 CREATE TABLE note_versions (
     id INT AUTO_INCREMENT PRIMARY KEY,
     item_id INT NOT NULL,

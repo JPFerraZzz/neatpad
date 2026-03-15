@@ -17,7 +17,7 @@ O teu cantinho digital para organizar tudo. Projeto da FerrazWeb.
 - **Base de dados:** MySQL / MariaDB
 - **Auth:** Firebase Authentication
 
-## Setup local (Linux com LAMP)
+## Setup local (Linux Mint Cinnamon + WhiteSur com LAMP)
 
 ```bash
 # 1. Executar o setup automático

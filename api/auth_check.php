@@ -2,7 +2,11 @@
 /**
  * Helper de autenticação por sessão.
  * Incluir no topo de cada endpoint protegido.
+ * Usa sessões em MySQL para funcionar no Railway (multi-instância).
  */
+require_once __DIR__ . '/session_db.php';
+initDbSession();
+
 function requireAuth(): string {
     if (session_status() === PHP_SESSION_NONE) {
         session_start();

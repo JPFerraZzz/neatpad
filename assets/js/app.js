@@ -18,7 +18,7 @@ const API_URL = 'api';
 
 async function fetchCategories() {
     try {
-        const response = await fetch(`${API_URL}/categories.php`);
+        const response = await fetch(`${API_URL}/categories.php`, { credentials: 'same-origin' });
         const data = await response.json();
         
         if (data.success) {
@@ -39,10 +39,9 @@ async function saveCategory(categoryData) {
         const method = isEdit ? 'PUT' : 'POST';
         const response = await fetch(`${API_URL}/categories.php`, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(categoryData),
+            credentials: 'same-origin',
         });
 
         const data = await response.json();
@@ -86,6 +85,7 @@ async function deleteCategory(categoryId) {
     try {
         const response = await fetch(`${API_URL}/categories.php?id=${categoryId}`, {
             method: 'DELETE',
+            credentials: 'same-origin',
         });
 
         const data = await response.json();
@@ -105,7 +105,7 @@ async function deleteCategory(categoryId) {
 
 async function fetchItems(categoryId) {
     try {
-        const response = await fetch(`${API_URL}/items.php?category_id=${categoryId}`);
+        const response = await fetch(`${API_URL}/items.php?category_id=${categoryId}`, { credentials: 'same-origin' });
         const data = await response.json();
         
         if (data.success) {
@@ -126,10 +126,9 @@ async function saveItem(itemData) {
         const method = itemData.id ? 'PUT' : 'POST';
         const response = await fetch(`${API_URL}/items.php`, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(itemData),
+            credentials: 'same-origin',
         });
 
         const data = await response.json();
@@ -162,6 +161,7 @@ async function deleteItem(itemId) {
     try {
         const response = await fetch(`${API_URL}/items.php?id=${itemId}`, {
             method: 'DELETE',
+            credentials: 'same-origin',
         });
 
         const data = await response.json();
@@ -651,7 +651,7 @@ async function loadVersionManager() {
     container.innerHTML = '<div style="text-align:center;padding:40px;color:#8892a4;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">A carregar versões...</p></div>';
 
     try {
-        const resp = await fetch(`${API_URL}/manage_versions.php`);
+        const resp = await fetch(`${API_URL}/manage_versions.php`, { credentials: 'same-origin' });
         const data = await resp.json();
 
         if (!data.success) throw new Error(data.error);
@@ -740,7 +740,7 @@ async function toggleItemVersions(itemId) {
     detail.innerHTML = '<div style="padding:15px;text-align:center;color:#8892a4;"><i class="fas fa-spinner fa-spin"></i></div>';
 
     try {
-        const resp = await fetch(`${API_URL}/get_versions.php?item_id=${itemId}`);
+        const resp = await fetch(`${API_URL}/get_versions.php?item_id=${itemId}`, { credentials: 'same-origin' });
         const data = await resp.json();
 
         if (!data.success || !data.data.length) {
@@ -774,7 +774,7 @@ async function toggleItemVersions(itemId) {
 
 async function deleteSingleVersion(versionId, itemId) {
     try {
-        const resp = await fetch(`${API_URL}/manage_versions.php?id=${versionId}`, { method: 'DELETE' });
+        const resp = await fetch(`${API_URL}/manage_versions.php?id=${versionId}`, { method: 'DELETE', credentials: 'same-origin' });
         const data = await resp.json();
         if (!data.success) throw new Error(data.error);
 
@@ -793,7 +793,7 @@ async function deleteItemVersions(itemId) {
     if (!confirm('Apagar TODAS as versões deste item? Esta ação é irreversível.')) return;
 
     try {
-        const resp = await fetch(`${API_URL}/manage_versions.php?item_id=${itemId}`, { method: 'DELETE' });
+        const resp = await fetch(`${API_URL}/manage_versions.php?item_id=${itemId}`, { method: 'DELETE', credentials: 'same-origin' });
         const data = await resp.json();
         if (!data.success) throw new Error(data.error);
 
@@ -812,6 +812,7 @@ async function deleteAllVersions() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action: 'delete_all' }),
+            credentials: 'same-origin',
         });
         const data = await resp.json();
         if (!data.success) throw new Error(data.error);

@@ -3,12 +3,12 @@
  * FerrazNest — Conexão à base de dados
  */
 
-// Suporta variáveis do Railway (MYSQLHOST, etc.) e variáveis próprias (DB_HOST, etc.)
-define('DB_HOST', getenv('DB_HOST') ?: getenv('MYSQLHOST')     ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: getenv('MYSQLPORT')     ?: '3306');
-define('DB_USER', getenv('DB_USER') ?: getenv('MYSQLUSER')     ?: 'organizer');
-define('DB_PASS', getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: 'organizer123');
-define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: 'ferraznest');
+// Suporta variáveis do Railway (MYSQLHOST ou MYSQL_HOST, etc.) e variáveis próprias
+define('DB_HOST', getenv('DB_HOST') ?: getenv('MYSQLHOST') ?: getenv('MYSQL_HOST')     ?: 'localhost');
+define('DB_PORT', getenv('DB_PORT') ?: getenv('MYSQLPORT') ?: getenv('MYSQL_PORT')     ?: '3306');
+define('DB_USER', getenv('DB_USER') ?: getenv('MYSQLUSER') ?: getenv('MYSQL_USER')     ?: 'organizer');
+define('DB_PASS', getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: getenv('MYSQL_PASSWORD') ?: 'organizer123');
+define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: 'ferraznest');
 
 date_default_timezone_set('Europe/Lisbon');
 

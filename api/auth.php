@@ -6,6 +6,8 @@
  * POST   — Verifica token Firebase e cria sessão PHP
  * DELETE — Termina sessão (logout)
  */
+require_once __DIR__ . '/session_db.php';
+initDbSession();
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../config.php';
