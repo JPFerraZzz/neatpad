@@ -1,0 +1,134 @@
+# ============================================================================
+# NeatPad — CI/CD para servidor Ubuntu (Apache + PHP, sem Docker)
+# ----------------------------------------------------------------------------
+# Fluxo:
+#   1. push para `main` no GitHub
+#   2. GitHub Actions faz SSH para o servidor
+#   3. No servidor: cd $SSH_PATH && git pull origin main
+#   4. Apache serve os ficheiros directamente (sem restart)
+#
+# O deploy NUNCA toca em ficheiros com credenciais reais:
+#   - assets/js/firebase-config.js  (está no .gitignore, existe só no servidor)
+#   - config.php                    (está no .gitignore, existe só no servidor)
+#
+# ----------------------------------------------------------------------------
+# SETUP DOS SECRETS (uma vez, no GitHub)
+# ----------------------------------------------------------------------------
+# GitHub → Settings → Secrets and variables → Actions → New repository secret
+#
+#   SSH_HOST   IP ou domínio do servidor. Ex.: neatpad.duckdns.org
+#   SSH_USER   Utilizador SSH com acesso à pasta do projeto. Ex.: ubuntu
+#   SSH_KEY    Chave PRIVADA SSH (conteúdo completo do ficheiro ~/.ssh/id_ed25519)
+#              INCLUINDO os headers "-----BEGIN OPENSSH PRIVATE KEY-----"
+#              e "-----END OPENSSH PRIVATE KEY-----". Sem passphrase recomendado.
+#   SSH_PORT   (opcional) Porta SSH. Default: 22
+#   SSH_PATH   Caminho absoluto da pasta do projeto no servidor.
+#              Ex.: /var/www/neatpad
+#
+# ----------------------------------------------------------------------------
+# SETUP NO SERVIDOR (uma vez)
+# ----------------------------------------------------------------------------
+# 1) Criar o utilizador de deploy e autorizar a chave PÚBLICA correspondente:
+#
+#    sudo adduser --disabled-password --gecos "" deploy    # ou usa "ubuntu"
+#    sudo mkdir -p /home/deploy/.ssh
+#    echo "ssh-ed25519 AAAA...public_key..." | \
+#        sudo tee -a /home/deploy/.ssh/authorized_keys
+#    sudo chown -R deploy:deploy /home/deploy/.ssh
+#    sudo chmod 700 /home/deploy/.ssh
+#    sudo chmod 600 /home/deploy/.ssh/authorized_keys
+#
+# 2) Permitir que o utilizador de deploy escreva na pasta do projeto:
+#
+#    sudo chown -R deploy:www-data /var/www/neatpad
+#    sudo chmod -R g+rwX /var/www/neatpad
+#    sudo find /var/www/neatpad -type d -exec chmod g+s {} \;
+#
+# 3) Inicializar o repositório no servidor (uma vez):
+#
+#    sudo -u deploy git clone https://github.com/JPFerraZzz/neatpad.git /var/www/neatpad
+#
+# 4) Criar MANUALMENTE no servidor (fora do Git, nunca sobrescritos pelo deploy):
+#
+#    /var/www/neatpad/assets/js/firebase-config.js
+#    /var/www/neatpad/config.php
+#
+# ============================================================================
+
+name: Deploy to Ubuntu server
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: SSH git pull on server
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          # A pasta é passada como env para podermos validá-la e usá-la no script
+          envs: SSH_PATH
+          script_stop: true
+          script: |
+            set -euo pipefail
+
+            PROJECT_PATH="${{ secrets.SSH_PATH }}"
+
+            if [ -z "$PROJECT_PATH" ] || [ ! -d "$PROJECT_PATH/.git" ]; then
+                echo "❌ SSH_PATH inválido ou não é um repositório Git: $PROJECT_PATH"
+                exit 1
+            fi
+
+            cd "$PROJECT_PATH"
+
+            echo "── Git pull em $PROJECT_PATH ──"
+            # Proteger ficheiros que têm de viver só no servidor
+            if [ -f assets/js/firebase-config.js ]; then
+                echo "✓ firebase-config.js presente (preservado)"
+            else
+                echo "⚠️  firebase-config.js NÃO existe no servidor — a app não vai funcionar"
+                echo "   Cria com os valores reais: $PROJECT_PATH/assets/js/firebase-config.js"
+            fi
+
+            if [ -f config.php ]; then
+                echo "✓ config.php presente (preservado)"
+            else
+                echo "⚠️  config.php NÃO existe no servidor — a app não vai funcionar"
+            fi
+
+            git fetch --prune origin
+            git reset --hard origin/main
+            git clean -fd \
+                --exclude='assets/js/firebase-config.js' \
+                --exclude='config.php' \
+                --exclude='.env' \
+                --exclude='.env.local'
+
+            # Garantir permissões para o Apache (www-data) ler os ficheiros actualizados
+            # (não é necessário chown se o grupo foi configurado no setup — ver header)
+
+            echo "── Deploy concluído ──"
+            git log -1 --pretty=format:"%h %s (%an, %ar)"
+
+      - name: Health check
+        run: |
+          HOST="${{ secrets.SSH_HOST }}"
+          echo "A verificar https://${HOST}/login.html ..."
+          # Permite falhar sem parar o workflow — é só informativo
+          curl -sfI --max-time 10 "https://${HOST}/login.html" \
+            && echo "✓ Servidor respondeu 200 OK" \
+            || echo "⚠️  Health check falhou (pode ser normal se usas HTTP ou domínio diferente)"

@@ -1,0 +1,34 @@
+{
+  "name": "NeatPad",
+  "short_name": "NeatPad",
+  "description": "O teu bloco de notas organizado — categorias, notas, tarefas, cursos e cadernos digitais.",
+  "lang": "pt-PT",
+  "dir": "ltr",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#6C63FF",
+  "background_color": "#F4F0EB",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/assets/icons/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icons/icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1026,3 +1026,177 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-hover);
 }
+
+/* ========================================
+   MOBILE FIX — Cadernos, drawers e modais empilhados
+   Abordagem mobile-first, breakpoint principal 768px
+   ======================================== */
+
+/* 1) Shell do caderno (sidebar + main) em coluna única < 768px.
+      Usa !important para sobrepor os estilos injetados em templates.js
+      (que têm breakpoint em 860px, mas com sidebar fixa a 260px). */
+@media (max-width: 767px) {
+    .nb-shell {
+        grid-template-columns: 1fr !important;
+        height: auto !important;
+        border-radius: 12px !important;
+        overflow: visible !important;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.12) !important;
+    }
+    .nb-sidebar {
+        max-height: 280px !important;
+        border-radius: 12px 12px 0 0;
+    }
+    .nb-main {
+        border-radius: 0 0 12px 12px;
+    }
+    .nb-content-inner {
+        padding: 20px 16px !important;
+    }
+
+    /* 2) Cabeçalho do caderno: empilhar título e grupo de botões */
+    .nb-view-header {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding-bottom: 16px !important;
+        margin-bottom: 18px !important;
+    }
+    .nb-view-title {
+        font-size: 22px !important;
+        word-break: break-word;
+    }
+    .nb-view-meta {
+        gap: 10px !important;
+        font-size: 12px !important;
+    }
+
+    /* 3) Grupo "Editar | Guardar Versão | Versões" com wrap e scroll horizontal
+          como fallback em telefones muito estreitos */
+    #nbViewButtons {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        width: 100%;
+    }
+    .nb-edit-btn {
+        flex: 1 1 auto !important;
+        justify-content: center !important;
+        min-height: var(--touch-min);
+        padding: 10px 12px !important;
+        font-size: 13px !important;
+    }
+
+    /* 4) Toolbar de rich text: scroll horizontal se exceder viewport */
+    #notebookToolbarSlot {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nb-toolbar {
+        flex-wrap: nowrap !important;
+        padding: 8px 12px !important;
+        min-width: max-content;
+    }
+    .nb-tool {
+        min-width: 34px;
+        height: 34px;
+    }
+
+    /* 5) Editor rich-text: padding confortável e área mínima de toque */
+    .nb-rich-editor {
+        padding: 16px !important;
+        min-height: 320px !important;
+        font-size: 15px !important;
+    }
+    .nb-editor-actions {
+        gap: 8px !important;
+    }
+    .nb-editor-actions .btn {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+    .nb-word-count {
+        margin-left: 0 !important;
+        width: 100%;
+        justify-content: center;
+        padding-top: 4px;
+    }
+
+    /* 6) Corpo do caderno (leitura) com padding menor */
+    .nb-view-body {
+        padding: 18px 16px !important;
+        font-size: 14.5px !important;
+    }
+}
+
+/* Telefones muito estreitos: permitir scroll horizontal do grupo de botões
+   em vez de wrap, caso o utilizador prefira manter os rótulos completos. */
+@media (max-width: 380px) {
+    #nbViewButtons {
+        flex-wrap: nowrap !important;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+    .nb-edit-btn {
+        flex: 0 0 auto !important;
+        white-space: nowrap;
+    }
+}
+
+/* 7) Drawers de gestão de categoria (modais empilhados)
+      Em mobile, #categoryModal abre por cima de #itemsModal.
+      Ambos são bottom-sheets — garantir z-index correto, bloquear scroll
+      do modal de baixo e dar profundidade visual (backdrop mais escuro
+      no modal superior). */
+@media (max-width: 768px) {
+    /* O modal superior (editar categoria a partir dos itens) fica à frente */
+    #categoryModal {
+        z-index: 2200 !important;
+    }
+    #categoryModal.active {
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(2px);
+        -webkit-backdrop-filter: blur(2px);
+    }
+
+    /* Bottom-sheet mais arredondada, com "grabber" visual no topo */
+    .modal.active .modal-content {
+        border-radius: 18px 18px 0 0;
+        position: relative;
+    }
+    .modal.active .modal-content::before {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--border-color);
+        opacity: 0.8;
+        pointer-events: none;
+    }
+    .modal.active .modal-header {
+        padding-top: 24px;
+    }
+
+    /* Ações do modal de itens (Editar Categoria, Eliminar, Novo) em grid
+       responsivo que nunca sai do viewport */
+    #itemsModal .modal-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 8px;
+        margin-top: 8px;
+    }
+    #itemsModal .modal-actions .btn {
+        width: 100%;
+        min-width: 0;
+        justify-content: center;
+    }
+    #itemsModal .modal-actions .modal-close {
+        grid-column: -2 / -1;
+    }
+}

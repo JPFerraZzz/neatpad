@@ -1,16 +1,26 @@
-# Ambiente
+# ── Ambiente ─────────────────────────────
 .env
 .env.local
 
-# Logs e temporários
+# ── Credenciais / Segredos (NUNCA COMMITAR) ──────
+# Configuração Firebase real (usar sempre firebase-config.example.js como modelo)
+assets/js/firebase-config.js
+# Configuração do servidor com credenciais de BD e do projeto Firebase
+config.php
+
+# ── Logs e temporários ──────────────────
 *.log
 /tmp/
 
-# Sistema operativo
+# ── Sistema operativo ───────────────────
 .DS_Store
 Thumbs.db
 
-# IDE
+# ── IDE ──────────────────────────────────
 .vscode/
 .idea/
 *.swp
+
+# ── Build / dependências ────────────────
+/vendor/
+/node_modules/

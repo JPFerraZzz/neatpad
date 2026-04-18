@@ -6,7 +6,17 @@
     <meta name="theme-color" content="#6C63FF">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="NeatPad">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="NeatPad — o teu bloco de notas organizado. Categorias, notas, tarefas, cursos e cadernos digitais.">
     <title>NeatPad — O teu bloco de notas organizado</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
+    <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -233,6 +243,7 @@
     <script src="assets/js/app.js"></script>
     <script src="assets/js/autosave.js"></script>
     <script src="assets/js/templates.js"></script>
+    <script src="assets/js/pwa.js" defer></script>
     <script>
         function toggleTheme() {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
