@@ -1817,7 +1817,7 @@ window.Templates = {
                 </div>
 
                 <style>
-                /* ── Shell (mobile-first) ──────────────── */
+                /* ── Shell (mobile-first: coluna única até tablet landscape) ── */
                 .nb-shell {
                     display: grid;
                     grid-template-columns: 1fr;
@@ -1830,15 +1830,24 @@ window.Templates = {
                     background: var(--bg-surface);
                     font-family: var(--font);
                 }
-                .nb-shell .nb-sidebar { max-height: 260px; }
+                .nb-shell .nb-sidebar {
+                    max-height: 280px;
+                    border-right: none;
+                    border-bottom: 1px solid var(--border);
+                }
 
-                @media (min-width: 768px) {
+                /* Tablet landscape & desktop: duas colunas */
+                @media (min-width: 1024px) {
                     .nb-shell {
                         grid-template-columns: 280px 1fr;
                         grid-template-rows: 1fr;
                         height: 72vh;
                     }
-                    .nb-shell .nb-sidebar { max-height: none; }
+                    .nb-shell .nb-sidebar {
+                        max-height: none;
+                        border-right: 1px solid var(--border);
+                        border-bottom: none;
+                    }
                 }
 
                 /* ── Sidebar ────────────────────────────── */
@@ -1958,22 +1967,44 @@ window.Templates = {
                     position: relative;
                 }
                 #nbContent { flex: 1; padding: 0; }
-                .nb-content-inner { padding: 24px 24px; }
+                .nb-content-inner { padding: 16px; }
+                @media (min-width: 768px) { .nb-content-inner { padding: 24px; } }
 
                 /* ── Notebook view ──────────────────────── */
+                /* Mobile-first: título em cima, ações em baixo (sem sobreposição em tablet portrait) */
                 .nb-view-header {
-                    display: flex; align-items: flex-start; justify-content: space-between;
-                    gap: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 14px;
                     padding: 0 0 16px;
                     margin-bottom: 20px;
                     border-bottom: 1px solid var(--border);
                 }
+                .nb-view-header .nb-view-title-block { min-width: 0; flex: 1 1 auto; }
+                .nb-view-header #nbViewButtons {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                }
+                /* Desktop / tablet landscape: lado-a-lado */
+                @media (min-width: 1024px) {
+                    .nb-view-header {
+                        flex-direction: row;
+                        align-items: flex-start;
+                        justify-content: space-between;
+                        gap: 16px;
+                    }
+                    .nb-view-header #nbViewButtons { flex-shrink: 0; }
+                }
                 .nb-view-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
                 .nb-view-title {
-                    font-size: 24px; font-weight: 700; color: var(--text); margin: 0;
+                    font-size: 22px; font-weight: 700; color: var(--text); margin: 0;
                     line-height: 1.25;
                     letter-spacing: -0.01em;
+                    word-break: break-word;
                 }
+                @media (min-width: 1024px) { .nb-view-title { font-size: 24px; } }
                 .nb-priority-pill {
                     display: inline-flex; align-items: center; gap: 6px;
                     padding: 2px 10px; border-radius: var(--radius-pill);
@@ -1997,19 +2028,38 @@ window.Templates = {
                     font-size: 13px; font-weight: 600;
                     cursor: pointer; white-space: nowrap;
                     min-height: var(--touch-min);
-                    transition: background 0.12s ease, border-color 0.12s ease;
+                    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
                 }
                 .nb-edit-btn:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+                .nb-edit-btn--success {
+                    background: var(--success); border-color: var(--success); color: #fff;
+                }
+                .nb-edit-btn--success:hover {
+                    background: var(--success); border-color: var(--success); filter: brightness(0.95);
+                }
+                .nb-edit-btn--ghost {
+                    background: var(--bg-surface); color: var(--text); border-color: var(--border);
+                }
+                .nb-edit-btn--ghost:hover {
+                    background: var(--bg-subtle); border-color: var(--border-strong); color: var(--text);
+                }
+                /* Em ecrãs muito estreitos (<480px) colapsa para ícones apenas */
+                @media (max-width: 479px) {
+                    .nb-edit-btn { padding: 8px 10px; }
+                    .nb-edit-btn .nb-btn-text { display: none; }
+                }
 
                 /* view content */
                 .nb-view-body {
                     background: var(--bg-surface);
                     border: 1px solid var(--border);
                     border-radius: var(--radius-lg);
-                    padding: 20px 24px;
+                    padding: 16px;
                     min-height: 200px;
                     font-size: 15px; line-height: 1.7; color: var(--text);
+                    overflow-wrap: anywhere;
                 }
+                @media (min-width: 768px) { .nb-view-body { padding: 20px 24px; } }
                 .nb-view-body h1 { font-size: 22px; font-weight: 700; color: var(--text); margin: 18px 0 10px; }
                 .nb-view-body h2 { font-size: 19px; font-weight: 700; color: var(--text); margin: 16px 0 8px; }
                 .nb-view-body h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 12px 0 6px; }
@@ -2255,7 +2305,7 @@ window.Templates = {
 
                     <div class="nb-content-inner">
                         <div class="nb-view-header">
-                            <div style="flex:1;min-width:0;">
+                            <div class="nb-view-title-block">
                                 <div class="nb-view-title-row">
                                     <h1 class="nb-view-title">${escapeHtml(notebook.title)}</h1>
                                     <span class="nb-priority-pill" style="background:${p.bg};color:${p.color};">
@@ -2268,17 +2318,17 @@ window.Templates = {
                                     ${(notebook.metadata && notebook.metadata.linkedToCourseTitle) ? `<span class="nb-view-linked-course" title="Caderno associado a este curso"><i class="fas fa-link"></i> Associado: ${escapeHtml(notebook.metadata.linkedToCourseTitle)}</span>` : ''}
                                 </div>
                             </div>
-                            <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;" id="nbViewButtons">
+                            <div id="nbViewButtons">
                                 <button class="nb-edit-btn" id="editNotebookBtn" onclick="Templates.notebooks.enableEditMode()">
-                                    <i class="fas fa-pencil-alt"></i> Editar
+                                    <i class="fas fa-pencil-alt"></i> <span class="nb-btn-text">Editar</span>
                                 </button>
-                                <button class="nb-edit-btn" style="background:var(--success);border-color:var(--success);"
+                                <button class="nb-edit-btn nb-edit-btn--success"
                                         onclick="Templates.notebooks.saveCurrentVersion(${notebook.id})" title="Guardar versão manual do conteúdo atual">
-                                    <i class="fas fa-download"></i> Guardar Versão
+                                    <i class="fas fa-download"></i> <span class="nb-btn-text">Guardar Versão</span>
                                 </button>
-                                <button class="nb-edit-btn" style="background:var(--bg-surface);color:var(--text);border-color:var(--border);"
+                                <button class="nb-edit-btn nb-edit-btn--ghost"
                                         onclick="Templates.notebooks.toggleVersionPanel()" title="Historial de versões">
-                                    <i class="fas fa-history"></i> Versões
+                                    <i class="fas fa-history"></i> <span class="nb-btn-text">Versões</span>
                                 </button>
                             </div>
                         </div>
