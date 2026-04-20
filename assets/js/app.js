@@ -7,7 +7,31 @@ const AppState = {
     categories: [],
     currentCategory: null,
     currentItem: null,
+    isSavingCategory: false,
+    currentView: 'home', // 'home' | 'categories'
 };
+
+// ==== Utilidades genéricas de loading de botões ====
+function setButtonLoading(btn, loading) {
+    if (!btn) return;
+    if (loading) {
+        btn.disabled = true;
+        btn.classList.add('is-loading');
+        const labelEl = btn.querySelector('.btn-label');
+        if (labelEl) {
+            if (!btn.dataset._origLabel) btn.dataset._origLabel = labelEl.textContent;
+            const loadingLabel = btn.dataset.labelLoading || 'A guardar…';
+            labelEl.textContent = loadingLabel;
+        }
+    } else {
+        btn.disabled = false;
+        btn.classList.remove('is-loading');
+        const labelEl = btn.querySelector('.btn-label');
+        if (labelEl && btn.dataset._origLabel) {
+            labelEl.textContent = btn.dataset._origLabel;
+        }
+    }
+}
 
 // API Base URL
 const API_URL = 'api';
@@ -184,13 +208,18 @@ async function deleteItem(itemId) {
 
 function renderCategories() {
     const grid = document.getElementById('categoriesGrid');
-    
+
+    renderHomeStats();
+    renderQuickAccess();
+
+    if (!grid) return;
+
     if (AppState.categories.length === 0) {
         grid.innerHTML = `
             <div class="empty-state" style="grid-column: 1 / -1;">
                 <i class="fas fa-folder-open"></i>
                 <h3>Ainda não tens categorias</h3>
-                <p>Clica em "Nova Categoria" para começar</p>
+                <p>Clica em "Nova categoria" para começar</p>
             </div>
         `;
         return;
@@ -227,6 +256,14 @@ function renderCategories() {
                     <div class="category-icon" style="color: ${category.color}">
                         <i class="fas ${iconMap[category.icon] || 'fa-folder'}"></i>
                     </div>
+                    <div class="category-actions">
+                        <button class="category-action-btn" onclick="event.stopPropagation(); openCategoryModal(${category.id});" title="Editar" aria-label="Editar categoria">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="category-action-btn delete" onclick="event.stopPropagation(); deleteCategory(${category.id});" title="Eliminar" aria-label="Eliminar categoria">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 </div>
                 <h3 class="category-title">${escapeHtml(category.name)}</h3>
                 <div class="category-info">
@@ -237,6 +274,104 @@ function renderCategories() {
         `;
     }).join('');
 }
+
+// ============================================================================
+// Home view: estatísticas + acesso rápido
+// ============================================================================
+window.renderHomeStats = renderHomeStats;
+function renderHomeStats() {
+    const elCats = document.getElementById('statCategories');
+    const elItems = document.getElementById('statItems');
+    const elRecent = document.getElementById('statRecent');
+    if (!elCats) return;
+
+    const total = AppState.categories.length;
+    const totalItems = AppState.categories.reduce((acc, c) => acc + (Number(c.item_count) || 0), 0);
+
+    // Consideramos "atualizada recentemente" toda a categoria com item_count > 0 nos últimos 7 dias.
+    // Como não temos last_updated por categoria aqui, usamos heurística: categorias com itens.
+    const recent = AppState.categories.filter(c => Number(c.item_count) > 0).length;
+
+    elCats.textContent = total;
+    elItems.textContent = totalItems;
+    elRecent.textContent = recent;
+
+    // Saudação
+    const greeting = document.getElementById('heroGreeting');
+    if (greeting && window.__currentUser) {
+        const name = (window.__currentUser.name || window.__currentUser.email || '').split('@')[0];
+        const hour = new Date().getHours();
+        const prefix = hour < 6 ? 'Boa noite' : hour < 13 ? 'Bom dia' : hour < 20 ? 'Boa tarde' : 'Boa noite';
+        greeting.textContent = `${prefix}${name ? ', ' + name : ''} 👋`;
+    }
+}
+
+function renderQuickAccess() {
+    const grid = document.getElementById('quickGrid');
+    if (!grid) return;
+
+    const iconMap = {
+        'folder': 'fa-folder', 'briefcase': 'fa-briefcase', 'lightbulb': 'fa-lightbulb',
+        'box': 'fa-box', 'sticky-note': 'fa-sticky-note', 'graduation-cap': 'fa-graduation-cap',
+        'shield-alt': 'fa-shield-alt', 'code': 'fa-code', 'book': 'fa-book',
+        'star': 'fa-star', 'heart': 'fa-heart', 'video': 'fa-video',
+    };
+
+    if (AppState.categories.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+                <i class="fas fa-sparkles"></i>
+                <h3>Ainda sem nada por aqui</h3>
+                <p>Cria a tua primeira categoria para começar.</p>
+            </div>
+        `;
+        return;
+    }
+
+    // Mostra até 6 categorias recentes
+    const recent = AppState.categories.slice(0, 6);
+    grid.innerHTML = recent.map(c => `
+        <button class="quick-card" type="button" onclick="openCategory(${c.id})">
+            <span class="qc-icon" style="color:${c.color}">
+                <i class="fas ${iconMap[c.icon] || 'fa-folder'}"></i>
+            </span>
+            <span class="qc-body">
+                <span class="qc-title">${escapeHtml(c.name)}</span>
+                <span class="qc-sub">${c.item_count || 0} item(s)</span>
+            </span>
+            <span class="qc-arrow"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    `).join('');
+}
+
+// ============================================================================
+// View router (home ⇄ categories)
+// ============================================================================
+function switchView(name) {
+    const home = document.getElementById('viewHome');
+    const cats = document.getElementById('viewCategories');
+    if (!home || !cats) return;
+
+    AppState.currentView = name;
+    document.documentElement.setAttribute('data-view', name);
+
+    if (name === 'categories') {
+        home.hidden = true;
+        cats.hidden = false;
+    } else {
+        home.hidden = false;
+        cats.hidden = true;
+    }
+
+    // Sincronizar bottom bar
+    document.querySelectorAll('.bottom-bar [data-nav]').forEach(b => {
+        b.classList.toggle('active', b.dataset.nav === name);
+    });
+
+    // Scroll para cima ao mudar de view
+    window.scrollTo({ top: 0, behavior: 'instant' });
+}
+window.switchView = switchView;
 
 // ====================================
 // Funções de Modal - Categoria
@@ -587,9 +722,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // Carregar categorias
     fetchCategories();
 
-    // Event Listeners
-    document.getElementById('newCategoryBtn').addEventListener('click', () => openCategoryModal());
-    document.getElementById('versionManagerBtn').addEventListener('click', () => openVersionManager());
+    // Event Listeners (alguns botões só existem em desktop; null-safe)
+    const newCatBtn = document.getElementById('newCategoryBtn');
+    if (newCatBtn) newCatBtn.addEventListener('click', () => openCategoryModal());
+
+    const vmBtn = document.getElementById('versionManagerBtn');
+    if (vmBtn) vmBtn.addEventListener('click', () => openVersionManager());
+
+    // Hero CTAs
+    const ctaSee = document.getElementById('ctaSeeCategories');
+    if (ctaSee) ctaSee.addEventListener('click', () => switchView('categories'));
+    const ctaAll = document.getElementById('ctaSeeAll');
+    if (ctaAll) ctaAll.addEventListener('click', () => switchView('categories'));
+    const ctaNew = document.getElementById('ctaNewCategory');
+    if (ctaNew) ctaNew.addEventListener('click', () => openCategoryModal());
+    const backBtn = document.getElementById('backToHome');
+    if (backBtn) backBtn.addEventListener('click', () => switchView('home'));
 
     document.getElementById('categoryTemplate').addEventListener('change', () => {
         const excelImportGroup = document.getElementById('excelImportGroup');
@@ -601,7 +749,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('categoryForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
+        // Guarda anti-duplo-submit
+        if (AppState.isSavingCategory) return;
+        AppState.isSavingCategory = true;
+
+        const submitBtn = document.getElementById('categorySubmitBtn');
+        setButtonLoading(submitBtn, true);
+
         const categoryData = {
             id: document.getElementById('categoryId').value || null,
             name: document.getElementById('categoryName').value,
@@ -613,8 +768,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const fileInput = document.getElementById('categoryExcelImport');
         const isNewExcelWithFile = !categoryData.id && categoryData.template_type === 'excel' && fileInput && fileInput.files && fileInput.files[0];
 
-        if (isNewExcelWithFile) {
-            try {
+        try {
+            if (isNewExcelWithFile) {
                 const res = await fetch(`${API_URL}/categories.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -658,13 +813,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification('Categoria criada' + (lines.length >= 1 ? ' e dados importados' : '') + '!', 'success');
                 closeCategoryModal();
                 await fetchCategories();
-            } catch (err) {
-                showNotification('Erro: ' + (err.message || 'ao criar categoria'), 'error');
+            } else {
+                await saveCategory(categoryData);
             }
-            return;
+        } catch (err) {
+            showNotification('Erro: ' + (err.message || 'ao guardar categoria'), 'error');
+        } finally {
+            AppState.isSavingCategory = false;
+            setButtonLoading(submitBtn, false);
         }
-
-        saveCategory(categoryData);
     });
 
     document.getElementById('newItemBtn').addEventListener('click', () => openItemEditor());
@@ -681,13 +838,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Fechar modais ao clicar fora
+    // Fechar modais ao clicar fora (views)
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.classList.remove('active');
             }
         });
+    });
+
+    // Fechar popup categoria ao clicar fora
+    const pm = document.getElementById('categoryModal');
+    if (pm) {
+        pm.addEventListener('click', (e) => {
+            if (e.target === pm) closeCategoryModal();
+        });
+    }
+
+    // Fechar view / popup com ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        const popup = document.querySelector('.popup-modal.active');
+        if (popup) { closeCategoryModal(); return; }
+        // Fecha a view mais interna (editor > itens > versões)
+        const editor = document.getElementById('itemEditorModal');
+        if (editor && editor.classList.contains('active')) { closeItemEditor(); return; }
+        const items = document.getElementById('itemsModal');
+        if (items && items.classList.contains('active')) { closeItemsModal(); return; }
+        const vm = document.getElementById('versionManagerModal');
+        if (vm && vm.classList.contains('active')) { closeVersionManager(); return; }
     });
 });
 
@@ -706,7 +885,9 @@ function closeVersionManager() {
 
 async function loadVersionManager() {
     const container = document.getElementById('versionManagerContent');
-    container.innerHTML = '<div style="text-align:center;padding:40px;color:#8892a4;"><i class="fas fa-spinner fa-spin" style="font-size:24px;"></i><p style="margin-top:10px;">A carregar versões...</p></div>';
+    if (!container) return;
+
+    container.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>A carregar versões...</p></div>`;
 
     try {
         const resp = await fetch(`${API_URL}/manage_versions.php`, { credentials: 'same-origin' });
@@ -720,11 +901,14 @@ async function loadVersionManager() {
 
         if (items.length === 0) {
             container.innerHTML = `
-                <div style="text-align:center;padding:60px 20px;color:var(--text-secondary);">
-                    <i class="fas fa-inbox" style="font-size:48px;opacity:0.3;display:block;margin-bottom:15px;"></i>
-                    <h3 style="color:var(--text-primary);margin-bottom:8px;">Sem versões guardadas</h3>
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>Sem versões guardadas</h3>
                     <p><strong>A gestão de versões aplica-se apenas a cadernos.</strong></p>
-                    <p style="margin-top:8px;">As versões são criadas quando guardas um caderno ou quando usas "Guardar versão" dentro de um caderno.</p>
+                    <p style="margin-top:8px; max-width: 420px; margin-left:auto; margin-right:auto;">
+                        As versões são criadas quando guardas um caderno ou quando usas
+                        <em>“Guardar versão”</em> dentro de um caderno.
+                    </p>
                 </div>`;
             return;
         }
@@ -735,102 +919,129 @@ async function loadVersionManager() {
         };
 
         container.innerHTML = `
-            <p class="vm-notice" style="background:var(--bg-badge);color:var(--text-secondary);padding:12px 16px;border-radius:8px;margin-bottom:16px;font-size:14px;">
-                <i class="fas fa-info-circle"></i> <strong>Versões apenas para cadernos.</strong> Só os cadernos têm historial de versões. Podes guardar versões manualmente com um nome dentro de cada caderno.
-            </p>
-            <div class="vm-stats">
-                <div class="vm-stat">
-                    <i class="fas fa-layer-group"></i>
-                    <div><strong>${items.length}</strong><span>Itens</span></div>
+            <div class="vm-wrapper">
+                <div class="vm-intro">
+                    <i class="fas fa-info-circle"></i>
+                    <p><strong>Versões apenas para cadernos.</strong> Só os cadernos guardam historial — automaticamente ou quando usas <em>“Guardar versão”</em>.</p>
                 </div>
-                <div class="vm-stat">
-                    <i class="fas fa-history"></i>
-                    <div><strong>${totalVersions}</strong><span>Versões</span></div>
-                </div>
-                <div class="vm-stat">
-                    <i class="fas fa-database"></i>
-                    <div><strong>${totalSizeKb > 1024 ? (totalSizeKb / 1024).toFixed(1) + ' MB' : totalSizeKb + ' KB'}</strong><span>Espaço</span></div>
-                </div>
-                <button class="btn btn-danger btn-sm" onclick="deleteAllVersions()" style="margin-left:auto;">
-                    <i class="fas fa-trash"></i> Limpar Tudo
-                </button>
-            </div>
-            <div class="vm-list">
-                ${items.map(item => `
-                    <div class="vm-item" id="vm-item-${item.item_id}">
-                        <div class="vm-item-icon" style="background:${item.category_color}20;color:${item.category_color};">
-                            <i class="fas ${templateIcons[item.template_type] || 'fa-file'}"></i>
-                        </div>
-                        <div class="vm-item-info">
-                            <div class="vm-item-title">${escapeHtml(item.title)}</div>
-                            <div class="vm-item-meta">
-                                <span style="background:${item.category_color}20;color:${item.category_color};padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">${escapeHtml(item.category_name)}</span>
-                                <span>${item.version_count} versão(ões)</span>
-                                <span>${item.total_size_kb} KB</span>
-                                <span>${new Date(item.last_version_at).toLocaleDateString('pt-PT')}</span>
-                            </div>
-                        </div>
-                        <div class="vm-item-actions">
-                            <button class="btn btn-sm btn-secondary" onclick="toggleItemVersions(${item.item_id})" title="Ver versões">
-                                <i class="fas fa-list"></i> Ver
-                            </button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteItemVersions(${item.item_id})" title="Apagar todas">
-                                <i class="fas fa-trash"></i>
-                            </button>
+
+                <div class="vm-stats">
+                    <div class="vm-stat">
+                        <span class="vm-stat-icon"><i class="fas fa-layer-group"></i></span>
+                        <div class="vm-stat-body">
+                            <strong>${items.length}</strong>
+                            <span>itens</span>
                         </div>
                     </div>
-                    <div class="vm-versions-detail" id="vm-detail-${item.item_id}" style="display:none;"></div>
-                `).join('')}
+                    <div class="vm-stat">
+                        <span class="vm-stat-icon"><i class="fas fa-history"></i></span>
+                        <div class="vm-stat-body">
+                            <strong>${totalVersions}</strong>
+                            <span>versões</span>
+                        </div>
+                    </div>
+                    <div class="vm-stat">
+                        <span class="vm-stat-icon"><i class="fas fa-database"></i></span>
+                        <div class="vm-stat-body">
+                            <strong>${totalSizeKb > 1024 ? (totalSizeKb / 1024).toFixed(1) + ' MB' : totalSizeKb + ' KB'}</strong>
+                            <span>espaço usado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vm-toolbar">
+                    <h4>Itens com historial</h4>
+                    <button class="btn btn-danger btn-sm" onclick="deleteAllVersions()">
+                        <i class="fas fa-trash"></i> Limpar tudo
+                    </button>
+                </div>
+
+                <div class="vm-list">
+                    ${items.map(item => `
+                        <div class="vm-item" id="vm-item-${item.item_id}">
+                            <button class="vm-item-row" type="button" onclick="toggleItemVersions(${item.item_id})">
+                                <span class="vm-item-icon" style="background:${item.category_color}22;color:${item.category_color};">
+                                    <i class="fas ${templateIcons[item.template_type] || 'fa-file'}"></i>
+                                </span>
+                                <span class="vm-item-info">
+                                    <span class="vm-item-title">${escapeHtml(item.title)}</span>
+                                    <span class="vm-item-meta">
+                                        <span class="vm-chip" style="background:${item.category_color}22;color:${item.category_color};">${escapeHtml(item.category_name)}</span>
+                                        <span>${item.version_count} versões</span>
+                                        <span>${item.total_size_kb} KB</span>
+                                        <span>${new Date(item.last_version_at).toLocaleDateString('pt-PT')}</span>
+                                    </span>
+                                </span>
+                                <span class="vm-chev"><i class="fas fa-chevron-down"></i></span>
+                            </button>
+                            <div class="vm-versions-detail" id="vm-detail-${item.item_id}" hidden></div>
+                            <div class="vm-item-side">
+                                <button class="btn btn-danger btn-sm" onclick="deleteItemVersions(${item.item_id})" aria-label="Apagar todas as versões deste item">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<div style="text-align:center;padding:40px;color:#e74c3c;"><i class="fas fa-exclamation-triangle" style="font-size:32px;display:block;margin-bottom:10px;"></i>Erro ao carregar: ${err.message}</div>`;
+        container.innerHTML = `
+            <div class="empty-state" style="color:var(--danger);">
+                <i class="fas fa-exclamation-triangle"></i>
+                <h3>Não foi possível carregar versões</h3>
+                <p>${escapeHtml(err.message || 'Erro desconhecido')}</p>
+            </div>`;
     }
 }
 
 async function toggleItemVersions(itemId) {
     const detail = document.getElementById(`vm-detail-${itemId}`);
+    const wrapper = document.getElementById(`vm-item-${itemId}`);
     if (!detail) return;
 
-    if (detail.style.display !== 'none') {
-        detail.style.display = 'none';
+    if (!detail.hidden) {
+        detail.hidden = true;
+        wrapper && wrapper.classList.remove('open');
         return;
     }
 
-    detail.style.display = 'block';
-    detail.innerHTML = '<div style="padding:15px;text-align:center;color:#8892a4;"><i class="fas fa-spinner fa-spin"></i></div>';
+    detail.hidden = false;
+    wrapper && wrapper.classList.add('open');
+    detail.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>A carregar…</p></div>`;
 
     try {
         const resp = await fetch(`${API_URL}/get_versions.php?item_id=${itemId}`, { credentials: 'same-origin' });
         const data = await resp.json();
 
         if (!data.success || !data.data.length) {
-            detail.innerHTML = '<div style="padding:15px;text-align:center;color:#8892a4;">Sem versões</div>';
+            detail.innerHTML = `<div class="vm-empty">Sem versões.</div>`;
             return;
         }
 
         detail.innerHTML = `
-            <div class="vm-version-list">
+            <ul class="vm-version-list">
                 ${data.data.map(v => `
-                    <div class="vm-version-row" id="vm-ver-${v.id}">
-                        <div class="vm-ver-badge ${v.saved_by}">
+                    <li class="vm-version-row" id="vm-ver-${v.id}">
+                        <span class="vm-ver-badge ${v.saved_by}">
                             <i class="fas ${v.saved_by === 'manual' ? 'fa-save' : 'fa-robot'}"></i>
-                        </div>
-                        <div class="vm-ver-info">
-                            <strong>v${v.version}</strong> · ${v.saved_by === 'manual' ? 'Manual' : 'Auto'}${v.version_name ? ' · ' + escapeHtml(v.version_name) : ''} ·
-                            ${new Date(v.created_at).toLocaleString('pt-PT')} ·
-                            ${Math.round(v.content_length / 1024 * 10) / 10} KB
-                        </div>
-                        <button class="vm-ver-delete" onclick="deleteSingleVersion(${v.id}, ${itemId})" title="Apagar versão">
+                        </span>
+                        <span class="vm-ver-info">
+                            <strong>v${v.version}</strong>
+                            <span>${v.saved_by === 'manual' ? 'Manual' : 'Auto'}${v.version_name ? ' · ' + escapeHtml(v.version_name) : ''}</span>
+                            <span>${new Date(v.created_at).toLocaleString('pt-PT')}</span>
+                            <span>${Math.round(v.content_length / 1024 * 10) / 10} KB</span>
+                        </span>
+                        <button class="vm-ver-delete" onclick="deleteSingleVersion(${v.id}, ${itemId})" aria-label="Apagar versão">
                             <i class="fas fa-times"></i>
                         </button>
-                    </div>
+                    </li>
                 `).join('')}
-            </div>
+            </ul>
         `;
     } catch (err) {
-        detail.innerHTML = `<div style="padding:15px;color:#e74c3c;">Erro: ${err.message}</div>`;
+        detail.innerHTML = `<div class="vm-empty" style="color:var(--danger);">Erro: ${escapeHtml(err.message)}</div>`;
     }
 }
 
@@ -886,152 +1097,170 @@ async function deleteAllVersions() {
     }
 }
 
-// Adicionar estilos de animação
+// Estilos dinâmicos do version manager (limpos, baseados em design tokens)
 const style = document.createElement('style');
 style.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
     @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
+        from { transform: translateX(0); opacity: 1; }
+        to   { transform: translateX(100%); opacity: 0; }
     }
 
-    /* Version Manager */
+    /* ==== Version Manager ==================================== */
+    .vm-wrapper { padding: 16px; }
+    @media (min-width: 768px) { .vm-wrapper { padding: 24px; } }
+
+    .vm-intro {
+        display: flex; gap: 10px;
+        padding: 12px 14px;
+        background: var(--primary-weak);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        color: var(--text);
+        margin-bottom: 16px;
+    }
+    .vm-intro i { color: var(--primary); margin-top: 2px; }
+    .vm-intro p { font-size: 13px; margin: 0; line-height: 1.5; color: var(--text-muted); }
+    .vm-intro p strong { color: var(--text); }
+
     .vm-stats {
-        display: flex;
-        align-items: center;
-        gap: 20px;
-        padding: 16px 20px;
-        background: var(--bg-subtle);
-        border-bottom: 1px solid var(--border);
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 16px;
     }
+    @media (min-width: 768px) { .vm-stats { grid-template-columns: repeat(3, 1fr); gap: 12px; } }
     .vm-stat {
-        display: flex;
-        align-items: center;
-        gap: 10px;
+        display: flex; align-items: center; gap: 10px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 10px 12px;
     }
-    .vm-stat i {
-        font-size: 16px;
-        color: var(--primary);
-    }
-    .vm-stat div {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.2;
-    }
-    .vm-stat strong {
-        font-size: 16px;
-        color: var(--text);
-    }
-    .vm-stat span {
-        font-size: 11px;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .vm-list {
-        max-height: 55vh;
-        overflow-y: auto;
-    }
-    .vm-item {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 12px 20px;
-        border-bottom: 1px solid var(--border);
-        transition: background 0.12s ease;
-    }
-    .vm-item:hover { background: var(--bg-subtle); }
-    .vm-item-icon {
-        width: 36px;
-        height: 36px;
+    .vm-stat-icon {
+        width: 34px; height: 34px;
         border-radius: var(--radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 14px;
+        background: var(--primary-weak);
+        color: var(--primary);
+        display: inline-flex; align-items: center; justify-content: center;
         flex-shrink: 0;
-    }
-    .vm-item-info { flex: 1; min-width: 0; }
-    .vm-item-title {
-        font-weight: 600;
-        color: var(--text);
         font-size: 14px;
-        white-space: nowrap;
+    }
+    .vm-stat-body { display: flex; flex-direction: column; min-width: 0; }
+    .vm-stat-body strong { font-size: 17px; line-height: 1; color: var(--text); font-weight: 800; }
+    .vm-stat-body span { font-size: 11px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .vm-toolbar {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    .vm-toolbar h4 {
+        font-size: 13px; font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .vm-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .vm-item {
+        position: relative;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
         overflow: hidden;
-        text-overflow: ellipsis;
+        transition: border-color 0.12s ease;
+    }
+    .vm-item:hover { border-color: var(--border-strong); }
+    .vm-item.open { border-color: var(--primary); }
+
+    .vm-item-row {
+        display: flex; align-items: center; gap: 12px;
+        width: 100%;
+        padding: 12px 56px 12px 14px;
+        background: transparent;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        font-family: inherit;
+        color: var(--text);
+        min-height: var(--touch-min);
+    }
+    .vm-item-icon {
+        width: 36px; height: 36px;
+        border-radius: var(--radius);
+        display: inline-flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        font-size: 14px;
+    }
+    .vm-item-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .vm-item-title {
+        font-size: 14px; font-weight: 600;
+        color: var(--text);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
     .vm-item-meta {
-        display: flex;
-        gap: 10px;
+        display: flex; gap: 10px; flex-wrap: wrap;
+        font-size: 12px; color: var(--text-muted);
         align-items: center;
-        margin-top: 2px;
+    }
+    .vm-chip {
+        padding: 2px 8px;
+        border-radius: var(--radius-pill);
+        font-size: 10.5px; font-weight: 600;
+        line-height: 1.5;
+    }
+    .vm-chev {
+        margin-left: auto;
+        color: var(--text-subtle);
         font-size: 12px;
-        color: var(--text-muted);
-        flex-wrap: wrap;
+        transition: transform 0.15s ease;
     }
-    .vm-item-actions {
-        display: flex;
-        gap: 6px;
-        flex-shrink: 0;
+    .vm-item.open .vm-chev { transform: rotate(180deg); }
+
+    .vm-item-side {
+        position: absolute;
+        top: 10px; right: 10px;
     }
+
     .vm-versions-detail {
         background: var(--bg-subtle);
-        border-bottom: 1px solid var(--border);
+        border-top: 1px solid var(--border);
     }
-    .vm-version-list {
-        padding: 8px 20px 8px 56px;
-    }
+    .vm-empty { padding: 14px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+    .vm-version-list { list-style: none; margin: 0; padding: 6px; }
     .vm-version-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 10px;
-        border-radius: var(--radius-sm);
-        margin-bottom: 2px;
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 10px;
+        border-radius: var(--radius);
         transition: background 0.12s ease;
     }
     .vm-version-row:hover { background: var(--bg-muted); }
     .vm-ver-badge {
-        width: 24px;
-        height: 24px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        width: 28px; height: 28px;
+        border-radius: var(--radius);
+        display: inline-flex; align-items: center; justify-content: center;
         font-size: 11px;
         flex-shrink: 0;
     }
     .vm-ver-badge.manual { background: var(--primary-weak); color: var(--primary); }
-    .vm-ver-badge.auto   { background: rgba(46,125,50,0.12); color: var(--success); }
-    [data-theme="dark"] .vm-ver-badge.auto { background: rgba(111,207,126,0.15); }
+    .vm-ver-badge.auto   { background: var(--bg-muted); color: var(--success); }
     .vm-ver-info {
         flex: 1;
-        font-size: 12px;
-        color: var(--text-muted);
+        display: flex; flex-wrap: wrap; gap: 4px 10px;
+        font-size: 12px; color: var(--text-muted);
+        align-items: center;
     }
+    .vm-ver-info strong { color: var(--text); }
     .vm-ver-delete {
-        background: none;
+        background: transparent;
         border: none;
         color: var(--text-subtle);
         cursor: pointer;
-        padding: 4px 8px;
-        border-radius: 6px;
+        width: var(--touch-min); height: var(--touch-min);
+        border-radius: var(--radius);
+        display: inline-flex; align-items: center; justify-content: center;
         transition: color 0.12s ease, background 0.12s ease;
+        flex-shrink: 0;
     }
     .vm-ver-delete:hover { color: var(--danger); background: var(--danger-weak); }
 `;

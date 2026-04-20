@@ -18,7 +18,34 @@
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+                .then((reg) => {
+                    // Verificar updates explícitos ao abrir a app
+                    reg.update().catch(() => {});
+                    if (reg.waiting) reg.waiting.postMessage('SKIP_WAITING');
+
+                    reg.addEventListener('updatefound', () => {
+                        const newWorker = reg.installing;
+                        if (!newWorker) return;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                newWorker.postMessage('SKIP_WAITING');
+                            }
+                        });
+                    });
+                })
                 .catch(err => console.warn('[PWA] SW registration failed:', err));
+
+            // Quando um SW novo toma controlo, força reload único para servir cache fresca
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                // Evitar loop: só recarregamos se já tínhamos um SW anterior
+                if (sessionStorage.getItem('sw-refreshed') !== '1') {
+                    sessionStorage.setItem('sw-refreshed', '1');
+                    window.location.reload();
+                }
+            });
         });
     }
 
