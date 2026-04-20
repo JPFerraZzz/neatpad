@@ -79,7 +79,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT || 22 }}
+          port: ${{ secrets.SSH_PORT || 2222 }}
           # A pasta é passada como env para podermos validá-la e usá-la no script
           envs: SSH_PATH
           script_stop: true
