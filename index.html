@@ -76,6 +76,9 @@
                             <span class="moon-icon">🌙</span>
                         </div>
                     </button>
+                    <button class="btn btn-ghost btn-icon hide-mobile" id="settingsBtn" title="Definições" aria-label="Definições" type="button">
+                        <i class="fas fa-cog"></i>
+                    </button>
                     <div id="userMenu" class="hide-mobile">
                         <span id="userDisplayName"></span>
                         <button class="btn btn-ghost btn-icon" onclick="logout()" title="Terminar sessão" aria-label="Terminar sessão">
@@ -337,15 +340,22 @@
         <button type="button" data-nav="versions" aria-label="Versões">
             <i class="fas fa-history"></i><span>Versões</span>
         </button>
-        <button type="button" data-nav="more" aria-label="Mais">
-            <i class="fas fa-ellipsis-h"></i><span>Mais</span>
+        <button type="button" data-nav="more" aria-label="Definições">
+            <i class="fas fa-cog"></i><span>Definições</span>
         </button>
     </nav>
 
-    <!-- Bottom sheet: "Mais" (user, tema, logout, tema de fundo) -->
+    <!-- Definições (sheet mobile / popover desktop) -->
     <div class="sheet-backdrop" id="moreSheetBackdrop" hidden></div>
-    <div class="sheet" id="moreSheet" hidden aria-hidden="true" role="dialog" aria-label="Mais opções">
+    <aside class="sheet" id="moreSheet" hidden aria-hidden="true" role="dialog" aria-label="Definições">
         <div class="sheet-grabber"></div>
+        <div class="sheet-topbar">
+            <h3 class="sheet-title">Definições</h3>
+            <button class="sheet-close" id="sheetCloseBtn" type="button" aria-label="Fechar">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
         <div class="sheet-user">
             <div class="sheet-avatar"><i class="fas fa-user"></i></div>
             <div class="sheet-user-info">
@@ -353,31 +363,60 @@
                 <span id="sheetUserEmail"></span>
             </div>
         </div>
-        <ul class="sheet-list">
-            <li>
-                <button type="button" id="sheetToggleTheme">
-                    <i class="fas fa-moon"></i> <span>Tema escuro</span>
-                    <span class="sheet-value" id="sheetThemeValue"></span>
+
+        <!-- Aparência -->
+        <div class="sheet-section">
+            <h4 class="sheet-section-title">Aparência</h4>
+
+            <button type="button" class="sheet-row" id="sheetToggleTheme">
+                <i class="fas fa-moon"></i>
+                <span class="sheet-row-label">Tema escuro</span>
+                <span class="sheet-value" id="sheetThemeValue"></span>
+            </button>
+
+            <div class="sheet-row sheet-row--static">
+                <i class="fas fa-palette"></i>
+                <span class="sheet-row-label">Fundo decorativo</span>
+                <span class="sheet-value" id="sheetBgValue"></span>
+            </div>
+            <div class="bg-chips" id="bgChips" role="radiogroup" aria-label="Escolher fundo decorativo">
+                <button type="button" class="bg-chip" data-bg="waves" role="radio" aria-checked="false">
+                    <span class="bg-chip-preview bg-chip--waves"></span>
+                    <span class="bg-chip-label">Ondas</span>
                 </button>
-            </li>
-            <li>
-                <button type="button" id="sheetBgTheme">
-                    <i class="fas fa-palette"></i> <span>Fundo decorativo</span>
-                    <span class="sheet-value" id="sheetBgValue"></span>
+                <button type="button" class="bg-chip" data-bg="grid" role="radio" aria-checked="false">
+                    <span class="bg-chip-preview bg-chip--grid"></span>
+                    <span class="bg-chip-label">Grelha</span>
                 </button>
-            </li>
-            <li>
-                <button type="button" id="sheetVersions">
-                    <i class="fas fa-history"></i> <span>Gestão de versões</span>
+                <button type="button" class="bg-chip" data-bg="dots" role="radio" aria-checked="false">
+                    <span class="bg-chip-preview bg-chip--dots"></span>
+                    <span class="bg-chip-label">Pontos</span>
                 </button>
-            </li>
-            <li class="danger">
-                <button type="button" id="sheetLogout">
-                    <i class="fas fa-sign-out-alt"></i> <span>Terminar sessão</span>
+                <button type="button" class="bg-chip" data-bg="paper" role="radio" aria-checked="false">
+                    <span class="bg-chip-preview bg-chip--paper"></span>
+                    <span class="bg-chip-label">Papel</span>
                 </button>
-            </li>
-        </ul>
-    </div>
+                <button type="button" class="bg-chip" data-bg="none" role="radio" aria-checked="false">
+                    <span class="bg-chip-preview bg-chip--none"></span>
+                    <span class="bg-chip-label">Limpo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Ações -->
+        <div class="sheet-section">
+            <h4 class="sheet-section-title">Ações</h4>
+            <button type="button" class="sheet-row" id="sheetVersions">
+                <i class="fas fa-history"></i>
+                <span class="sheet-row-label">Gestão de versões</span>
+                <i class="fas fa-chevron-right sheet-chev"></i>
+            </button>
+            <button type="button" class="sheet-row sheet-row--danger" id="sheetLogout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span class="sheet-row-label">Terminar sessão</span>
+            </button>
+        </div>
+    </aside>
 
     <!-- Install gate (bloqueia mobile browser fora do PWA) -->
     <div id="pwa-install-gate" role="dialog" aria-modal="true" aria-labelledby="pwaGateTitle">

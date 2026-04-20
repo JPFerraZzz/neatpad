@@ -1,16 +1,17 @@
 /* ============================================================================
- * NeatPad — Mobile UX controller
+ * NeatPad — Mobile + Settings UX controller
  * ----------------------------------------------------------------------------
  * Controla:
- *  - Bottom bar navigation (Início / Espaços / Nova / Versões / Mais)
- *  - Bottom sheet "Mais" (user, tema, fundo, versões, logout)
+ *  - Bottom bar (mobile): Início / Espaços / Nova / Versões / Definições
+ *  - Painel de Definições (bottom sheet em mobile, popover em desktop)
  *  - Sincroniza saudação + user info
  *
- * Não depende de JS existente além de:
- *   - window.switchView(name)            (app.js)
- *   - window.openCategoryModal()         (app.js)
- *   - window.openVersionManager()        (app.js)
- *   - window.logout()                    (auth.js)
+ * Dependências (globais opcionais):
+ *   window.switchView(name)           app.js
+ *   window.openCategoryModal()        app.js
+ *   window.openVersionManager()       app.js
+ *   window.toggleTheme()              index.html inline
+ *   window.logout()                   auth.js
  * ==========================================================================*/
 
 (function () {
@@ -51,7 +52,7 @@
                     window.openVersionManager && window.openVersionManager();
                     break;
                 case 'more':
-                    openMoreSheet();
+                    toggleSettings();
                     break;
             }
         });
@@ -61,18 +62,24 @@
         document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
     }
 
-    // ── Bottom sheet "Mais" ────────────────────────────────────────────
-    function openMoreSheet() {
+    // ── Painel de Definições ───────────────────────────────────────────
+    function isSettingsOpen() {
+        const sheet = document.getElementById('moreSheet');
+        return sheet && !sheet.hidden;
+    }
+
+    function openSettings() {
         const sheet = document.getElementById('moreSheet');
         const bd = document.getElementById('moreSheetBackdrop');
         if (!sheet || !bd) return;
 
-        refreshSheet();
+        refreshSettings();
         sheet.hidden = false;
         bd.hidden = false;
         sheet.setAttribute('aria-hidden', 'false');
     }
-    function closeMoreSheet() {
+
+    function closeSettings() {
         const sheet = document.getElementById('moreSheet');
         const bd = document.getElementById('moreSheetBackdrop');
         if (!sheet || !bd) return;
@@ -81,7 +88,12 @@
         sheet.setAttribute('aria-hidden', 'true');
     }
 
-    function refreshSheet() {
+    function toggleSettings() {
+        if (isSettingsOpen()) closeSettings();
+        else openSettings();
+    }
+
+    function refreshSettings() {
         const user = window.__currentUser;
         const nameEl = document.getElementById('sheetUserName');
         const emailEl = document.getElementById('sheetUserEmail');
@@ -95,46 +107,74 @@
         const bv = document.getElementById('sheetBgValue');
         const found = BG_THEMES.find(t => t.id === bg);
         if (bv) bv.textContent = found ? found.label : 'Limpo';
+
+        document.querySelectorAll('#bgChips .bg-chip').forEach(chip => {
+            const active = chip.dataset.bg === bg;
+            chip.setAttribute('aria-checked', active ? 'true' : 'false');
+        });
     }
 
-    function initMoreSheet() {
+    function applyBgTheme(id) {
+        document.documentElement.setAttribute('data-bg', id);
+        try { localStorage.setItem('neatpad-bg-theme', id); } catch (e) {}
+        refreshSettings();
+    }
+
+    function initSettingsPanel() {
         const bd = document.getElementById('moreSheetBackdrop');
-        if (bd) bd.addEventListener('click', closeMoreSheet);
+        if (bd) bd.addEventListener('click', closeSettings);
+
+        const closeBtn = document.getElementById('sheetCloseBtn');
+        if (closeBtn) closeBtn.addEventListener('click', closeSettings);
+
+        const settingsBtn = document.getElementById('settingsBtn');
+        if (settingsBtn) settingsBtn.addEventListener('click', (ev) => {
+            ev.stopPropagation();
+            toggleSettings();
+        });
 
         const tt = document.getElementById('sheetToggleTheme');
         if (tt) tt.addEventListener('click', () => {
             if (typeof window.toggleTheme === 'function') window.toggleTheme();
-            refreshSheet();
+            refreshSettings();
         });
 
-        const bg = document.getElementById('sheetBgTheme');
-        if (bg) bg.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-bg') || 'waves';
-            const idx = BG_THEMES.findIndex(t => t.id === current);
-            const next = BG_THEMES[(idx + 1) % BG_THEMES.length];
-            document.documentElement.setAttribute('data-bg', next.id);
-            localStorage.setItem('neatpad-bg-theme', next.id);
-            refreshSheet();
+        const chips = document.getElementById('bgChips');
+        if (chips) chips.addEventListener('click', (ev) => {
+            const chip = ev.target.closest('.bg-chip');
+            if (!chip) return;
+            applyBgTheme(chip.dataset.bg);
         });
 
         const vm = document.getElementById('sheetVersions');
         if (vm) vm.addEventListener('click', () => {
-            closeMoreSheet();
+            closeSettings();
             if (typeof window.openVersionManager === 'function') window.openVersionManager();
         });
 
         const lo = document.getElementById('sheetLogout');
         if (lo) lo.addEventListener('click', () => {
-            closeMoreSheet();
+            closeSettings();
             if (typeof window.logout === 'function') window.logout();
         });
 
-        // Fechar ao tocar fora / ESC
+        // ESC fecha
         document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeMoreSheet();
+            if (e.key === 'Escape' && isSettingsOpen()) closeSettings();
         });
 
-        document.addEventListener('neatpad:theme-changed', refreshSheet);
+        // Em desktop: clicar fora do popover fecha-o (o backdrop é transparente)
+        document.addEventListener('click', (ev) => {
+            if (!isSettingsOpen()) return;
+            const sheet = document.getElementById('moreSheet');
+            const btn = document.getElementById('settingsBtn');
+            if (sheet && sheet.contains(ev.target)) return;
+            if (btn && btn.contains(ev.target)) return;
+            // Só fechamos no desktop; no mobile o backdrop já trata
+            if (window.matchMedia('(min-width: 768px)').matches) closeSettings();
+        });
+
+        document.addEventListener('neatpad:theme-changed', refreshSettings);
     }
 
     // ── Sincronizar estado da bottom bar com view ativa ─────────────────
@@ -163,15 +203,14 @@
         htmlObs.observe(html, { attributes: true, attributeFilter: ['data-view'] });
     }
 
-    // ── Saudação no header quando o user carrega ────────────────────────
+    // ── Carregamento do user (async) ───────────────────────────────────
     function pollUser(max = 40) {
         let tries = 0;
         const t = setInterval(() => {
             tries++;
             if (window.__currentUser) {
                 clearInterval(t);
-                refreshSheet();
-                // Saudação no hero (caso app.js já tenha renderizado)
+                refreshSettings();
                 if (typeof window.renderHomeStats === 'function') {
                     try { window.renderHomeStats(); } catch (e) { /* noop */ }
                 }
@@ -184,13 +223,20 @@
     // ── Boot ───────────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
         initBottomBar();
-        initMoreSheet();
+        initSettingsPanel();
         watchActiveStateChanges();
         syncBottomBarHighlight();
+        refreshSettings();
         pollUser();
     });
 
-    // Expor para debug
+    // API pública (para debug/consumo externo)
     window.Neatpad = window.Neatpad || {};
-    window.Neatpad.mobile = { openMoreSheet, closeMoreSheet, refreshSheet };
+    window.Neatpad.settings = {
+        open: openSettings,
+        close: closeSettings,
+        toggle: toggleSettings,
+        refresh: refreshSettings,
+        applyBgTheme,
+    };
 })();

@@ -940,13 +940,16 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     .bottom-bar { display: none !important; }
 }
 
-/* Bottom sheet "Mais" */
+/* ── Definições (sheet em mobile / popover em desktop) ─────────────── */
+
 .sheet-backdrop {
     position: fixed; inset: 0;
     background: var(--overlay);
     z-index: 3000;
     animation: fadeIn 0.15s ease-out;
 }
+.sheet-backdrop[hidden] { display: none; }
+
 .sheet {
     position: fixed;
     left: 0; right: 0; bottom: 0;
@@ -956,7 +959,9 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     border: 1px solid var(--border);
     border-bottom: none;
     z-index: 3100;
-    padding: 8px 12px calc(16px + var(--safe-bottom));
+    padding: 6px 14px calc(16px + var(--safe-bottom));
+    max-height: 90dvh;
+    overflow-y: auto;
     animation: sheetUp 0.22s ease-out;
     box-shadow: var(--elev-3);
 }
@@ -965,18 +970,45 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     to   { transform: translateY(0); }
 }
 .sheet[hidden] { display: none; }
+
 .sheet-grabber {
     width: 40px; height: 4px;
     background: var(--border-strong);
     border-radius: 2px;
-    margin: 6px auto 14px;
+    margin: 6px auto 10px;
 }
+.sheet-topbar {
+    display: none;                     /* só no desktop */
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+}
+.sheet-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+.sheet-close {
+    width: 32px; height: 32px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px;
+}
+.sheet-close:hover { background: var(--bg-subtle); color: var(--text); }
+
 .sheet-user {
     display: flex; align-items: center;
     gap: 12px;
-    padding: 8px 10px 16px;
+    padding: 8px 10px 14px;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 .sheet-avatar {
     width: 44px; height: 44px;
@@ -987,7 +1019,7 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     font-size: 18px;
     flex-shrink: 0;
 }
-.sheet-user-info { min-width: 0; display: flex; flex-direction: column; }
+.sheet-user-info { min-width: 0; display: flex; flex-direction: column; flex: 1; }
 .sheet-user-info strong {
     font-size: 14px; font-weight: 700; color: var(--text);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
@@ -996,13 +1028,31 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     font-size: 12px; color: var(--text-muted);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.sheet-list { list-style: none; margin: 0; padding: 0; }
-.sheet-list li button {
-    width: 100%;
+
+.sheet-section {
+    padding: 6px 0 10px;
+}
+.sheet-section + .sheet-section {
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+    margin-top: 4px;
+}
+.sheet-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 4px 10px 8px;
+    margin: 0;
+}
+
+.sheet-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 10px;
+    width: 100%;
+    padding: 12px 10px;
     min-height: var(--touch-min);
     background: transparent;
     border: none;
@@ -1013,20 +1063,138 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     border-radius: var(--radius);
     text-align: left;
 }
-.sheet-list li button:hover { background: var(--bg-subtle); }
-.sheet-list li button i {
-    width: 28px; text-align: center;
+.sheet-row:hover { background: var(--bg-subtle); }
+.sheet-row > i:first-child {
+    width: 22px; text-align: center;
     color: var(--text-muted);
     font-size: 15px;
+    flex-shrink: 0;
 }
-.sheet-list li button .sheet-value {
-    margin-left: auto;
+.sheet-row-label { flex: 1; min-width: 0; }
+.sheet-row .sheet-value {
     font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 3px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-subtle);
+}
+.sheet-row .sheet-chev {
+    color: var(--text-subtle);
+    font-size: 12px;
+}
+
+.sheet-row--static {
+    cursor: default;
+}
+.sheet-row--static:hover { background: transparent; }
+
+.sheet-row--danger { color: var(--danger); }
+.sheet-row--danger > i:first-child { color: var(--danger); }
+.sheet-row--danger:hover { background: var(--danger-weak); }
+
+/* Chips de fundo decorativo */
+.bg-chips {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    padding: 4px 10px 8px;
+}
+.bg-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 4px;
+    background: var(--bg-surface);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.12s ease, transform 0.12s ease;
+}
+.bg-chip:hover { border-color: var(--border-strong); }
+.bg-chip[aria-checked="true"] {
+    border-color: var(--primary);
+    background: var(--primary-weak);
+}
+.bg-chip-preview {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    display: block;
+}
+.bg-chip-label {
+    font-size: 11px;
+    font-weight: 600;
     color: var(--text-muted);
 }
-.sheet-list li.danger button { color: var(--danger); }
-.sheet-list li.danger button i { color: var(--danger); }
-.sheet-list li.danger button:hover { background: var(--danger-weak); }
+.bg-chip[aria-checked="true"] .bg-chip-label { color: var(--primary); }
+
+/* Previews dos chips */
+.bg-chip--waves {
+    background:
+        radial-gradient(circle at 20% 20%, rgba(91,91,214,0.35) 0, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(91,91,214,0.2) 0, transparent 50%),
+        var(--bg-subtle);
+}
+.bg-chip--grid {
+    background-image:
+        linear-gradient(rgba(91,91,214,0.3) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(91,91,214,0.3) 1px, transparent 1px);
+    background-size: 8px 8px;
+    background-color: var(--bg-subtle);
+}
+.bg-chip--dots {
+    background-image: radial-gradient(rgba(91,91,214,0.45) 1.2px, transparent 1.3px);
+    background-size: 7px 7px;
+    background-color: var(--bg-subtle);
+}
+.bg-chip--paper {
+    background-color: var(--bg-subtle);
+    background-image: repeating-linear-gradient(
+        0deg,
+        transparent 0 6px,
+        rgba(91,91,214,0.22) 6px 7px
+    );
+}
+.bg-chip--none {
+    background: var(--bg-subtle);
+}
+[data-theme="dark"] .bg-chip--waves {
+    background:
+        radial-gradient(circle at 20% 20%, rgba(142,136,255,0.45) 0, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(142,136,255,0.25) 0, transparent 50%),
+        var(--bg-subtle);
+}
+[data-theme="dark"] .bg-chip--grid,
+[data-theme="dark"] .bg-chip--dots,
+[data-theme="dark"] .bg-chip--paper {
+    background-color: var(--bg-subtle);
+}
+
+/* Desktop: aparece como popover ancorado ao header */
+@media (min-width: 768px) {
+    .sheet {
+        left: auto;
+        right: 24px;
+        bottom: auto;
+        top: calc(var(--header-h) + 10px);
+        width: 340px;
+        max-height: calc(100dvh - var(--header-h) - 40px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 14px 16px 16px;
+        animation: popIn 0.15s ease-out;
+        box-shadow: var(--elev-3);
+    }
+    .sheet-grabber { display: none; }
+    .sheet-topbar { display: flex; }
+    .sheet-backdrop { display: none !important; }  /* em desktop: sem backdrop; clique fora fecha o popover */
+    .bg-chips { grid-template-columns: repeat(5, 1fr); }
+}
 
 /* ── 11. Install gate ────────────────────────────────────────────────── */
 
