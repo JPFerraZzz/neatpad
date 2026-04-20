@@ -1,5 +1,0 @@
-[phases.setup]
-nixPkgs = ["php", "phpPackages.pdo_mysql", "phpPackages.mbstring", "phpPackages.openssl"]
-
-[start]
-cmd = "php -S 0.0.0.0:$PORT -t ."
