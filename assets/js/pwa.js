@@ -1,21 +1,20 @@
 /* ============================================================================
- * NeatPad — PWA bootstrap
+ * NeatPad — PWA bootstrap + Install Gate
  * ----------------------------------------------------------------------------
- * - Regista o service worker
- * - Deteta se a app já está em modo standalone (instalada)
- * - Mostra banner de instalação (Android: beforeinstallprompt, iOS: instruções)
- * - Permite dispensar o banner (não volta a aparecer)
- *
- * A versão web continua 100% funcional para quem não instalar.
+ * 1. Regista o service worker.
+ * 2. Em mobile (iPhone/Android), se a app NÃO está instalada (modo standalone):
+ *      - bloqueia o uso da web
+ *      - mostra ecrã com instruções de instalação
+ *      - Android: botão nativo via beforeinstallprompt
+ *      - iOS: instruções passo-a-passo (Partilhar → Adicionar ao ecrã inicial)
+ * 3. Em desktop: nunca bloqueia.
+ * 4. Bypass opcional: adicionar ?dev=1 ao URL em desenvolvimento local.
  * ==========================================================================*/
 
 (function () {
     'use strict';
 
-    const DISMISS_KEY = 'neatpad-pwa-banner-dismissed';
-    const MIN_INTERACTION_MS = 1500;
-
-    // ── Registar o service worker ────────────────────────────────────────
+    // ── Registar service worker ──────────────────────────────────────────
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
@@ -23,214 +22,132 @@
         });
     }
 
-    // ── Utils ────────────────────────────────────────────────────────────
+    // ── Deteção ──────────────────────────────────────────────────────────
+
     function isStandalone() {
         return window.matchMedia('(display-mode: standalone)').matches
+            || window.matchMedia('(display-mode: fullscreen)').matches
+            || window.matchMedia('(display-mode: minimal-ui)').matches
             || window.navigator.standalone === true;
     }
 
     function isIOS() {
-        return /iPad|iPhone|iPod/.test(navigator.userAgent)
-            && !window.MSStream;
+        const ua = navigator.userAgent;
+        const isIPad = /iPad/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        return /iPhone|iPod/.test(ua) || isIPad;
     }
 
-    function bannerDismissed() {
+    function isAndroid() { return /Android/.test(navigator.userAgent); }
+
+    function isMobileDevice() {
+        // Preferimos deteção por user agent para mobile real.
+        // Browsers desktop com ecrã pequeno não devem ser bloqueados.
+        return isIOS() || isAndroid();
+    }
+
+    function isDevBypass() {
         try {
-            return localStorage.getItem(DISMISS_KEY) === '1';
-        } catch (e) {
-            return false;
-        }
+            const q = new URLSearchParams(window.location.search);
+            if (q.get('dev') === '1') {
+                localStorage.setItem('neatpad-dev-bypass', '1');
+                return true;
+            }
+            if (localStorage.getItem('neatpad-dev-bypass') === '1') return true;
+        } catch (e) {}
+        return false;
     }
 
-    function dismissBanner() {
-        try { localStorage.setItem(DISMISS_KEY, '1'); } catch (e) {}
-        const el = document.getElementById('pwa-install-banner');
-        if (el) el.remove();
-    }
+    // ── Install gate ─────────────────────────────────────────────────────
 
-    // ── Banner UI ────────────────────────────────────────────────────────
-    function injectStyles() {
-        if (document.getElementById('pwa-install-styles')) return;
-        const css = `
-        .pwa-banner {
-            position: fixed;
-            left: 16px;
-            right: 16px;
-            bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-            max-width: 520px;
-            margin: 0 auto;
-            background: #1B1830;
-            color: #fff;
-            border-radius: 14px;
-            box-shadow: 0 10px 32px rgba(0,0,0,0.28);
-            padding: 14px 16px 14px 14px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            z-index: 9500;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            animation: pwaSlideUp 0.3s ease-out;
-        }
-        @keyframes pwaSlideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .pwa-banner__icon {
-            width: 40px; height: 40px; border-radius: 10px;
-            background: linear-gradient(145deg, #6C63FF, #9D97FF);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; color: #fff; font-size: 18px;
-        }
-        .pwa-banner__body { flex: 1; min-width: 0; }
-        .pwa-banner__title { font-size: 14px; font-weight: 700; margin: 0 0 2px; }
-        .pwa-banner__text  { font-size: 12.5px; opacity: 0.82; margin: 0; line-height: 1.35; }
-        .pwa-banner__actions { display: flex; gap: 8px; flex-shrink: 0; }
-        .pwa-banner__btn {
-            border: none; border-radius: 10px;
-            padding: 10px 14px;
-            font-size: 13px; font-weight: 600;
-            cursor: pointer;
-            font-family: inherit;
-            min-height: 40px;
-        }
-        .pwa-banner__btn--primary { background: #6C63FF; color: #fff; }
-        .pwa-banner__btn--primary:hover { background: #5A52E0; }
-        .pwa-banner__btn--ghost {
-            background: transparent; color: rgba(255,255,255,0.75);
-        }
-        .pwa-banner__btn--ghost:hover { color: #fff; }
-
-        /* Modal iOS com instruções */
-        .pwa-ios-modal {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.55);
-            display: flex; align-items: flex-end; justify-content: center;
-            z-index: 9600;
-            animation: pwaSlideUp 0.2s ease-out;
-        }
-        .pwa-ios-modal__box {
-            background: #fff; color: #1B1830;
-            border-radius: 18px 18px 0 0;
-            padding: 22px 22px calc(22px + env(safe-area-inset-bottom, 0px));
-            width: 100%; max-width: 520px;
-        }
-        .pwa-ios-modal__title {
-            font-size: 17px; font-weight: 700; margin: 0 0 10px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .pwa-ios-modal__steps { margin: 10px 0 18px; padding-left: 18px; font-size: 14px; line-height: 1.55; }
-        .pwa-ios-modal__close {
-            width: 100%;
-            background: #6C63FF; color: #fff;
-            border: none; border-radius: 12px;
-            padding: 12px; font-size: 14px; font-weight: 600;
-            cursor: pointer; font-family: inherit;
-        }
-
-        @media (prefers-color-scheme: dark) {
-            .pwa-ios-modal__box { background: #1E1A36; color: #EDEAFF; }
-        }
-        `;
-        const style = document.createElement('style');
-        style.id = 'pwa-install-styles';
-        style.textContent = css;
-        document.head.appendChild(style);
-    }
-
-    function renderBanner({ title, text, primaryLabel, onPrimary }) {
-        injectStyles();
-        const banner = document.createElement('div');
-        banner.className = 'pwa-banner';
-        banner.id = 'pwa-install-banner';
-        banner.setAttribute('role', 'dialog');
-        banner.setAttribute('aria-label', 'Instalar NeatPad');
-        banner.innerHTML = `
-            <div class="pwa-banner__icon"><i class="fas fa-feather-alt"></i></div>
-            <div class="pwa-banner__body">
-                <p class="pwa-banner__title">${title}</p>
-                <p class="pwa-banner__text">${text}</p>
-            </div>
-            <div class="pwa-banner__actions">
-                <button class="pwa-banner__btn pwa-banner__btn--ghost" data-action="dismiss">Agora não</button>
-                <button class="pwa-banner__btn pwa-banner__btn--primary" data-action="install">${primaryLabel}</button>
-            </div>
-        `;
-        banner.querySelector('[data-action="dismiss"]').addEventListener('click', dismissBanner);
-        banner.querySelector('[data-action="install"]').addEventListener('click', () => {
-            onPrimary();
-        });
-        document.body.appendChild(banner);
-    }
-
-    function showIosInstructions() {
-        injectStyles();
-        const overlay = document.createElement('div');
-        overlay.className = 'pwa-ios-modal';
-        overlay.innerHTML = `
-            <div class="pwa-ios-modal__box">
-                <h3 class="pwa-ios-modal__title">
-                    <i class="fas fa-mobile-alt" style="color:#6C63FF"></i>
-                    Instalar no iPhone/iPad
-                </h3>
-                <ol class="pwa-ios-modal__steps">
-                    <li>Toca no ícone <strong>Partilhar</strong> (<i class="fas fa-share"></i>) na barra do Safari.</li>
-                    <li>Escolhe <strong>Adicionar ao ecrã principal</strong>.</li>
-                    <li>Confirma <strong>Adicionar</strong>. O NeatPad fica como ícone no ecrã inicial.</li>
-                </ol>
-                <button class="pwa-ios-modal__close" type="button">Percebido</button>
-            </div>
-        `;
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) overlay.remove();
-        });
-        overlay.querySelector('button').addEventListener('click', () => {
-            overlay.remove();
-            dismissBanner();
-        });
-        document.body.appendChild(overlay);
-    }
-
-    // ── Fluxo principal ──────────────────────────────────────────────────
-    // Se já instalado ou já dispensou, não mexemos
-    if (isStandalone() || bannerDismissed()) return;
-
-    // Android / Chrome / Edge: usar beforeinstallprompt
     let deferredPrompt = null;
 
+    const gate       = document.getElementById('pwa-install-gate');
+    const gateSteps  = document.getElementById('gateSteps');
+    const gateInstallBtn = document.getElementById('gateInstallBtn');
+    const gateTabs   = gate?.querySelectorAll('[data-gate-tab]');
+
+    function activateGate() {
+        if (!gate) return;
+        document.body.classList.add('gate-active');
+        // Travar scroll e focus de elementos da app
+        document.body.style.overflow = 'hidden';
+        // Anunciar a qualquer screen reader
+        gate.setAttribute('aria-modal', 'true');
+    }
+
+    function renderSteps(platform) {
+        if (!gateSteps) return;
+
+        gateTabs?.forEach(t => {
+            t.classList.toggle('active', t.dataset.gateTab === platform);
+            t.setAttribute('aria-selected', t.dataset.gateTab === platform ? 'true' : 'false');
+        });
+
+        if (platform === 'ios') {
+            gateSteps.innerHTML = `
+                <li>Abre o NeatPad no <strong>Safari</strong> (não funciona no Chrome iOS).</li>
+                <li>Toca no botão <strong>Partilhar</strong> <i class="fas fa-share" aria-hidden="true"></i> na barra inferior.</li>
+                <li>Escolhe <strong>Adicionar ao ecrã principal</strong>.</li>
+                <li>Confirma em <strong>Adicionar</strong>.</li>
+                <li>Abre o NeatPad a partir do ícone no ecrã inicial.</li>
+            `;
+            if (gateInstallBtn) gateInstallBtn.style.display = 'none';
+        } else {
+            gateSteps.innerHTML = `
+                <li>Se aparecer a opção, toca em <strong>Instalar agora</strong> em baixo.</li>
+                <li>Caso contrário, abre o menu do Chrome (<i class="fas fa-ellipsis-v"></i>) e escolhe <strong>Instalar app</strong> ou <strong>Adicionar ao ecrã inicial</strong>.</li>
+                <li>Confirma em <strong>Instalar</strong>.</li>
+                <li>Abre o NeatPad a partir do ícone no ecrã inicial.</li>
+            `;
+            if (gateInstallBtn) {
+                gateInstallBtn.style.display = deferredPrompt ? 'inline-flex' : 'none';
+            }
+        }
+    }
+
+    gateTabs?.forEach(tab => {
+        tab.addEventListener('click', () => renderSteps(tab.dataset.gateTab));
+    });
+
+    gateInstallBtn?.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        try {
+            deferredPrompt.prompt();
+            await deferredPrompt.userChoice;
+        } catch (err) { /* ignore */ }
+        deferredPrompt = null;
+        gateInstallBtn.style.display = 'none';
+    });
+
+    // Android dispara beforeinstallprompt mesmo dentro do gate; ativamos o botão.
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        setTimeout(() => {
-            if (bannerDismissed() || isStandalone()) return;
-            renderBanner({
-                title: 'Instalar o NeatPad',
-                text: 'Abre como app no teu telefone — mais rápido e com ícone próprio.',
-                primaryLabel: 'Instalar',
-                onPrimary: async () => {
-                    if (!deferredPrompt) { dismissBanner(); return; }
-                    deferredPrompt.prompt();
-                    try {
-                        await deferredPrompt.userChoice;
-                    } catch (err) { /* ignored */ }
-                    deferredPrompt = null;
-                    dismissBanner();
-                }
-            });
-        }, MIN_INTERACTION_MS);
+        if (document.body.classList.contains('gate-active') && isAndroid()) {
+            if (gateInstallBtn) gateInstallBtn.style.display = 'inline-flex';
+        }
     });
 
+    // Se o utilizador instalar a app enquanto o gate está ativo, recarrega.
     window.addEventListener('appinstalled', () => {
-        dismissBanner();
-        deferredPrompt = null;
+        // Na prática, a app abre numa nova janela standalone. Mas se o browser
+        // actualizar a flag display-mode, desativamos o gate.
+        if (isStandalone()) {
+            document.body.classList.remove('gate-active');
+            document.body.style.overflow = '';
+        }
     });
 
-    // iOS: não existe beforeinstallprompt, mostra instruções manuais
-    if (isIOS()) {
-        setTimeout(() => {
-            if (bannerDismissed() || isStandalone()) return;
-            renderBanner({
-                title: 'Instalar o NeatPad',
-                text: 'Adiciona ao ecrã inicial para usar como app.',
-                primaryLabel: 'Como?',
-                onPrimary: showIosInstructions
-            });
-        }, MIN_INTERACTION_MS);
-    }
+    // ── Decisão principal ────────────────────────────────────────────────
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (isStandalone()) return;           // instalado → permitir
+        if (!isMobileDevice()) return;         // desktop → nunca bloquear
+        if (isDevBypass()) return;             // ?dev=1 em desenvolvimento
+
+        // Mobile browser fora de standalone → bloqueio duro (em qualquer página)
+        const platform = isIOS() ? 'ios' : 'android';
+        renderSteps(platform);
+        activateGate();
+    });
 })();

@@ -915,9 +915,9 @@ style.textContent = `
         display: flex;
         align-items: center;
         gap: 20px;
-        padding: 20px 24px;
-        background: linear-gradient(135deg, #f8f9fc, #eef1f8);
-        border-bottom: 1px solid #e1e8ed;
+        padding: 16px 20px;
+        background: var(--bg-subtle);
+        border-bottom: 1px solid var(--border);
     }
     .vm-stat {
         display: flex;
@@ -925,8 +925,8 @@ style.textContent = `
         gap: 10px;
     }
     .vm-stat i {
-        font-size: 18px;
-        color: #3498db;
+        font-size: 16px;
+        color: var(--primary);
     }
     .vm-stat div {
         display: flex;
@@ -934,12 +934,12 @@ style.textContent = `
         line-height: 1.2;
     }
     .vm-stat strong {
-        font-size: 17px;
-        color: #2c3e50;
+        font-size: 16px;
+        color: var(--text);
     }
     .vm-stat span {
         font-size: 11px;
-        color: #8892a4;
+        color: var(--text-muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
@@ -951,30 +951,25 @@ style.textContent = `
         display: flex;
         align-items: center;
         gap: 14px;
-        padding: 14px 24px;
-        border-bottom: 1px solid #f0f2f5;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border);
         transition: background 0.12s ease;
     }
-    .vm-item:hover {
-        background: #f8f9fc;
-    }
+    .vm-item:hover { background: var(--bg-subtle); }
     .vm-item-icon {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius);
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 16px;
+        font-size: 14px;
         flex-shrink: 0;
     }
-    .vm-item-info {
-        flex: 1;
-        min-width: 0;
-    }
+    .vm-item-info { flex: 1; min-width: 0; }
     .vm-item-title {
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--text);
         font-size: 14px;
         white-space: nowrap;
         overflow: hidden;
@@ -984,9 +979,9 @@ style.textContent = `
         display: flex;
         gap: 10px;
         align-items: center;
-        margin-top: 4px;
+        margin-top: 2px;
         font-size: 12px;
-        color: #8892a4;
+        color: var(--text-muted);
         flex-wrap: wrap;
     }
     .vm-item-actions {
@@ -995,27 +990,25 @@ style.textContent = `
         flex-shrink: 0;
     }
     .vm-versions-detail {
-        background: #f8f9fc;
-        border-bottom: 2px solid #e1e8ed;
+        background: var(--bg-subtle);
+        border-bottom: 1px solid var(--border);
     }
     .vm-version-list {
-        padding: 8px 24px 8px 60px;
+        padding: 8px 20px 8px 56px;
     }
     .vm-version-row {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 8px 12px;
-        border-radius: 8px;
-        margin-bottom: 4px;
+        padding: 6px 10px;
+        border-radius: var(--radius-sm);
+        margin-bottom: 2px;
         transition: background 0.12s ease;
     }
-    .vm-version-row:hover {
-        background: #eef1f8;
-    }
+    .vm-version-row:hover { background: var(--bg-muted); }
     .vm-ver-badge {
-        width: 26px;
-        height: 26px;
+        width: 24px;
+        height: 24px;
         border-radius: 6px;
         display: flex;
         align-items: center;
@@ -1023,31 +1016,23 @@ style.textContent = `
         font-size: 11px;
         flex-shrink: 0;
     }
-    .vm-ver-badge.manual {
-        background: #3498db20;
-        color: #3498db;
-    }
-    .vm-ver-badge.auto {
-        background: #2ecc7120;
-        color: #27ae60;
-    }
+    .vm-ver-badge.manual { background: var(--primary-weak); color: var(--primary); }
+    .vm-ver-badge.auto   { background: rgba(46,125,50,0.12); color: var(--success); }
+    [data-theme="dark"] .vm-ver-badge.auto { background: rgba(111,207,126,0.15); }
     .vm-ver-info {
         flex: 1;
         font-size: 12px;
-        color: #5a6a7a;
+        color: var(--text-muted);
     }
     .vm-ver-delete {
         background: none;
         border: none;
-        color: #bcc5d0;
+        color: var(--text-subtle);
         cursor: pointer;
         padding: 4px 8px;
         border-radius: 6px;
         transition: color 0.12s ease, background 0.12s ease;
     }
-    .vm-ver-delete:hover {
-        color: #e74c3c;
-        background: #e74c3c15;
-    }
+    .vm-ver-delete:hover { color: var(--danger); background: var(--danger-weak); }
 `;
 document.head.appendChild(style);

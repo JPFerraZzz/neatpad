@@ -45,75 +45,68 @@ window.Templates = {
                 <style>
                     .notes-grid {
                         display: grid;
-                        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-                        gap: 20px;
+                        grid-template-columns: 1fr;
+                        gap: 12px;
+                    }
+                    @media (min-width: 768px) {
+                        .notes-grid {
+                            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                            gap: 16px;
+                        }
                     }
                     .note-card {
-                        border-radius: 12px;
-                        padding: 20px;
-                        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-                        transition: transform 0.15s ease, box-shadow 0.15s ease;
-                        min-height: 200px;
+                        border-radius: var(--radius-lg);
+                        padding: 16px;
+                        border: 1px solid var(--border);
+                        transition: border-color 0.12s ease;
+                        min-height: 180px;
                         display: flex;
                         flex-direction: column;
-                        will-change: transform;
                     }
-                    .note-card:hover {
-                        transform: translateY(-5px);
-                        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-                    }
+                    .note-card:hover { border-color: var(--border-strong); }
                     .note-header {
                         display: flex;
                         justify-content: space-between;
                         align-items: flex-start;
-                        margin-bottom: 15px;
+                        margin-bottom: 10px;
                     }
                     .note-title {
-                        font-size: 18px;
+                        font-size: 16px;
                         font-weight: 600;
-                        color: #2c3e50;
+                        color: var(--text);
                         flex: 1;
                     }
                     .note-actions {
                         display: flex;
-                        gap: 8px;
-                        opacity: 0;
-                        transition: opacity 0.3s ease;
-                    }
-                    .note-card:hover .note-actions {
-                        opacity: 1;
+                        gap: 4px;
                     }
                     .note-action-btn {
-                        background: rgba(255,255,255,0.8);
+                        background: transparent;
                         border: none;
-                        border-radius: 50%;
-                        width: 30px;
-                        height: 30px;
+                        border-radius: var(--radius);
+                        width: 32px;
+                        height: 32px;
+                        color: var(--text-muted);
                         cursor: pointer;
-                        display: flex;
+                        display: inline-flex;
                         align-items: center;
                         justify-content: center;
-                        transition: background 0.12s ease, transform 0.12s ease;
+                        transition: background 0.12s ease, color 0.12s ease;
                     }
-                    .note-action-btn:hover {
-                        background: white;
-                        transform: scale(1.1);
-                    }
-                    .note-action-btn.delete:hover {
-                        color: #e74c3c;
-                    }
+                    .note-action-btn:hover { background: var(--bg-subtle); color: var(--text); }
+                    .note-action-btn.delete:hover { background: var(--danger-weak); color: var(--danger); }
                     .note-content {
                         flex: 1;
-                        color: #34495e;
-                        line-height: 1.6;
+                        color: var(--text-muted);
+                        line-height: 1.55;
                         white-space: pre-wrap;
-                        font-size: 14px;
+                        font-size: 13px;
                     }
                     .note-footer {
-                        margin-top: 15px;
-                        padding-top: 15px;
-                        border-top: 1px solid rgba(0,0,0,0.1);
-                        color: #7f8c8d;
+                        margin-top: 12px;
+                        padding-top: 12px;
+                        border-top: 1px solid var(--border);
+                        color: var(--text-subtle);
                         font-size: 12px;
                     }
                 </style>
@@ -269,82 +262,75 @@ window.Templates = {
                 <style>
                     .tasks-kanban {
                         display: grid;
-                        grid-template-columns: repeat(3, 1fr);
-                        gap: 20px;
-                        overflow-x: auto;
+                        grid-template-columns: 1fr;
+                        gap: 12px;
                     }
-                    @media (max-width: 968px) {
+                    @media (min-width: 768px) {
                         .tasks-kanban {
-                            grid-template-columns: 1fr;
+                            grid-template-columns: repeat(3, 1fr);
+                            gap: 16px;
                         }
                     }
                     .kanban-column {
-                        background: #f8f9fa;
-                        border-radius: 12px;
-                        padding: 15px;
-                        min-height: 300px;
+                        background: var(--bg-subtle);
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-lg);
+                        padding: 12px;
+                        min-height: 240px;
                     }
                     .kanban-title {
-                        font-size: 16px;
-                        margin-bottom: 15px;
-                        color: #2c3e50;
+                        font-size: 14px;
+                        margin-bottom: 12px;
+                        color: var(--text);
+                        font-weight: 600;
                         display: flex;
                         align-items: center;
-                        gap: 10px;
+                        gap: 8px;
                     }
                     .kanban-items {
                         display: flex;
                         flex-direction: column;
-                        gap: 12px;
+                        gap: 10px;
                     }
                     .task-card {
-                        background: white;
-                        border-radius: 8px;
-                        padding: 15px;
-                        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                        transition: transform 0.12s ease, box-shadow 0.12s ease;
+                        background: var(--bg-surface);
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius);
+                        padding: 14px;
+                        transition: border-color 0.12s ease;
                         cursor: pointer;
-                        will-change: transform;
                     }
-                    .task-card:hover {
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                        transform: translateY(-2px);
-                    }
-                    .task-card.priority-high {
-                        border-left: 4px solid #e74c3c;
-                    }
-                    .task-card.priority-medium {
-                        border-left: 4px solid #f39c12;
-                    }
-                    .task-card.priority-low {
-                        border-left: 4px solid #3498db;
-                    }
+                    .task-card:hover { border-color: var(--border-strong); }
+                    .task-card.priority-high   { border-left: 3px solid var(--danger); }
+                    .task-card.priority-medium { border-left: 3px solid var(--warning); }
+                    .task-card.priority-low    { border-left: 3px solid var(--info); }
                     .task-title {
                         font-weight: 600;
-                        margin-bottom: 8px;
-                        color: #2c3e50;
+                        margin-bottom: 6px;
+                        color: var(--text);
+                        font-size: 14px;
                     }
                     .task-progress {
                         font-size: 12px;
-                        color: #7f8c8d;
+                        color: var(--text-muted);
                         margin-top: 8px;
                     }
                     .task-progress-bar {
                         height: 4px;
-                        background: #ecf0f1;
+                        background: var(--bg-muted);
                         border-radius: 2px;
                         margin-top: 5px;
                         overflow: hidden;
                     }
                     .task-progress-fill {
                         height: 100%;
-                        background: #2ecc71;
+                        background: var(--success);
                         transition: width 0.3s ease;
                     }
                     .task-actions {
                         margin-top: 10px;
                         display: flex;
-                        gap: 8px;
+                        gap: 6px;
                         justify-content: flex-end;
                     }
                 </style>
@@ -433,7 +419,7 @@ window.Templates = {
             const modalHTML = `
                 <div class="modal active" id="taskDetailModal" style="z-index: 3000;">
                     <div class="modal-content" style="max-width: 700px;">
-                        <div class="modal-header" style="background: linear-gradient(135deg, #2c3e50, #3d5166); color: white; border-radius: 12px 12px 0 0; padding: 25px;">
+                        <div class="modal-header" style="background: var(--bg-surface); color: var(--text); border-bottom: 1px solid var(--border); padding: 16px 20px;">
                             <div style="flex:1;">
                                 <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
                                     <span style="background:${p.bg}; color:${p.color}; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;">
@@ -863,89 +849,91 @@ window.Templates = {
                     .courses-list {
                         display: flex;
                         flex-direction: column;
-                        gap: 20px;
+                        gap: 12px;
                     }
                     .course-card {
-                        background: white;
-                        border: 2px solid #ecf0f1;
-                        border-radius: 12px;
-                        padding: 25px;
-                        transition: border-color 0.12s ease, box-shadow 0.12s ease;
+                        background: var(--bg-surface);
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-lg);
+                        padding: 16px;
+                        transition: border-color 0.12s ease;
                     }
-                    .course-card:hover {
-                        border-color: #3498db;
-                        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+                    @media (min-width: 768px) {
+                        .courses-list { gap: 16px; }
+                        .course-card { padding: 20px; }
                     }
+                    .course-card:hover { border-color: var(--border-strong); }
                     .course-header {
                         display: flex;
                         justify-content: space-between;
                         align-items: flex-start;
-                        margin-bottom: 20px;
+                        margin-bottom: 14px;
+                        gap: 10px;
+                        flex-wrap: wrap;
                     }
                     .course-title {
-                        font-size: 20px;
+                        font-size: 17px;
                         font-weight: 600;
-                        color: #2c3e50;
-                        margin-bottom: 8px;
+                        color: var(--text);
+                        margin-bottom: 6px;
                     }
                     .course-platform {
-                        background: #3498db;
-                        color: white;
-                        padding: 4px 12px;
-                        border-radius: 20px;
-                        font-size: 12px;
+                        background: var(--primary-weak);
+                        color: var(--primary);
+                        padding: 2px 10px;
+                        border-radius: var(--radius-pill);
+                        font-size: 11px;
                         font-weight: 600;
                     }
                     .course-actions {
                         display: flex;
-                        gap: 8px;
+                        gap: 6px;
                     }
                     .course-progress-section {
-                        margin-bottom: 20px;
+                        margin-bottom: 14px;
                     }
                     .course-progress-info {
                         display: flex;
                         justify-content: space-between;
-                        margin-bottom: 8px;
-                        font-size: 14px;
-                        color: #7f8c8d;
+                        margin-bottom: 6px;
+                        font-size: 13px;
+                        color: var(--text-muted);
                         font-weight: 600;
                     }
                     .course-progress-bar {
-                        height: 10px;
-                        background: #ecf0f1;
-                        border-radius: 5px;
+                        height: 6px;
+                        background: var(--bg-muted);
+                        border-radius: 3px;
                         overflow: hidden;
                     }
                     .course-progress-fill {
                         height: 100%;
-                        background: linear-gradient(90deg, #3498db, #2ecc71);
+                        background: var(--primary);
                         transition: width 0.3s ease;
                     }
                     .course-modules {
-                        margin-top: 15px;
-                        padding-top: 15px;
-                        border-top: 1px solid #ecf0f1;
+                        margin-top: 12px;
+                        padding-top: 12px;
+                        border-top: 1px solid var(--border);
                     }
                     .module-item {
                         display: flex;
                         align-items: center;
                         gap: 12px;
-                        padding: 10px 12px;
-                        color: #7f8c8d;
-                        border-radius: 8px;
-                        transition: background 0.12s ease, transform 0.12s ease;
+                        padding: 8px 10px;
+                        color: var(--text-muted);
+                        border-radius: var(--radius-sm);
+                        transition: background 0.12s ease;
                     }
                     .module-clickable {
                         cursor: pointer;
                         user-select: none;
                     }
                     .module-clickable:hover {
-                        background: #f0f7ff;
-                        transform: translateX(4px);
+                        background: var(--bg-subtle);
                     }
                     .module-item.completed {
-                        color: #27ae60;
+                        color: var(--success);
                     }
                     .module-item.completed span {
                         text-decoration: line-through;
@@ -1829,24 +1817,34 @@ window.Templates = {
                 </div>
 
                 <style>
-                /* ── Shell ─────────────────────────────── */
+                /* ── Shell (mobile-first) ──────────────── */
                 .nb-shell {
                     display: grid;
-                    grid-template-columns: 280px 1fr;
-                    height: 72vh;
-                    border-radius: 16px;
+                    grid-template-columns: 1fr;
+                    grid-template-rows: auto 1fr;
+                    height: auto;
+                    min-height: 70vh;
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius-lg);
                     overflow: hidden;
-                    box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-                    font-family: 'Segoe UI', system-ui, sans-serif;
+                    background: var(--bg-surface);
+                    font-family: var(--font);
                 }
-                @media(max-width:860px){
-                    .nb-shell { grid-template-columns:1fr; height:auto; }
-                    .nb-sidebar { max-height:260px; }
+                .nb-shell .nb-sidebar { max-height: 260px; }
+
+                @media (min-width: 768px) {
+                    .nb-shell {
+                        grid-template-columns: 280px 1fr;
+                        grid-template-rows: 1fr;
+                        height: 72vh;
+                    }
+                    .nb-shell .nb-sidebar { max-height: none; }
                 }
 
                 /* ── Sidebar ────────────────────────────── */
                 .nb-sidebar {
-                    background: linear-gradient(170deg, #1a1f36 0%, #2d3561 100%);
+                    background: var(--bg-surface);
+                    border-right: 1px solid var(--border);
                     display: flex;
                     flex-direction: column;
                     overflow: hidden;
@@ -1854,269 +1852,279 @@ window.Templates = {
                 .nb-sidebar-header {
                     display: flex;
                     align-items: center;
-                    gap: 14px;
-                    padding: 22px 20px 16px;
-                    border-bottom: 1px solid rgba(255,255,255,0.08);
+                    gap: 12px;
+                    padding: 16px;
+                    border-bottom: 1px solid var(--border);
                     flex-shrink: 0;
                 }
                 .nb-sidebar-logo {
-                    width: 44px; height: 44px;
-                    border-radius: 12px;
-                    background: rgba(255,255,255,0.12);
+                    width: 36px; height: 36px;
+                    border-radius: 8px;
+                    background: var(--primary-weak);
                     display: flex; align-items: center; justify-content: center;
-                    font-size: 20px; color: #a5b4fc;
+                    font-size: 16px; color: var(--primary);
                 }
-                .nb-sidebar-brand { font-size: 15px; font-weight: 700; color: #fff; }
-                .nb-sidebar-count { font-size: 12px; color: rgba(255,255,255,0.45); margin-top: 2px; }
+                .nb-sidebar-brand { font-size: 14px; font-weight: 700; color: var(--text); }
+                .nb-sidebar-count { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
 
                 /* search */
                 .nb-search-wrap {
                     position: relative;
-                    padding: 14px 16px 10px;
+                    padding: 10px 12px;
                     flex-shrink: 0;
                 }
                 .nb-search-icon {
-                    position: absolute; left: 28px; top: 50%; transform: translateY(-50%);
-                    color: rgba(255,255,255,0.35); font-size: 13px; pointer-events: none;
+                    position: absolute; left: 24px; top: 50%; transform: translateY(-50%);
+                    color: var(--text-subtle); font-size: 13px; pointer-events: none;
                 }
                 .nb-search {
                     width: 100%; box-sizing: border-box;
-                    background: rgba(255,255,255,0.08);
-                    border: 1px solid rgba(255,255,255,0.12);
-                    border-radius: 10px;
-                    padding: 9px 12px 9px 34px;
-                    color: #fff; font-size: 13px;
-                    outline: none; transition: border-color 0.2s;
+                    background: var(--bg-subtle);
+                    border: 1px solid var(--border);
+                    border-radius: 8px;
+                    padding: 8px 12px 8px 32px;
+                    color: var(--text); font-size: 13px;
+                    outline: none; transition: border-color 0.12s ease, box-shadow 0.12s ease;
                 }
-                .nb-search::placeholder { color: rgba(255,255,255,0.35); }
-                .nb-search:focus { border-color: rgba(165,180,252,0.6); }
+                .nb-search::placeholder { color: var(--text-subtle); }
+                .nb-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--focus-ring); }
 
                 /* list */
                 .nb-list {
                     flex: 1; overflow-y: auto;
-                    padding: 8px 12px 16px;
-                    display: flex; flex-direction: column; gap: 6px;
+                    padding: 4px 8px 12px;
+                    display: flex; flex-direction: column; gap: 2px;
                 }
-                .nb-list::-webkit-scrollbar { width: 4px; }
-                .nb-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+                .nb-list::-webkit-scrollbar { width: 6px; }
+                .nb-list::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 3px; }
 
                 .nb-list-item {
                     position: relative;
                     display: flex; align-items: flex-start; gap: 10px;
-                    padding: 12px 10px 12px 14px;
-                    border-radius: 10px;
+                    padding: 10px 10px 10px 14px;
+                    border-radius: 8px;
                     cursor: pointer;
-                    transition: background 0.2s, transform 0.2s;
+                    transition: background 0.12s ease;
                     overflow: hidden;
                 }
-                .nb-list-item:hover { background: rgba(255,255,255,0.1); transform: translateX(3px); }
-                .nb-list-item.active { background: rgba(165,180,252,0.2); box-shadow: inset 3px 0 0 #a5b4fc; }
+                .nb-list-item:hover { background: var(--bg-subtle); }
+                .nb-list-item.active { background: var(--primary-weak); box-shadow: inset 3px 0 0 var(--primary); }
 
                 .nb-item-accent {
                     position: absolute; left: 0; top: 0; bottom: 0;
                     width: 3px; border-radius: 0 2px 2px 0;
                 }
                 .nb-item-icon {
-                    width: 32px; height: 32px; border-radius: 8px;
-                    background: rgba(255,255,255,0.08);
+                    width: 28px; height: 28px; border-radius: 6px;
+                    background: var(--bg-subtle);
                     display: flex; align-items: center; justify-content: center;
-                    font-size: 14px; flex-shrink: 0; margin-top: 2px;
+                    font-size: 13px; flex-shrink: 0; margin-top: 2px;
                 }
                 .nb-item-body { flex: 1; min-width: 0; }
                 .nb-item-title {
-                    font-size: 13px; font-weight: 600; color: #fff;
+                    font-size: 13px; font-weight: 600; color: var(--text);
+                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                    margin-bottom: 2px;
+                }
+                .nb-item-preview {
+                    font-size: 11px; color: var(--text-muted);
                     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
                     margin-bottom: 3px;
                 }
-                .nb-item-preview {
-                    font-size: 11px; color: rgba(255,255,255,0.45);
-                    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                    margin-bottom: 4px;
-                }
-                .nb-item-date { font-size: 10px; color: rgba(255,255,255,0.3); }
+                .nb-item-date { font-size: 10px; color: var(--text-subtle); }
                 .nb-item-date i { margin-right: 3px; }
-                .nb-item-linked-course { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+                .nb-item-linked-course { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
                 .nb-item-linked-course i { margin-right: 4px; }
                 .nb-item-btns {
                     display: flex; flex-direction: column; gap: 4px;
-                    opacity: 0; transition: opacity 0.2s; flex-shrink: 0;
+                    opacity: 0; transition: opacity 0.15s ease; flex-shrink: 0;
                 }
-                .nb-list-item:hover .nb-item-btns { opacity: 1; }
+                .nb-list-item:hover .nb-item-btns,
+                .nb-list-item.active .nb-item-btns { opacity: 1; }
                 .nb-btn-sm {
-                    background: rgba(255,255,255,0.1); border: none;
-                    color: rgba(255,255,255,0.7); padding: 4px 7px;
+                    background: transparent; border: none;
+                    color: var(--text-muted); padding: 4px 6px;
                     border-radius: 6px; cursor: pointer; font-size: 11px;
                     transition: background 0.12s ease, color 0.12s ease;
                 }
-                .nb-btn-sm:hover { background: rgba(255,255,255,0.2); color: #fff; }
+                .nb-btn-sm:hover { background: var(--bg-muted); color: var(--text); }
+                .nb-btn-sm.danger:hover { background: var(--danger-weak); color: var(--danger); }
                 .nb-btn-sm.danger:hover { background: #e74c3c; color: #fff; }
 
                 /* ── Main content ───────────────────────── */
                 .nb-main {
-                    background: #f7f8fc;
+                    background: var(--bg);
                     overflow-y: auto;
                     display: flex; flex-direction: column;
                     position: relative;
                 }
                 #nbContent { flex: 1; padding: 0; }
-                .nb-content-inner { padding: 32px 36px; }
+                .nb-content-inner { padding: 24px 24px; }
 
                 /* ── Notebook view ──────────────────────── */
                 .nb-view-header {
                     display: flex; align-items: flex-start; justify-content: space-between;
-                    gap: 16px;
-                    padding: 0 0 20px;
-                    margin-bottom: 24px;
-                    border-bottom: 2px solid #e9ecf0;
+                    gap: 12px;
+                    padding: 0 0 16px;
+                    margin-bottom: 20px;
+                    border-bottom: 1px solid var(--border);
                 }
-                .nb-view-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+                .nb-view-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
                 .nb-view-title {
-                    font-size: 28px; font-weight: 800; color: #1a1f36; margin: 0;
-                    line-height: 1.2;
+                    font-size: 24px; font-weight: 700; color: var(--text); margin: 0;
+                    line-height: 1.25;
+                    letter-spacing: -0.01em;
                 }
                 .nb-priority-pill {
                     display: inline-flex; align-items: center; gap: 6px;
-                    padding: 4px 12px; border-radius: 20px;
-                    font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+                    padding: 2px 10px; border-radius: var(--radius-pill);
+                    font-size: 11px; font-weight: 600;
                 }
-                .nb-view-meta { display: flex; flex-wrap: wrap; gap: 18px; font-size: 13px; color: #8892a4; align-items: center; }
+                .nb-view-meta { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-muted); align-items: center; }
                 .nb-view-meta i { margin-right: 5px; }
                 .nb-view-linked-course {
-                    background: linear-gradient(135deg, rgba(155,89,182,0.15), rgba(108,99,255,0.12));
-                    color: #6C63FF;
-                    padding: 4px 12px;
-                    border-radius: 20px;
+                    background: var(--primary-weak);
+                    color: var(--primary);
+                    padding: 2px 10px;
+                    border-radius: var(--radius-pill);
                     font-size: 12px;
                     font-weight: 600;
                 }
                 .nb-edit-btn {
-                    display: flex; align-items: center; gap: 7px;
-                    padding: 8px 18px; border-radius: 10px;
-                    background: linear-gradient(135deg, #667eea, #764ba2);
-                    color: #fff; border: none; font-size: 14px; font-weight: 600;
+                    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+                    padding: 8px 14px; border-radius: var(--radius);
+                    background: var(--primary);
+                    color: var(--primary-text); border: 1px solid var(--primary);
+                    font-size: 13px; font-weight: 600;
                     cursor: pointer; white-space: nowrap;
-                    transition: opacity 0.2s, transform 0.2s;
-                    box-shadow: 0 4px 14px rgba(102,126,234,0.4);
+                    min-height: var(--touch-min);
+                    transition: background 0.12s ease, border-color 0.12s ease;
                 }
-                .nb-edit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+                .nb-edit-btn:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
 
                 /* view content */
                 .nb-view-body {
-                    background: #fff;
-                    border-radius: 12px;
-                    padding: 28px 32px;
-                    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius-lg);
+                    padding: 20px 24px;
                     min-height: 200px;
-                    font-size: 15px; line-height: 1.85; color: #2d3748;
+                    font-size: 15px; line-height: 1.7; color: var(--text);
                 }
-                .nb-view-body h1 { font-size: 24px; font-weight: 800; color: #1a1f36; margin: 20px 0 10px; }
-                .nb-view-body h2 { font-size: 20px; font-weight: 700; color: #2d3561; margin: 18px 0 8px; border-bottom: 2px solid #e9ecf0; padding-bottom: 6px; }
-                .nb-view-body h3 { font-size: 17px; font-weight: 600; color: #3d4e7a; margin: 14px 0 6px; }
+                .nb-view-body h1 { font-size: 22px; font-weight: 700; color: var(--text); margin: 18px 0 10px; }
+                .nb-view-body h2 { font-size: 19px; font-weight: 700; color: var(--text); margin: 16px 0 8px; }
+                .nb-view-body h3 { font-size: 16px; font-weight: 600; color: var(--text); margin: 12px 0 6px; }
                 .nb-view-body p { margin: 8px 0; }
                 .nb-view-body ul, .nb-view-body ol { padding-left: 22px; margin: 8px 0; }
                 .nb-view-body li { margin: 4px 0; }
-                .nb-view-body strong { color: #1a1f36; }
-                .nb-view-body em { color: #5a6a85; }
-                .nb-view-body u { text-decoration-color: #667eea; }
-                .nb-view-body s { color: #9aa5b4; }
+                .nb-view-body strong { color: var(--text); }
+                .nb-view-body em { color: var(--text-muted); }
+                .nb-view-body u { text-decoration-color: var(--primary); }
+                .nb-view-body s { color: var(--text-subtle); }
                 .nb-view-body code {
-                    background: #f1f3f9; border: 1px solid #dde1ea;
-                    border-radius: 5px; padding: 2px 7px;
-                    font-family: 'Fira Code','Courier New',monospace;
-                    font-size: 13px; color: #e74c3c;
+                    background: var(--bg-subtle); border: 1px solid var(--border);
+                    border-radius: 4px; padding: 1px 6px;
+                    font-family: var(--font-mono);
+                    font-size: 13px; color: var(--danger);
                 }
                 .nb-view-body pre {
-                    background: #1a1f36; color: #a5b4fc;
-                    border-radius: 10px; padding: 16px 20px;
-                    font-family: 'Fira Code','Courier New',monospace;
-                    font-size: 13px; line-height: 1.7; overflow-x: auto;
+                    background: var(--bg-subtle); color: var(--text);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius); padding: 12px 16px;
+                    font-family: var(--font-mono);
+                    font-size: 13px; line-height: 1.6; overflow-x: auto;
                     margin: 12px 0;
                 }
                 .nb-view-body blockquote {
-                    border-left: 4px solid #667eea;
-                    background: #f0f2ff; border-radius: 0 8px 8px 0;
-                    padding: 12px 18px; margin: 12px 0; color: #4a5568;
+                    border-left: 3px solid var(--primary);
+                    background: var(--bg-subtle); border-radius: 0 6px 6px 0;
+                    padding: 10px 14px; margin: 12px 0; color: var(--text-muted);
                 }
-                .nb-view-body hr { border: none; border-top: 2px solid #e9ecf0; margin: 20px 0; }
+                .nb-view-body hr { border: none; border-top: 1px solid var(--border); margin: 18px 0; }
                 .nb-view-body mark { background: #fff3a3; padding: 1px 4px; border-radius: 3px; }
-                .nb-view-body a { color: #667eea; text-decoration: underline; }
+                [data-theme="dark"] .nb-view-body mark { background: #433a12; color: #F2D87A; }
+                .nb-view-body a { color: var(--primary); text-decoration: underline; }
                 .nb-empty-hint {
                     display: flex; flex-direction: column; align-items: center;
-                    justify-content: center; padding: 60px 20px;
-                    color: #b0bac6; gap: 10px;
+                    justify-content: center; padding: 48px 20px;
+                    color: var(--text-subtle); gap: 10px;
                 }
-                .nb-empty-hint i { font-size: 56px; opacity: 0.3; }
-                .nb-empty-hint p { font-size: 15px; }
+                .nb-empty-hint i { font-size: 40px; opacity: 0.5; }
+                .nb-empty-hint p { font-size: 14px; }
 
                 /* ── Rich-text toolbar ──────────────────── */
                 #notebookToolbarSlot {
                     position: sticky;
                     top: 0;
                     z-index: 100;
-                    background: #fff;
-                    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
-                    border-bottom: 2px solid #e2e8f0;
+                    background: var(--bg-surface);
+                    border-bottom: 1px solid var(--border);
                 }
                 .nb-toolbar {
-                    display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
-                    padding: 8px 16px;
+                    display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
+                    padding: 6px 12px;
                     border-radius: 0;
                 }
                 .nb-tool-sep {
-                    width: 1px; height: 26px; background: #e2e8f0; margin: 0 4px;
+                    width: 1px; height: 22px; background: var(--border); margin: 0 4px;
                 }
                 .nb-tool {
                     display: flex; align-items: center; justify-content: center;
-                    min-width: 32px; height: 32px; border-radius: 8px;
+                    min-width: 30px; height: 30px; border-radius: 6px;
                     border: none; background: transparent; cursor: pointer;
-                    color: #4a5568; font-size: 13px; font-weight: 600;
-                    transition: background 0.15s, color 0.15s;
-                    padding: 0 8px;
+                    color: var(--text-muted); font-size: 13px; font-weight: 600;
+                    transition: background 0.12s ease, color 0.12s ease;
+                    padding: 0 6px;
                 }
-                .nb-tool:hover { background: #eef2ff; color: #667eea; }
-                .nb-tool.active { background: #667eea; color: #fff; }
+                .nb-tool:hover { background: var(--bg-subtle); color: var(--text); }
+                .nb-tool.active { background: var(--primary); color: var(--primary-text); }
                 .nb-tool-select {
-                    height: 32px; border: 1px solid #e2e8f0; border-radius: 8px;
-                    padding: 0 8px; font-size: 13px; color: #4a5568;
-                    background: #fff; cursor: pointer; outline: none;
+                    height: 30px; border: 1px solid var(--border); border-radius: 6px;
+                    padding: 0 8px; font-size: 13px; color: var(--text);
+                    background: var(--bg-surface); cursor: pointer; outline: none;
                 }
                 .nb-color-btn {
-                    width: 22px; height: 22px; border-radius: 50%;
-                    border: 3px solid #fff; box-shadow: 0 0 0 1px #cbd5e0;
+                    width: 20px; height: 20px; border-radius: 50%;
+                    border: 2px solid var(--bg-surface); box-shadow: 0 0 0 1px var(--border-strong);
                     cursor: pointer; display: inline-block;
                 }
 
                 /* editor area */
                 .nb-editor-wrap { display: flex; flex-direction: column; }
                 .nb-rich-editor {
-                    background: #fff;
-                    border: 2px solid #667eea;
-                    border-radius: 12px;
-                    padding: 20px 24px;
-                    min-height: 380px; outline: none;
-                    font-size: 15px; line-height: 1.85; color: #2d3748;
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius-lg);
+                    padding: 18px 20px;
+                    min-height: 360px; outline: none;
+                    font-size: 15px; line-height: 1.7; color: var(--text);
                     overflow-y: auto;
-                    margin-top: 16px;
-                    box-shadow: 0 2px 12px rgba(102,126,234,0.1);
+                    margin-top: 14px;
+                    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+                }
+                .nb-rich-editor:focus {
+                    border-color: var(--primary);
+                    box-shadow: 0 0 0 3px var(--focus-ring);
                 }
                 .nb-rich-editor:empty::before {
                     content: attr(data-placeholder);
-                    color: #b0bac6; pointer-events: none;
+                    color: var(--text-subtle); pointer-events: none;
                 }
-                .nb-rich-editor h1 { font-size: 24px; font-weight: 800; color: #1a1f36; }
-                .nb-rich-editor h2 { font-size: 20px; font-weight: 700; color: #2d3561; border-bottom: 2px solid #e9ecf0; padding-bottom: 6px; }
-                .nb-rich-editor h3 { font-size: 17px; font-weight: 600; color: #3d4e7a; }
-                .nb-rich-editor code { background: #f1f3f9; border: 1px solid #dde1ea; border-radius: 5px; padding: 2px 7px; font-family: monospace; font-size: 13px; color: #e74c3c; }
-                .nb-rich-editor blockquote { border-left: 4px solid #667eea; background: #f0f2ff; border-radius: 0 8px 8px 0; padding: 12px 18px; margin: 8px 0; }
+                .nb-rich-editor h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+                .nb-rich-editor h2 { font-size: 19px; font-weight: 700; color: var(--text); }
+                .nb-rich-editor h3 { font-size: 16px; font-weight: 600; color: var(--text); }
+                .nb-rich-editor code { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: var(--font-mono); font-size: 13px; color: var(--danger); }
+                .nb-rich-editor blockquote { border-left: 3px solid var(--primary); background: var(--bg-subtle); border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 8px 0; }
                 .nb-rich-editor mark { background: #fff3a3; }
+                [data-theme="dark"] .nb-rich-editor mark { background: #433a12; color: #F2D87A; }
 
                 /* bottom actions */
                 .nb-editor-actions {
-                    display: flex; align-items: center; gap: 10px;
-                    padding: 14px 0 0; flex-wrap: wrap;
+                    display: flex; align-items: center; gap: 8px;
+                    padding: 12px 0 0; flex-wrap: wrap;
                 }
                 .nb-word-count {
-                    margin-left: auto; font-size: 12px; color: #8892a4;
+                    margin-left: auto; font-size: 12px; color: var(--text-muted);
                     display: flex; align-items: center; gap: 5px;
                 }
 
@@ -2124,39 +2132,39 @@ window.Templates = {
                 .nb-select-hint {
                     display: flex; flex-direction: column; align-items: center;
                     justify-content: center; height: 100%;
-                    color: #b0bac6; gap: 14px; padding: 60px;
+                    color: var(--text-subtle); gap: 12px; padding: 48px;
                 }
-                .nb-select-hint i { font-size: 64px; opacity: 0.25; }
+                .nb-select-hint i { font-size: 48px; opacity: 0.35; }
 
                 /* ── Version history panel ────────────── */
                 .nb-version-panel {
-                    background: #fff;
-                    border: 2px solid #e2e8f0;
-                    border-radius: 12px;
-                    margin-bottom: 20px;
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius-lg);
+                    margin-bottom: 16px;
                     overflow: hidden;
-                    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
                 }
                 .nb-version-header {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding: 14px 20px;
-                    background: linear-gradient(135deg, #1a1f36, #2d3561);
-                    color: #fff;
+                    padding: 12px 16px;
+                    background: var(--bg-subtle);
+                    color: var(--text);
+                    border-bottom: 1px solid var(--border);
                 }
                 .nb-version-header h3 {
-                    margin: 0; font-size: 15px; font-weight: 700;
+                    margin: 0; font-size: 14px; font-weight: 600;
                     display: flex; align-items: center; gap: 8px;
                 }
                 .nb-version-close {
-                    background: rgba(255,255,255,0.15); border: none;
-                    color: #fff; width: 28px; height: 28px; border-radius: 8px;
+                    background: transparent; border: none;
+                    color: var(--text-muted); width: 32px; height: 32px; border-radius: 6px;
                     cursor: pointer; display: flex; align-items: center;
                     justify-content: center; font-size: 13px;
-                    transition: background 0.12s ease;
+                    transition: background 0.12s ease, color 0.12s ease;
                 }
-                .nb-version-close:hover { background: rgba(255,255,255,0.3); }
+                .nb-version-close:hover { background: var(--bg-muted); color: var(--text); }
                 .nb-version-list {
                     max-height: 280px;
                     overflow-y: auto;
@@ -2257,15 +2265,15 @@ window.Templates = {
                                     ${(notebook.metadata && notebook.metadata.linkedToCourseTitle) ? `<span class="nb-view-linked-course" title="Caderno associado a este curso"><i class="fas fa-link"></i> Associado: ${escapeHtml(notebook.metadata.linkedToCourseTitle)}</span>` : ''}
                                 </div>
                             </div>
-                            <div style="display:flex;gap:8px;align-items:flex-start;" id="nbViewButtons">
+                            <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;" id="nbViewButtons">
                                 <button class="nb-edit-btn" id="editNotebookBtn" onclick="Templates.notebooks.enableEditMode()">
                                     <i class="fas fa-pencil-alt"></i> Editar
                                 </button>
-                                <button class="nb-edit-btn" style="background:linear-gradient(135deg,#27ae60,#2ecc71);box-shadow:0 4px 14px rgba(39,174,96,0.3);"
+                                <button class="nb-edit-btn" style="background:var(--success);border-color:var(--success);"
                                         onclick="Templates.notebooks.saveCurrentVersion(${notebook.id})" title="Guardar versão manual do conteúdo atual">
                                     <i class="fas fa-download"></i> Guardar Versão
                                 </button>
-                                <button class="nb-edit-btn" style="background:linear-gradient(135deg,#2d3561,#1a1f36);box-shadow:0 4px 14px rgba(26,31,54,0.3);"
+                                <button class="nb-edit-btn" style="background:var(--bg-surface);color:var(--text);border-color:var(--border);"
                                         onclick="Templates.notebooks.toggleVersionPanel()" title="Historial de versões">
                                     <i class="fas fa-history"></i> Versões
                                 </button>
@@ -2309,7 +2317,7 @@ window.Templates = {
                                 <button class="btn btn-success" onclick="Templates.notebooks.saveInlineEdit()">
                                     <i class="fas fa-save"></i> Guardar
                                 </button>
-                                <button class="btn btn-secondary" onclick="Templates.notebooks.saveVersionFromEditor(${notebook.id})" title="Guardar como versão sem sair da edição" style="background:linear-gradient(135deg,#27ae60,#2ecc71);color:#fff;border:none;">
+                                <button class="btn btn-success" onclick="Templates.notebooks.saveVersionFromEditor(${notebook.id})" title="Guardar como versão sem sair da edição">
                                     <i class="fas fa-download"></i> Guardar Versão
                                 </button>
                                 <button class="btn btn-secondary" onclick="Templates.notebooks.cancelEditMode()">

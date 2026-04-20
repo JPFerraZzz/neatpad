@@ -279,16 +279,10 @@ window.Autosave = {
                         <strong>Prévia:</strong> ${previewText}…
                     </div>
                     <div style="display:flex;gap:10px;justify-content:flex-end;">
-                        <button id="draftDiscard" style="
-                            padding:10px 20px;border-radius:10px;border:1px solid #e2e8f0;
-                            background:#fff;color:#e74c3c;font-weight:600;cursor:pointer;font-size:14px;">
+                        <button id="draftDiscard" class="btn btn-danger">
                             <i class="fas fa-trash"></i> Descartar
                         </button>
-                        <button id="draftRestore" style="
-                            padding:10px 20px;border-radius:10px;border:none;
-                            background:linear-gradient(135deg,#667eea,#764ba2);
-                            color:#fff;font-weight:600;cursor:pointer;font-size:14px;
-                            box-shadow:0 4px 14px rgba(102,126,234,0.4);">
+                        <button id="draftRestore" class="btn btn-primary">
                             <i class="fas fa-undo"></i> Restaurar Draft
                         </button>
                     </div>

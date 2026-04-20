@@ -50,15 +50,18 @@
     <header class="main-header">
         <div class="container">
             <div class="header-content">
+                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Abrir menu" type="button">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="logo">
                     <i class="fas fa-feather-alt"></i>
                     <h1>Neat<span>Pad</span></h1>
                 </div>
-                <div style="display:flex;gap:10px;align-items:center;">
+                <div class="header-actions">
                     <button class="btn btn-secondary btn-sm" id="versionManagerBtn" title="Gestão de Versões (apenas cadernos)">
                         <i class="fas fa-history"></i> Versões
                     </button>
-                    <button class="btn btn-primary" id="newCategoryBtn">
+                    <button class="btn btn-primary btn-sm" id="newCategoryBtn">
                         <i class="fas fa-plus"></i> Nova Categoria
                     </button>
                     <button class="theme-toggle" onclick="toggleTheme()" title="Alternar tema" aria-label="Alternar tema">
@@ -67,9 +70,9 @@
                             <span class="moon-icon">🌙</span>
                         </div>
                     </button>
-                    <div id="userMenu" style="display:flex;align-items:center;gap:8px;border-left:1.5px solid var(--border-color);padding-left:12px;">
-                        <span id="userDisplayName" style="color:var(--text-secondary);font-size:13px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500;"></span>
-                        <button class="btn btn-secondary btn-sm" onclick="logout()" title="Terminar sessão">
+                    <div id="userMenu">
+                        <span id="userDisplayName"></span>
+                        <button class="btn btn-ghost btn-icon" onclick="logout()" title="Terminar sessão" aria-label="Terminar sessão">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
                     </div>
@@ -77,6 +80,46 @@
             </div>
         </div>
     </header>
+
+    <!-- Drawer lateral (mobile) -->
+    <div class="drawer-overlay" id="drawerOverlay" aria-hidden="true"></div>
+    <aside class="drawer" id="appDrawer" aria-label="Menu principal" aria-hidden="true">
+        <div class="drawer-header">
+            <div class="drawer-user">
+                <strong id="drawerUserName">—</strong>
+                <span id="drawerUserEmail"></span>
+            </div>
+            <button class="drawer-close" id="drawerCloseBtn" aria-label="Fechar menu" type="button">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <h4 class="drawer-section-title">Categorias</h4>
+        <ul class="drawer-list" id="drawerCategoriesList">
+            <li><button type="button" disabled>A carregar…</button></li>
+        </ul>
+
+        <div class="drawer-footer">
+            <button class="btn btn-primary" id="drawerNewCategoryBtn" type="button">
+                <i class="fas fa-plus"></i> Nova categoria
+            </button>
+            <button class="btn btn-secondary" id="drawerVersionsBtn" type="button">
+                <i class="fas fa-history"></i> Versões
+            </button>
+            <div class="drawer-footer-row">
+                <span><i class="fas fa-moon"></i> Modo escuro</span>
+                <button class="theme-toggle" onclick="toggleTheme()" aria-label="Alternar tema">
+                    <div class="theme-toggle-knob">
+                        <span class="sun-icon">☀️</span>
+                        <span class="moon-icon">🌙</span>
+                    </div>
+                </button>
+            </div>
+            <button class="btn btn-ghost" id="drawerLogoutBtn" type="button">
+                <i class="fas fa-sign-out-alt"></i> Terminar sessão
+            </button>
+        </div>
+    </aside>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -218,12 +261,10 @@
 
     <!-- Modal: Gestão de Versões -->
     <div class="modal modal-large" id="versionManagerModal">
-        <div class="modal-content" style="max-width:900px;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#1a1f36,#2d3561);color:#fff;border-radius:12px 12px 0 0;">
-                <h3 style="color:#fff;display:flex;align-items:center;gap:10px;">
-                    <i class="fas fa-history"></i> Gestão de Versões
-                </h3>
-                <button class="modal-close" onclick="closeVersionManager()" style="color:#fff;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-history"></i> Gestão de Versões</h3>
+                <button class="modal-close" onclick="closeVersionManager()" aria-label="Fechar">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -235,6 +276,38 @@
         </div>
     </div>
 
+    <!-- Bottom action bar (mobile, contextual) -->
+    <nav class="bottom-bar" id="bottomBar" aria-label="Ações rápidas">
+        <!-- Populada pelo mobile.js consoante o contexto (categoria ativa, caderno aberto, etc.) -->
+    </nav>
+
+    <!-- Install gate: bloqueia uso da app em browser mobile fora do PWA -->
+    <div id="pwa-install-gate" role="dialog" aria-modal="true" aria-labelledby="pwaGateTitle">
+        <div class="gate-box">
+            <div class="gate-icon"><i class="fas fa-feather-alt"></i></div>
+            <h2 class="gate-title" id="pwaGateTitle">Instala o NeatPad</h2>
+            <p class="gate-lead">
+                Em telemóvel, o NeatPad só funciona instalado no ecrã inicial.
+                A versão no browser foi desativada — segue as instruções em baixo.
+            </p>
+
+            <div class="gate-tabs" role="tablist">
+                <button type="button" role="tab" data-gate-tab="ios" aria-selected="false">iPhone / iPad</button>
+                <button type="button" role="tab" data-gate-tab="android" aria-selected="false">Android</button>
+            </div>
+
+            <ol class="gate-steps" id="gateSteps">
+                <!-- Preenchido pelo pwa.js conforme o dispositivo -->
+            </ol>
+
+            <button class="btn btn-primary gate-install-btn" id="gateInstallBtn" type="button" style="display:none;">
+                <i class="fas fa-download"></i> Instalar agora
+            </button>
+
+            <p class="gate-footer">Depois de instalado, abre o ícone do NeatPad no ecrã inicial.</p>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -243,6 +316,7 @@
     <script src="assets/js/app.js"></script>
     <script src="assets/js/autosave.js"></script>
     <script src="assets/js/templates.js"></script>
+    <script src="assets/js/mobile.js" defer></script>
     <script src="assets/js/pwa.js" defer></script>
     <script>
         function toggleTheme() {

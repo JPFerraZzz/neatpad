@@ -1,1202 +1,1306 @@
-/* ======================================
-   NeatPad - CSS
-   ====================================== */
+/* ============================================================================
+ * NeatPad — Design System
+ * ----------------------------------------------------------------------------
+ * Abordagem mobile-first.
+ * Sem gradientes, cores sólidas, hierarquia por peso/tamanho.
+ *
+ *   1. Reset + variáveis
+ *   2. Tipografia
+ *   3. Botões
+ *   4. Forms
+ *   5. Cards
+ *   6. Layout app shell (header, container, main)
+ *   7. Drawer mobile (navegação lateral)
+ *   8. Views (os antigos "modais" passam a ser páginas que substituem o conteúdo)
+ *   9. Bottom action bar (mobile contextual)
+ *  10. Install gate (bloqueio web mobile fora do PWA)
+ *  11. Categorias / listas / items
+ *  12. Notificações
+ *  13. Scrollbars
+ *  14. Media queries — desktop (≥ 768px)
+ *  15. Overrides mobile (≤ 767px)
+ * ==========================================================================*/
 
-/* Reset e Base */
-* {
+/* ── 1. Reset + variáveis ─────────────────────────────────────────────── */
+
+*, *::before, *::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-/* ── Light Mode (default) ────────────── */
 :root {
-    --touch-min: 44px;
-    --safe-top: env(safe-area-inset-top, 0);
+    /* Safe areas iOS */
+    --safe-top:    env(safe-area-inset-top, 0);
     --safe-bottom: env(safe-area-inset-bottom, 0);
-    --safe-left: env(safe-area-inset-left, 0);
-    --safe-right: env(safe-area-inset-right, 0);
-    --primary-color: #6C63FF;
-    --primary-hover: #5A52E0;
-    --secondary-color: #1B1830;
-    --success-color: #2ecc71;
-    --danger-color: #e74c3c;
-    --warning-color: #f39c12;
-    --info-color: #9b59b6;
+    --safe-left:   env(safe-area-inset-left, 0);
+    --safe-right:  env(safe-area-inset-right, 0);
 
-    --bg-body: linear-gradient(145deg, #E8E3FF 0%, #F4F0EB 40%, #FFF3DC 100%);
-    --bg-header: rgba(255,255,255,0.88);
-    --bg-card: #ffffff;
-    --bg-input: #FAFAF9;
-    --bg-badge: #F4F0EB;
-    --bg-modal-overlay: rgba(0,0,0,0.45);
+    /* Touch target mínimo (WCAG / Apple HIG) */
+    --touch-min: 44px;
 
-    --text-primary: #1B1830;
-    --text-secondary: #6B6988;
-    --text-section: #3D3960;
-    --text-on-bg: #1B1830;
+    /* Breakpoints (referência JS/documentação) */
+    --break-md: 768px;
 
-    --border-color: #EAE6DF;
-    --border-header: #EAE6DF;
-    --header-shadow: 0 2px 16px rgba(108,99,255,0.07);
+    /* Cor — primária */
+    --primary:        #5B5BD6;
+    --primary-hover:  #4A4AC2;
+    --primary-weak:   #EEEEFB;    /* estado hover subtil */
+    --primary-text:   #ffffff;
 
-    --white: #ffffff;
-    --shadow: 0 2px 10px rgba(27,24,48,0.06);
-    --shadow-hover: 0 8px 24px rgba(108,99,255,0.12);
-    --border-radius: 14px;
+    /* Cor — feedback */
+    --success:   #2E7D32;
+    --danger:    #C62828;
+    --danger-weak: #FDECEC;
+    --warning:   #E07A00;
+    --info:      #1565C0;
 
-    --scrollbar-track: #F4F0EB;
-    --scrollbar-thumb: #C8C5DC;
-    --scrollbar-hover: #6C63FF;
+    /* Neutros (light) */
+    --bg:            #F7F7F8;
+    --bg-surface:    #ffffff;
+    --bg-subtle:     #F0F0F3;
+    --bg-muted:      #E5E5EA;
+    --overlay:       rgba(16, 16, 24, 0.45);
+
+    --text:          #111114;
+    --text-muted:    #5E5E66;
+    --text-subtle:   #85858E;
+
+    --border:        #E2E2E6;
+    --border-strong: #CFCFD4;
+
+    --focus-ring:    rgba(91, 91, 214, 0.35);
+
+    /* Elevação (usar com moderação — só onde faz sentido semântico) */
+    --elev-1: 0 1px 2px rgba(16, 16, 24, 0.06);
+    --elev-2: 0 6px 16px rgba(16, 16, 24, 0.08);
+
+    /* Raios — uniformes */
+    --radius-sm: 6px;
+    --radius:    10px;
+    --radius-lg: 14px;
+    --radius-pill: 999px;
+
+    /* Tipografia */
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+            Roboto, Oxygen, Ubuntu, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Consolas, monospace;
+
+    /* Scrollbars */
+    --scroll-track: transparent;
+    --scroll-thumb: #CFCFD4;
+
+    /* Alturas de shell */
+    --header-h: 56px;
+    --bottombar-h: 58px;
+
+    /* Legados usados pelos templates (mapeados para o novo sistema) */
+    --primary-color: var(--primary);
+    --primary-hover-color: var(--primary-hover);
+    --success-color: var(--success);
+    --danger-color:  var(--danger);
+    --warning-color: var(--warning);
+    --info-color:    var(--info);
+    --bg-body:    var(--bg);
+    --bg-header:  var(--bg-surface);
+    --bg-card:    var(--bg-surface);
+    --bg-input:   var(--bg-surface);
+    --bg-badge:   var(--bg-subtle);
+    --bg-modal-overlay: var(--overlay);
+    --text-primary:   var(--text);
+    --text-secondary: var(--text-muted);
+    --text-section:   var(--text);
+    --text-on-bg:     var(--text);
+    --border-color:   var(--border);
+    --border-header:  var(--border);
+    --header-shadow:  none;
+    --white: var(--bg-surface);
+    --shadow:        var(--elev-1);
+    --shadow-hover:  var(--elev-2);
+    --border-radius: var(--radius-lg);
+    --scrollbar-track: var(--scroll-track);
+    --scrollbar-thumb: var(--scroll-thumb);
+    --scrollbar-hover: var(--primary);
 }
 
-/* ── Dark Mode ───────────────────────── */
+/* Dark mode — sem gradientes, neutros desaturados */
 [data-theme="dark"] {
-    --primary-color: #8B83FF;
-    --primary-hover: #6C63FF;
-    --secondary-color: #E8E3FF;
-    --success-color: #4ADE80;
-    --danger-color: #FB7185;
-    --warning-color: #FBBF24;
+    --primary:        #8E88FF;
+    --primary-hover:  #A7A3FF;
+    --primary-weak:   #2A2A3C;
+    --primary-text:   #0E0E13;
 
-    --bg-body: linear-gradient(145deg, #0D0B1A 0%, #151228 40%, #1A1635 100%);
-    --bg-header: rgba(21,18,40,0.92);
-    --bg-card: #1E1A36;
-    --bg-input: #252142;
-    --bg-badge: #2A2548;
-    --bg-modal-overlay: rgba(0,0,0,0.65);
+    --success:   #6FCF7E;
+    --danger:    #FF7A7A;
+    --danger-weak: #3A1F21;
+    --warning:   #F2B45A;
+    --info:      #7AB7FF;
 
-    --text-primary: #EDEAFF;
-    --text-secondary: #9896B0;
-    --text-section: #C8C5DC;
-    --text-on-bg: #EDEAFF;
+    --bg:            #0F0F13;
+    --bg-surface:    #17171C;
+    --bg-subtle:     #1E1E25;
+    --bg-muted:      #262631;
+    --overlay:       rgba(0, 0, 0, 0.65);
 
-    --border-color: #2E2952;
-    --border-header: #2E2952;
-    --header-shadow: 0 2px 16px rgba(0,0,0,0.3);
+    --text:          #ECECEE;
+    --text-muted:    #A0A0A8;
+    --text-subtle:   #74747E;
 
-    --white: #1E1A36;
-    --shadow: 0 2px 10px rgba(0,0,0,0.25);
-    --shadow-hover: 0 8px 24px rgba(139,131,255,0.18);
+    --border:        #2A2A34;
+    --border-strong: #3A3A48;
 
-    --scrollbar-track: #151228;
-    --scrollbar-thumb: #2E2952;
-    --scrollbar-hover: #8B83FF;
+    --focus-ring:    rgba(142, 136, 255, 0.4);
+
+    --elev-1: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --elev-2: 0 6px 16px rgba(0, 0, 0, 0.45);
+
+    --scroll-thumb: #2A2A34;
+}
+
+html {
+    -webkit-tap-highlight-color: transparent;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
 }
 
 body {
-    font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: var(--bg-body);
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.5;
     min-height: 100vh;
-    color: var(--text-primary);
-    line-height: 1.6;
-    transition: background 0.35s ease, color 0.25s ease;
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+    padding-bottom: var(--safe-bottom);
 }
 
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 0 20px;
-    padding-left: calc(20px + var(--safe-left, 0));
-    padding-right: calc(20px + var(--safe-right, 0));
+/* Oculta a app toda se o install gate estiver activo (evita flash) */
+body.gate-active > :not(#pwa-install-gate) {
+    display: none !important;
 }
 
-/* ── Theme Toggle ────────────────────── */
-.theme-toggle {
-    width: 52px;
-    height: 28px;
-    border-radius: 14px;
-    border: none;
+/* ── 2. Tipografia ────────────────────────────────────────────────────── */
+
+h1, h2, h3, h4 {
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+}
+
+h1 { font-size: 24px; }
+h2 { font-size: 20px; }
+h3 { font-size: 17px; }
+h4 { font-size: 15px; }
+
+p { color: var(--text); }
+
+small { color: var(--text-muted); font-size: 12px; }
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+}
+a:hover { text-decoration: underline; }
+
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+/* ── 3. Botões ────────────────────────────────────────────────────────── */
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    min-height: var(--touch-min);
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
     cursor: pointer;
+    background: var(--bg-subtle);
+    color: var(--text);
+    transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    text-decoration: none;
+    white-space: nowrap;
+    user-select: none;
+}
+
+.btn:hover  { background: var(--bg-muted); }
+.btn:active { transform: none; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+    background: var(--primary);
+    color: var(--primary-text);
+    border-color: var(--primary);
+}
+.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+
+.btn-secondary {
+    background: var(--bg-surface);
+    color: var(--text);
+    border-color: var(--border);
+}
+.btn-secondary:hover { background: var(--bg-subtle); }
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border-color: transparent;
+}
+.btn-ghost:hover { background: var(--bg-subtle); }
+
+.btn-danger {
+    background: transparent;
+    color: var(--danger);
+    border-color: var(--border);
+}
+.btn-danger:hover {
+    background: var(--danger-weak);
+    border-color: var(--danger);
+}
+
+.btn-success {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+}
+
+.btn-sm {
+    padding: 6px 12px;
+    min-height: 36px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.btn-icon {
+    padding: 0;
+    width: var(--touch-min);
+    min-width: var(--touch-min);
+    height: var(--touch-min);
+}
+
+/* Toggle tema (pill verdadeiro, nunca quadrado) */
+.theme-toggle {
+    width: 48px;
+    height: 26px;
+    min-width: 48px;
+    min-height: 26px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--bg-subtle);
     position: relative;
-    background: linear-gradient(135deg, #87CEEB 0%, #E0F0FF 100%);
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
-    transition: background 0.4s ease;
+    cursor: pointer;
     padding: 0;
     flex-shrink: 0;
+    transition: background 0.15s ease, border-color 0.15s ease;
 }
-
-[data-theme="dark"] .theme-toggle {
-    background: linear-gradient(135deg, #1A1635 0%, #2E2952 100%);
-}
-
 .theme-toggle-knob {
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 22px;
-    height: 22px;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
+    background: var(--bg-surface);
+    box-shadow: var(--elev-1);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
-    transition: transform 0.35s cubic-bezier(0.68, -0.3, 0.32, 1.3);
-    line-height: 1;
-    background: #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    font-size: 11px;
+    transition: transform 0.2s ease, background 0.15s ease;
 }
-
 [data-theme="dark"] .theme-toggle-knob {
-    transform: translateX(24px);
-    background: #2E2952;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    transform: translateX(22px);
+    background: var(--bg-muted);
 }
-
 .theme-toggle-knob .sun-icon,
 .theme-toggle-knob .moon-icon {
     position: absolute;
-    transition: opacity 0.25s ease, transform 0.35s ease;
+    transition: opacity 0.15s ease;
+}
+.theme-toggle-knob .moon-icon { opacity: 0; }
+[data-theme="dark"] .theme-toggle-knob .sun-icon  { opacity: 0; }
+[data-theme="dark"] .theme-toggle-knob .moon-icon { opacity: 1; }
+
+/* ── 4. Forms ─────────────────────────────────────────────────────────── */
+
+.form-group {
+    margin-bottom: 16px;
 }
 
-.theme-toggle-knob .sun-icon {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text);
 }
 
-.theme-toggle-knob .moon-icon {
-    opacity: 0;
-    transform: rotate(-90deg) scale(0.5);
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    min-height: var(--touch-min);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 16px;              /* 16px para evitar zoom iOS */
+    line-height: 1.4;
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--focus-ring);
 }
 
-[data-theme="dark"] .theme-toggle-knob .sun-icon {
-    opacity: 0;
-    transform: rotate(90deg) scale(0.5);
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
 }
 
-[data-theme="dark"] .theme-toggle-knob .moon-icon {
-    opacity: 1;
-    transform: rotate(0deg) scale(1);
+.form-control-color {
+    width: 100%;
+    min-height: var(--touch-min);
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-surface);
+    cursor: pointer;
 }
 
-/* ── Header ──────────────────────────── */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.form-help {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* ── 5. Cards ─────────────────────────────────────────────────────────── */
+
+.card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+}
+
+/* ── 6. Layout app shell ──────────────────────────────────────────────── */
+
+.container {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+
 .main-header {
-    background: var(--bg-header);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    box-shadow: var(--header-shadow);
-    border-bottom: 1.5px solid var(--border-header);
-    padding: 20px 0;
     position: sticky;
     top: 0;
     z-index: 1000;
-    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    height: var(--header-h);
+    padding-top: var(--safe-top);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
 }
 
 .header-content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    height: var(--header-h);
+    gap: 12px;
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 15px;
-    color: var(--text-primary);
+    gap: 10px;
+    color: var(--text);
+    min-width: 0;
 }
-
 .logo i {
-    font-size: 32px;
-    color: var(--primary-color);
+    font-size: 18px;
+    color: var(--primary);
 }
-
 .logo h1 {
-    font-size: 22px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
+.logo h1 span { color: var(--primary); }
 
-.logo h1 span {
-    color: var(--primary-color);
-}
-
-/* ── Buttons ─────────────────────────── */
-.btn {
-    padding: 12px 24px;
-    border: none;
-    border-radius: var(--border-radius);
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
-    display: inline-flex;
+/* Grupo de acções à direita do header */
+.header-actions {
+    display: flex;
     align-items: center;
     gap: 8px;
-    text-decoration: none;
-    font-family: 'Inter', sans-serif;
 }
 
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-hover);
+#userMenu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
 }
 
-.btn-primary {
-    background: var(--primary-color);
-    color: #fff;
-}
-
-.btn-primary:hover {
-    background: var(--primary-hover);
-}
-
-.btn-secondary {
-    background: var(--bg-badge);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-    background: var(--border-color);
-}
-
-.btn-success {
-    background: var(--success-color);
-    color: #fff;
-}
-
-.btn-danger {
-    background: var(--danger-color);
-    color: #fff;
-}
-
-.btn-sm {
-    padding: 8px 16px;
+#userDisplayName {
+    color: var(--text-muted);
     font-size: 13px;
+    font-weight: 500;
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* ── Main Content ────────────────────── */
+/* Hamburger (só visível em mobile) */
+.hamburger-btn {
+    display: none;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    border: none;
+    background: transparent;
+    color: var(--text);
+    border-radius: var(--radius);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+.hamburger-btn:hover { background: var(--bg-subtle); }
+
 .main-content {
-    padding: 40px 0;
+    padding: 24px 0 32px;
 }
 
 .section-title {
-    color: var(--text-section);
-    font-family: 'Inter', sans-serif;
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    margin-bottom: 30px;
-    text-align: center;
-    text-shadow: none;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 16px;
 }
 
-/* ── Categories Grid ─────────────────── */
+/* ── 7. Drawer mobile (só ativo <768px) ───────────────────────────────── */
+
+.drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay);
+    z-index: 3000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+.drawer-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 84vw;
+    max-width: 320px;
+    z-index: 3100;
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border);
+    transform: translateX(-102%);
+    transition: transform 0.22s ease;
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    min-height: var(--header-h);
+}
+
+.drawer-user {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+.drawer-user strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.drawer-user span {
+    font-size: 12px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.drawer-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: var(--touch-min);
+    height: var(--touch-min);
+    border-radius: var(--radius);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+.drawer-close:hover { background: var(--bg-subtle); color: var(--text); }
+
+.drawer-section-title {
+    padding: 16px 16px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.drawer-list {
+    list-style: none;
+    padding: 0 8px;
+    margin: 0;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.drawer-list li button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    min-height: var(--touch-min);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+}
+.drawer-list li button:hover { background: var(--bg-subtle); }
+.drawer-list li button.active { background: var(--primary-weak); color: var(--primary); }
+
+.drawer-list li button .drawer-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: var(--bg-subtle);
+    color: var(--text-muted);
+}
+.drawer-list li button.active .drawer-icon { background: var(--primary); color: #fff; }
+
+.drawer-list li button .drawer-badge {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.drawer-footer {
+    border-top: 1px solid var(--border);
+    padding: 12px 16px calc(12px + var(--safe-bottom));
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.drawer-footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: var(--touch-min);
+}
+.drawer-footer-row > span {
+    font-size: 14px;
+    color: var(--text);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ── 8. Views (antigos modais) ────────────────────────────────────────── */
+
+/*
+ * Os elementos com classe `.modal` são tratados como VIEWS:
+ *  - em mobile  (<768px): ocupam o ecrã inteiro como página
+ *  - em desktop (≥768px): ocupam uma coluna larga ao centro, sem flutuar
+ *
+ * Assim o JS existente (add/remove `.active`) continua a funcionar sem
+ * alterações — mas o efeito visual deixa de ser popup.
+ */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 2000;
+}
+.modal.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-content {
+    flex: 1;
+    width: 100%;
+    max-width: 100%;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 0;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    animation: viewSlideIn 0.18s ease-out;
+}
+
+.modal-large .modal-content { max-width: 100%; }
+
+@keyframes viewSlideIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    min-height: var(--header-h);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 5;
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.modal-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+}
+.category-icon-display {
+    font-size: 20px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+}
+
+.modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    padding: 0;
+}
+.modal-close:hover { background: var(--bg-subtle); color: var(--text); }
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--bg);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 16px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+}
+
+/* ── 9. Bottom action bar (mobile, contextual) ────────────────────────── */
+
+.bottom-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: none;
+    align-items: center;
+    justify-content: space-around;
+    gap: 4px;
+    padding: 8px 12px calc(8px + var(--safe-bottom));
+    background: var(--bg-surface);
+    border-top: 1px solid var(--border);
+    z-index: 1500;
+    min-height: calc(var(--bottombar-h) + var(--safe-bottom));
+}
+.bottom-bar.visible { display: flex; }
+
+.bottom-bar button {
+    flex: 1 1 auto;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    min-height: var(--touch-min);
+    padding: 6px 4px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+.bottom-bar button i { font-size: 16px; }
+.bottom-bar button:hover { background: var(--bg-subtle); color: var(--text); }
+.bottom-bar button.primary { color: var(--primary); }
+
+/* ── 10. Install gate (bloqueio web mobile fora do PWA) ──────────────── */
+
+#pwa-install-gate {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    color: var(--text);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: calc(24px + var(--safe-top)) 20px calc(24px + var(--safe-bottom));
+    overflow-y: auto;
+}
+body.gate-active #pwa-install-gate { display: flex; }
+
+.gate-box {
+    width: 100%;
+    max-width: 420px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+.gate-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: var(--primary);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin-bottom: 18px;
+}
+
+.gate-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+.gate-lead {
+    color: var(--text-muted);
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+}
+
+.gate-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+    padding: 4px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-pill);
+}
+.gate-tabs button {
+    flex: 1;
+    padding: 8px 14px;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-pill);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    min-height: 36px;
+}
+.gate-tabs button.active { background: var(--bg-surface); color: var(--text); box-shadow: var(--elev-1); }
+
+.gate-steps {
+    width: 100%;
+    text-align: left;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px 18px 16px 34px;
+    list-style: decimal;
+}
+.gate-steps li {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 8px;
+    color: var(--text);
+}
+.gate-steps li:last-child { margin-bottom: 0; }
+.gate-steps strong { color: var(--text); }
+
+.gate-install-btn {
+    margin-top: 18px;
+    width: 100%;
+    max-width: 280px;
+}
+
+.gate-footer {
+    margin-top: 22px;
+    font-size: 12px;
+    color: var(--text-subtle);
+}
+
+/* ── 11. Categorias / listas / items ──────────────────────────────────── */
+
 .categories-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 40px;
+    grid-template-columns: 1fr;
+    gap: 12px;
 }
 
 .category-card {
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
-    padding: 25px;
-    box-shadow: var(--shadow);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 16px;
     cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
     position: relative;
     overflow: hidden;
-    will-change: transform;
-    border: 1px solid var(--border-color);
+    transition: border-color 0.12s ease, background 0.12s ease;
 }
-
 .category-card::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 5px;
-    background: var(--primary-color);
+    height: 3px;
+    background: var(--primary);
 }
-
 .category-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hover);
+    border-color: var(--border-strong);
+    background: var(--bg-surface);
 }
+[data-theme="dark"] .category-card:hover { background: var(--bg-subtle); }
 
 .category-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .category-icon {
-    font-size: 36px;
-    margin-bottom: 10px;
+    font-size: 24px;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--bg-subtle);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .category-actions {
     display: flex;
-    gap: 8px;
-    opacity: 0;
-    transition: opacity 0.15s ease;
-}
-
-.category-card:hover .category-actions {
-    opacity: 1;
+    gap: 4px;
 }
 
 .category-action-btn {
     background: transparent;
     border: none;
+    color: var(--text-muted);
     cursor: pointer;
-    padding: 5px;
-    color: var(--text-secondary);
-    transition: color 0.12s ease;
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
 }
-
-.category-action-btn:hover {
-    color: var(--primary-color);
-}
-
-.category-action-btn.delete:hover {
-    color: var(--danger-color);
-}
+.category-action-btn:hover { background: var(--bg-subtle); color: var(--text); }
+.category-action-btn.delete:hover { color: var(--danger); background: var(--danger-weak); }
 
 .category-title {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 8px;
+    color: var(--text);
+    margin: 0 0 6px;
 }
 
 .category-info {
     display: flex;
     align-items: center;
-    gap: 15px;
-    color: var(--text-secondary);
-    font-size: 14px;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--text-muted);
 }
 
 .category-badge {
-    background: var(--bg-badge);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    background: var(--bg-subtle);
+    border: 1px solid var(--border);
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
     font-weight: 600;
-    color: var(--text-secondary);
+    color: var(--text-muted);
 }
 
-/* ── Modal ────────────────────────────── */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--bg-modal-overlay);
-    z-index: 2000;
-}
-
-/* Modal de categoria deve ficar à frente do modal de itens (Editar Categoria) */
-#categoryModal {
-    z-index: 2100;
-}
-
-.modal.active {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 30px 20px;
-    overflow-y: auto;
-    animation: modalFadeIn 0.12s ease-out;
-}
-
-@keyframes modalFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 1; }
-}
-
-.modal-content {
-    background: var(--bg-card);
-    border-radius: var(--border-radius);
-    width: 100%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    animation: modalSlideUp 0.15s ease-out;
-    margin: auto 0;
-    border: 1px solid var(--border-color);
-}
-
-.modal-large .modal-content {
-    max-width: 1200px;
-}
-
-@keyframes modalSlideUp {
-    from {
-        transform: translateY(24px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.modal-header {
-    padding: 25px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.modal-header h3 {
-    font-size: 22px;
-    color: var(--text-primary);
-}
-
-.modal-title-group {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.category-icon-display {
-    font-size: 32px;
-}
-
-.modal-actions {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.modal-close {
-    background: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: color 0.12s ease;
-    padding: 5px 10px;
-}
-
-.modal-close:hover {
-    color: var(--danger-color);
-}
-
-.modal-body {
-    padding: 25px;
-}
-
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-/* ── Forms ────────────────────────────── */
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: var(--text-primary);
-}
-
-.form-control {
-    width: 100%;
-    padding: 12px;
-    border: 1.5px solid var(--border-color);
-    border-radius: 10px;
-    font-size: 14px;
-    font-family: inherit;
-    background: var(--bg-input);
-    color: var(--text-primary);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12);
-}
-
-.form-control-color {
-    width: 100%;
-    height: 45px;
-    padding: 5px;
-    border: 1.5px solid var(--border-color);
-    border-radius: 10px;
-    cursor: pointer;
-    background: var(--bg-input);
-}
-
-.form-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 15px;
-}
-
-.form-help {
-    display: block;
-    margin-top: 5px;
-    font-size: 12px;
-    color: var(--text-secondary);
-}
-
-textarea.form-control {
-    min-height: 120px;
-    resize: vertical;
-}
-
-/* ── Loading ──────────────────────────── */
-.loading {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-secondary);
-}
-
-.loading i {
-    font-size: 48px;
-    margin-bottom: 15px;
-    color: var(--primary-color);
-}
-
-.loading p {
-    font-size: 16px;
-}
-
-/* ── Empty State ──────────────────────── */
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-secondary);
-}
-
-.empty-state i {
-    font-size: 64px;
-    margin-bottom: 20px;
-    opacity: 0.3;
-}
-
-.empty-state h3 {
-    font-size: 20px;
-    margin-bottom: 10px;
-    color: var(--text-primary);
-}
-
-/* ── Items List ───────────────────────── */
+/* Items genéricos */
 .items-list {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 10px;
 }
 
 .item-card {
-    background: var(--bg-card);
-    border: 1.5px solid var(--border-color);
-    border-radius: var(--border-radius);
-    padding: 20px;
-    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
     cursor: pointer;
+    transition: border-color 0.12s ease;
 }
-
-.item-card:hover {
-    border-color: var(--primary-color);
-    box-shadow: var(--shadow);
-}
+.item-card:hover { border-color: var(--border-strong); }
 
 .item-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 10px;
+    gap: 10px;
+    margin-bottom: 6px;
 }
 
 .item-title {
-    font-size: 18px;
+    font-size: 15px;
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--text);
     flex: 1;
+    min-width: 0;
 }
 
 .item-actions {
     display: flex;
-    gap: 8px;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .item-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
     font-weight: 600;
     display: inline-block;
+    border: 1px solid transparent;
 }
 
-.badge-pending {
-    background: #fff3cd;
-    color: #856404;
-}
+.badge-pending      { background: #FEF3C7; color: #8A5A00; }
+.badge-in_progress  { background: #DBEAFE; color: #1D4ED8; }
+.badge-completed    { background: #D1FAE5; color: #065F46; }
+.badge-high         { background: #FEE2E2; color: #991B1B; }
+.badge-medium       { background: #FEF3C7; color: #8A5A00; }
+.badge-low          { background: #DBEAFE; color: #1D4ED8; }
 
-.badge-in_progress {
-    background: #cce5ff;
-    color: #004085;
-}
-
-.badge-completed {
-    background: #d4edda;
-    color: #155724;
-}
-
-.badge-high {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.badge-medium {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.badge-low {
-    background: #d1ecf1;
-    color: #0c5460;
-}
-
-[data-theme="dark"] .badge-pending   { background: #3D3520; color: #FBBF24; }
-[data-theme="dark"] .badge-in_progress { background: #1A2940; color: #60A5FA; }
-[data-theme="dark"] .badge-completed { background: #1A3028; color: #4ADE80; }
-[data-theme="dark"] .badge-high      { background: #3D1A22; color: #FB7185; }
-[data-theme="dark"] .badge-medium    { background: #3D3520; color: #FBBF24; }
-[data-theme="dark"] .badge-low       { background: #1A2E32; color: #67E8F9; }
+[data-theme="dark"] .badge-pending      { background: #3A2D0C; color: #F2B45A; }
+[data-theme="dark"] .badge-in_progress  { background: #14213D; color: #7AB7FF; }
+[data-theme="dark"] .badge-completed    { background: #143028; color: #6FCF7E; }
+[data-theme="dark"] .badge-high         { background: #3A1F21; color: #FF7A7A; }
+[data-theme="dark"] .badge-medium       { background: #3A2D0C; color: #F2B45A; }
+[data-theme="dark"] .badge-low          { background: #14213D; color: #7AB7FF; }
 
 .item-content {
-    color: var(--text-secondary);
-    font-size: 14px;
-    line-height: 1.6;
-    margin-top: 10px;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.55;
+    margin-top: 6px;
     white-space: pre-wrap;
 }
 
-/* ========================================
-   MOBILE & TABLET — Heurísticas UX
-   Touch targets ≥44px, safe areas, consistência
-   ======================================== */
-
-/* Breakpoints */
-:root {
-    --break-sm: 480px;
-    --break-md: 768px;
-    --break-lg: 1024px;
+/* Empty / loading states */
+.empty-state,
+.loading {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--text-muted);
 }
-
-/* Base: tap highlight e font size (evita zoom iOS em inputs) */
-html {
-    -webkit-tap-highlight-color: transparent;
+.empty-state i,
+.loading i {
+    font-size: 36px;
+    opacity: 0.5;
+    display: block;
+    margin-bottom: 12px;
+    color: var(--text-muted);
 }
-
-body {
-    padding-left: var(--safe-left);
-    padding-right: var(--safe-right);
-    padding-bottom: var(--safe-bottom);
+.empty-state h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: var(--text);
 }
+.empty-state p { font-size: 14px; }
 
-/* Botões: área de toque mínima (Heurística 4 – Consistência) */
-.btn {
-    min-height: var(--touch-min);
-    min-width: var(--touch-min);
-    padding: 12px 24px;
-    align-items: center;
-    justify-content: center;
-}
+/* ── 12. Notificações ────────────────────────────────────────────────── */
 
-.btn-sm {
-    min-height: var(--touch-min);
-    min-width: var(--touch-min);
-    padding: 10px 16px;
-    font-size: 14px;
-}
-
-/* Ações em cards sempre visíveis em touch (Heurística 6 – Reconhecimento) */
-@media (hover: none) and (pointer: coarse) {
-    .category-actions {
-        opacity: 1;
-    }
-    .category-action-btn {
-        min-width: var(--touch-min);
-        min-height: var(--touch-min);
-        padding: 10px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-    }
-}
-
-/* Modais: full-viewport em mobile (Heurística 8 – Minimalista) */
-@media (max-width: 768px) {
-    .modal.active {
-        padding: 0;
-        align-items: flex-end;
-    }
-    .modal-content {
-        max-height: 92vh;
-        max-height: calc(92vh - var(--safe-bottom));
-        border-radius: 16px 16px 0 0;
-        margin: 0;
-        padding-bottom: var(--safe-bottom);
-    }
-    .modal-large .modal-content {
-        max-height: 95vh;
-        max-height: calc(95vh - var(--safe-bottom));
-    }
-    .modal-header {
-        padding: 20px 20px 16px;
-        padding-left: calc(20px + var(--safe-left));
-        padding-right: calc(20px + var(--safe-right));
-    }
-    .modal-header h3 {
-        font-size: 18px;
-    }
-    .modal-close {
-        min-width: var(--touch-min);
-        min-height: var(--touch-min);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin: -8px -8px -8px 0;
-    }
-    .modal-body {
-        padding: 20px;
-        padding-left: calc(20px + var(--safe-left));
-        padding-right: calc(20px + var(--safe-right));
-    }
-    .modal-footer {
-        padding-bottom: calc(20px + var(--safe-bottom));
-    }
-}
-
-/* Formulários: inputs legíveis sem zoom (16px) */
-@media (max-width: 768px) {
-    .form-control {
-        font-size: 16px;
-        min-height: var(--touch-min);
-        padding: 14px 16px;
-    }
-    textarea.form-control {
-        min-height: 140px;
-    }
-    .form-control-color {
-        min-height: var(--touch-min);
-        min-width: var(--touch-min);
-    }
-}
-
-/* Header: compacto em mobile (Heurística 8) */
-@media (max-width: 768px) {
-    .main-header {
-        padding: 14px 0;
-        padding-top: calc(14px + var(--safe-top));
-        padding-left: calc(20px + var(--safe-left));
-        padding-right: calc(20px + var(--safe-right));
-    }
-    .header-content {
-        flex-wrap: wrap;
-        gap: 12px;
-    }
-    .header-content .container {
-        padding: 0;
-    }
-    .logo {
-        gap: 10px;
-    }
-    .logo i {
-        font-size: 26px;
-    }
-    .logo h1 {
-        font-size: 18px;
-    }
-    .header-content > div[style*="display:flex"] {
-        display: flex !important;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-    }
-    #userMenu {
-        width: 100%;
-        border-left: none !important;
-        padding-left: 0 !important;
-        margin-top: 4px;
-        padding-top: 8px;
-        border-top: 1px solid var(--border-color);
-    }
-    #versionManagerBtn,
-    #newCategoryBtn,
-    .theme-toggle {
-        min-height: var(--touch-min);
-        min-width: var(--touch-min);
-    }
-    #newCategoryBtn {
-        flex: 1;
-        min-width: 0;
-        justify-content: center;
-    }
-    #userDisplayName {
-        max-width: 180px;
-    }
-}
-
-/* Telefones muito pequenos: manter rótulos (reconhecimento) */
-@media (max-width: 380px) {
-    .header-content > div[style*="display:flex"] {
-        justify-content: flex-start;
-    }
-    #newCategoryBtn,
-    #versionManagerBtn {
-        font-size: 13px;
-        padding-left: 12px;
-        padding-right: 12px;
-    }
-}
-
-/* Grid categorias: 1 col mobile, 2 cols tablet */
-@media (max-width: 767px) {
-    .categories-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-    .category-card {
-        padding: 20px;
-    }
-    .category-card::before {
-        height: 4px;
-    }
-    .category-icon {
-        font-size: 32px;
-    }
-    .category-title {
-        font-size: 18px;
-    }
-    .main-content {
-        padding: 24px 0;
-        padding-bottom: calc(24px + var(--safe-bottom));
-    }
-    .section-title {
-        font-size: 22px;
-        margin-bottom: 20px;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 1023px) {
-    .categories-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 20px;
-    }
-}
-
-/* Tablet landscape e desktop */
-@media (min-width: 1024px) {
-    .categories-grid {
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    }
-}
-
-/* Notificações (Heurística 1 – Visibilidade do estado) */
 .app-notification {
     position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 14px 20px;
-    color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    z-index: 10000;
-    animation: slideInRight 0.3s ease;
+    bottom: calc(20px + var(--safe-bottom));
+    left: 16px;
+    right: 16px;
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 12px 16px;
+    background: var(--text);
+    color: var(--bg-surface);
+    border-radius: var(--radius);
+    box-shadow: var(--elev-2);
     font-size: 14px;
     font-weight: 500;
-    max-width: 360px;
+    z-index: 9999;
+    animation: notifIn 0.2s ease-out;
 }
-.app-notification--success { background: var(--success-color); }
-.app-notification--error   { background: var(--danger-color); }
-.app-notification--info   { background: var(--info-color); }
-
-@media (max-width: 768px) {
-    .app-notification {
-        left: 16px;
-        right: 16px;
-        left: calc(16px + var(--safe-left));
-        right: calc(16px + var(--safe-right));
-        bottom: calc(20px + var(--safe-bottom));
-        top: auto;
-        max-width: none;
-    }
+@keyframes notifIn {
+    from { transform: translateY(8px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
 }
+.app-notification--success { background: var(--success); color: #fff; }
+.app-notification--error   { background: var(--danger);  color: #fff; }
+.app-notification--info    { background: var(--info);    color: #fff; }
 
-/* Empty state e loading: mais compactos em mobile */
-@media (max-width: 768px) {
-    .empty-state,
-    .loading {
-        padding: 40px 20px;
-    }
-    .empty-state i,
-    .loading i {
-        font-size: 40px;
-    }
-}
+/* ── 13. Scrollbars ──────────────────────────────────────────────────── */
 
-/* Item cards em listas: touch amigável */
-@media (max-width: 768px) {
-    .item-card {
-        padding: 16px;
-        min-height: auto;
-    }
-    .item-actions .category-action-btn,
-    .item-actions .btn {
-        min-width: var(--touch-min);
-        min-height: var(--touch-min);
-        padding: 10px;
-    }
-}
+::-webkit-scrollbar        { width: 8px; height: 8px; }
+::-webkit-scrollbar-track  { background: var(--scroll-track); }
+::-webkit-scrollbar-thumb  { background: var(--scroll-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
-/* Form row em modal: uma coluna em mobile */
-@media (max-width: 768px) {
-    .form-row {
-        grid-template-columns: 1fr;
+/* ============================================================================
+ * 14. DESKTOP — ≥ 768px
+ * ==========================================================================*/
+
+@media (min-width: 768px) {
+
+    :root { --header-h: 64px; }
+
+    .container { padding: 0 24px; }
+
+    .main-header { height: var(--header-h); }
+    .header-content { height: var(--header-h); }
+
+    .logo i { font-size: 22px; }
+    .logo h1 { font-size: 18px; }
+
+    .main-content { padding: 32px 0 40px; }
+
+    /* Hamburger escondido no desktop (navegação lateral não é drawer) */
+    .hamburger-btn { display: none !important; }
+
+    /* Drawer e overlay nunca em desktop — a navegação é outra */
+    .drawer, .drawer-overlay { display: none !important; }
+
+    /* Bottom bar nunca em desktop */
+    .bottom-bar { display: none !important; }
+
+    /* Grelha de categorias responsiva */
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
         gap: 16px;
     }
-}
 
-/* ── Responsive (legado, mantido) ─────── */
-@media (max-width: 768px) {
-    .modal-actions {
-        flex-wrap: wrap;
-        gap: 8px;
+    .category-card { padding: 18px; }
+    .category-icon { width: 48px; height: 48px; font-size: 26px; }
+    .category-title { font-size: 17px; }
+
+    /* Views em desktop: centradas, com largura controlada, não popup */
+    .modal.active {
+        align-items: stretch;
+        justify-content: center;
     }
-    .modal-actions .btn {
-        min-height: var(--touch-min);
+    .modal-content {
+        max-width: 760px;
+        margin: 0 auto;
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
     }
-    .modal-header {
-        flex-wrap: wrap;
+    .modal-large .modal-content { max-width: 1100px; }
+
+    .modal-header { padding: 14px 24px; }
+    .modal-header h3 { font-size: 18px; }
+    .modal-body    { padding: 24px; }
+
+    /* Forms em desktop: grid de 2 colunas quando faz sentido */
+    .form-row { grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-control { font-size: 14px; min-height: 40px; padding: 9px 12px; }
+    textarea.form-control { min-height: 140px; }
+
+    h1 { font-size: 28px; }
+    h2 { font-size: 22px; }
+    h3 { font-size: 18px; }
+
+    .section-title { font-size: 13px; }
+
+    .app-notification {
+        left: auto;
+        right: 24px;
+        bottom: 24px;
+        max-width: 380px;
+        margin: 0;
     }
-    .modal-title-group {
-        flex-wrap: wrap;
-    }
 }
 
-/* ── Task Detail Modal ────────────────── */
-#taskDetailModal .modal-content {
-    max-width: 700px !important;
-    max-height: 88vh !important;
-    overflow-y: auto !important;
-    overflow-x: hidden;
-}
+/* ============================================================================
+ * 15. OVERRIDES MOBILE — ≤ 767px
+ * ==========================================================================*/
 
-#taskDetailModal .modal-content,
-#courseNotebooksModal .modal-content {
-    margin-top: 30px;
-}
-
-.subtask-row {
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-.subtask-row:hover {
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* ── Scrollbar ────────────────────────── */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--scrollbar-track);
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--scrollbar-hover);
-}
-
-/* ========================================
-   MOBILE FIX — Cadernos, drawers e modais empilhados
-   Abordagem mobile-first, breakpoint principal 768px
-   ======================================== */
-
-/* 1) Shell do caderno (sidebar + main) em coluna única < 768px.
-      Usa !important para sobrepor os estilos injetados em templates.js
-      (que têm breakpoint em 860px, mas com sidebar fixa a 260px). */
 @media (max-width: 767px) {
-    .nb-shell {
-        grid-template-columns: 1fr !important;
-        height: auto !important;
-        border-radius: 12px !important;
-        overflow: visible !important;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.12) !important;
-    }
-    .nb-sidebar {
-        max-height: 280px !important;
-        border-radius: 12px 12px 0 0;
-    }
-    .nb-main {
-        border-radius: 0 0 12px 12px;
-    }
-    .nb-content-inner {
-        padding: 20px 16px !important;
+
+    /* Hamburger visível em mobile — ocupa o espaço do logo esquerdo */
+    .hamburger-btn {
+        display: inline-flex;
     }
 
-    /* 2) Cabeçalho do caderno: empilhar título e grupo de botões */
-    .nb-view-header {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 12px !important;
-        padding-bottom: 16px !important;
-        margin-bottom: 18px !important;
-    }
-    .nb-view-title {
-        font-size: 22px !important;
-        word-break: break-word;
-    }
-    .nb-view-meta {
-        gap: 10px !important;
-        font-size: 12px !important;
+    /* Em mobile escondemos os botões individuais do header — passam para o drawer */
+    #userMenu,
+    #versionManagerBtn,
+    #newCategoryBtn {
+        display: none !important;
     }
 
-    /* 3) Grupo "Editar | Guardar Versão | Versões" com wrap e scroll horizontal
-          como fallback em telefones muito estreitos */
-    #nbViewButtons {
-        flex-wrap: wrap !important;
-        gap: 8px !important;
-        width: 100%;
-    }
-    .nb-edit-btn {
-        flex: 1 1 auto !important;
-        justify-content: center !important;
-        min-height: var(--touch-min);
-        padding: 10px 12px !important;
-        font-size: 13px !important;
-    }
-
-    /* 4) Toolbar de rich text: scroll horizontal se exceder viewport */
-    #notebookToolbarSlot {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-    }
-    .nb-toolbar {
-        flex-wrap: nowrap !important;
-        padding: 8px 12px !important;
-        min-width: max-content;
-    }
-    .nb-tool {
-        min-width: 34px;
-        height: 34px;
-    }
-
-    /* 5) Editor rich-text: padding confortável e área mínima de toque */
-    .nb-rich-editor {
-        padding: 16px !important;
-        min-height: 320px !important;
-        font-size: 15px !important;
-    }
-    .nb-editor-actions {
-        gap: 8px !important;
-    }
-    .nb-editor-actions .btn {
-        flex: 1 1 auto;
-        justify-content: center;
-    }
-    .nb-word-count {
-        margin-left: 0 !important;
-        width: 100%;
-        justify-content: center;
-        padding-top: 4px;
-    }
-
-    /* 6) Corpo do caderno (leitura) com padding menor */
-    .nb-view-body {
-        padding: 18px 16px !important;
-        font-size: 14.5px !important;
-    }
-}
-
-/* Telefones muito estreitos: permitir scroll horizontal do grupo de botões
-   em vez de wrap, caso o utilizador prefira manter os rótulos completos. */
-@media (max-width: 380px) {
-    #nbViewButtons {
-        flex-wrap: nowrap !important;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 4px;
-        scrollbar-width: thin;
-    }
-    .nb-edit-btn {
-        flex: 0 0 auto !important;
-        white-space: nowrap;
-    }
-}
-
-/* 7) Drawers de gestão de categoria (modais empilhados)
-      Em mobile, #categoryModal abre por cima de #itemsModal.
-      Ambos são bottom-sheets — garantir z-index correto, bloquear scroll
-      do modal de baixo e dar profundidade visual (backdrop mais escuro
-      no modal superior). */
-@media (max-width: 768px) {
-    /* O modal superior (editar categoria a partir dos itens) fica à frente */
-    #categoryModal {
-        z-index: 2200 !important;
-    }
-    #categoryModal.active {
-        background: rgba(0, 0, 0, 0.65);
-        backdrop-filter: blur(2px);
-        -webkit-backdrop-filter: blur(2px);
-    }
-
-    /* Bottom-sheet mais arredondada, com "grabber" visual no topo */
-    .modal.active .modal-content {
-        border-radius: 18px 18px 0 0;
-        position: relative;
-    }
-    .modal.active .modal-content::before {
-        content: '';
-        position: absolute;
-        top: 8px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 40px;
-        height: 4px;
-        border-radius: 2px;
-        background: var(--border-color);
-        opacity: 0.8;
-        pointer-events: none;
-    }
-    .modal.active .modal-header {
-        padding-top: 24px;
-    }
-
-    /* Ações do modal de itens (Editar Categoria, Eliminar, Novo) em grid
-       responsivo que nunca sai do viewport */
-    #itemsModal .modal-actions {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    /* Header: hamburger + logo + toggle tema */
+    .header-content {
         gap: 8px;
-        margin-top: 8px;
     }
-    #itemsModal .modal-actions .btn {
-        width: 100%;
-        min-width: 0;
-        justify-content: center;
+
+    /* Quando uma view está aberta, ocupa tudo — o header da app fica oculto
+       porque a view tem o seu próprio header. Efeito "navegação por páginas". */
+    body:has(.modal.active) > .main-header { display: none; }
+
+    /* Título da view */
+    .modal-header h3 { font-size: 17px; }
+
+    /* Ações no header da view em mobile: só ícones, sem texto — senão não cabe */
+    .modal-actions .btn {
+        padding: 8px;
+        min-width: var(--touch-min);
+        font-size: 0;                /* esconde o texto solto (text nodes) */
     }
-    #itemsModal .modal-actions .modal-close {
-        grid-column: -2 / -1;
+    .modal-actions .btn i {
+        font-size: 14px;
+    }
+
+    /* Em mobile a modal-body pode usar todo o espaço em altura */
+    .modal.active .modal-content { padding-top: 0; }
+
+    /* Header da view: permitir wrap de ações se houver muitas */
+    .modal-header { flex-wrap: nowrap; }
+
+    /* Forms: inputs com 16px já definido. Nada a acrescentar. */
+}
+
+/* ============================================================================
+ * Acessibilidade — respeitar prefers-reduced-motion
+ * ==========================================================================*/
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
     }
 }

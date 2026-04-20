@@ -7,7 +7,7 @@
  *  - Nunca cacheia dados dinâmicos do utilizador nem credenciais
  * ==========================================================================*/
 
-const VERSION      = 'neatpad-v1.0.0';
+const VERSION      = 'neatpad-v1.1.0';
 const STATIC_CACHE = `static-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 
@@ -22,6 +22,7 @@ const PRECACHE_URLS = [
     '/assets/js/auth.js',
     '/assets/js/autosave.js',
     '/assets/js/templates.js',
+    '/assets/js/mobile.js',
     '/assets/js/pwa.js',
     '/assets/icons/icon-192.png',
     '/assets/icons/icon-512.png',
