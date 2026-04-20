@@ -1949,7 +1949,6 @@ window.Templates = {
                 }
                 .nb-btn-sm:hover { background: var(--bg-muted); color: var(--text); }
                 .nb-btn-sm.danger:hover { background: var(--danger-weak); color: var(--danger); }
-                .nb-btn-sm.danger:hover { background: #e74c3c; color: #fff; }
 
                 /* ── Main content ───────────────────────── */
                 .nb-main {
@@ -2068,6 +2067,9 @@ window.Templates = {
                 .nb-tool-sep {
                     width: 1px; height: 22px; background: var(--border); margin: 0 4px;
                 }
+                .nb-tool-label {
+                    font-size: 11px; color: var(--text-muted); margin: 0 4px 0 2px;
+                }
                 .nb-tool {
                     display: flex; align-items: center; justify-content: center;
                     min-width: 30px; height: 30px; border-radius: 6px;
@@ -2179,32 +2181,33 @@ window.Templates = {
                     margin-bottom: 4px;
                     transition: background 0.12s ease;
                 }
-                .nb-version-item:hover { background: #f7f8fc; }
+                .nb-version-item:hover { background: var(--bg-subtle); }
                 .nb-version-icon {
-                    width: 36px; height: 36px; border-radius: 10px;
+                    width: 36px; height: 36px; border-radius: var(--radius);
                     display: flex; align-items: center; justify-content: center;
                     flex-shrink: 0; font-size: 14px;
                 }
                 .nb-version-info { flex: 1; min-width: 0; }
-                .nb-version-info strong { font-size: 14px; color: #1a1f36; }
+                .nb-version-info strong { font-size: 14px; color: var(--text); font-weight: 700; }
                 .nb-version-badge {
                     display: inline-block;
-                    padding: 1px 8px; border-radius: 10px;
+                    padding: 1px 8px; border-radius: var(--radius-pill);
                     font-size: 10px; font-weight: 700;
                     margin-left: 6px;
                     vertical-align: middle;
                 }
-                .nb-version-badge.manual { background: #eafaf1; color: #27ae60; }
-                .nb-version-badge.autosave { background: #eaf4fb; color: #2980b9; }
-                .nb-version-date { font-size: 12px; color: #8892a4; margin-top: 2px; }
+                .nb-version-badge.manual   { background: var(--primary-weak); color: var(--primary); }
+                .nb-version-badge.autosave { background: var(--bg-muted);     color: var(--success); }
+                .nb-version-date { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
                 .nb-version-restore {
-                    padding: 6px 12px; border-radius: 8px;
-                    border: 1px solid #667eea; background: #fff;
-                    color: #667eea; font-weight: 600; font-size: 12px;
+                    padding: 6px 12px; border-radius: var(--radius);
+                    border: 1px solid var(--primary); background: var(--bg-surface);
+                    color: var(--primary); font-weight: 600; font-size: 12px;
                     cursor: pointer; white-space: nowrap; flex-shrink: 0;
                     transition: background 0.12s ease, color 0.12s ease;
+                    min-height: 32px;
                 }
-                .nb-version-restore:hover { background: #667eea; color: #fff; }
+                .nb-version-restore:hover { background: var(--primary); color: var(--primary-text); }
                 </style>
             `;
 
@@ -2290,9 +2293,7 @@ window.Templates = {
                                     </button>
                                 </div>
                                 <div id="nbVersionList" class="nb-version-list">
-                                    <div style="text-align:center;padding:20px;color:#8892a4;">
-                                        <i class="fas fa-spinner fa-spin"></i> A carregar...
-                                    </div>
+                                    <div class="loading"><i class="fas fa-spinner fa-spin"></i><p>A carregar…</p></div>
                                 </div>
                             </div>
                         </div>
@@ -2334,10 +2335,15 @@ window.Templates = {
         },
 
         _buildToolbar() {
+            // mousedown preventDefault para não perder a seleção do editor ao clicar em botões
+            const md = `onmousedown="event.preventDefault()"`;
             return `
                 <div class="nb-toolbar" id="nbToolbar">
-                    <!-- Headings -->
-                    <select class="nb-tool-select" onchange="Templates.notebooks._formatBlock(this.value); this.value='p';" title="Estilo">
+                    <!-- Cabeçalhos -->
+                    <select class="nb-tool-select"
+                            ${md}
+                            onchange="Templates.notebooks._formatBlock(this.value); this.value='p';"
+                            title="Estilo">
                         <option value="p">Parágrafo</option>
                         <option value="h1">Título 1</option>
                         <option value="h2">Título 2</option>
@@ -2348,42 +2354,41 @@ window.Templates = {
 
                     <div class="nb-tool-sep"></div>
 
-                    <!-- Text style -->
-                    <button class="nb-tool" title="Negrito (Ctrl+B)" onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
-                    <button class="nb-tool" title="Itálico (Ctrl+I)" onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
-                    <button class="nb-tool" title="Sublinhado (Ctrl+U)" onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
-                    <button class="nb-tool" title="Riscado" onclick="Templates.notebooks._exec('strikeThrough')"><s>S</s></button>
-                    <button class="nb-tool" title="Destacar (Highlight)" onclick="Templates.notebooks._highlight()"><i class="fas fa-highlighter"></i></button>
-                    <button class="nb-tool" title="Código inline" onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
+                    <!-- Estilo de texto -->
+                    <button type="button" class="nb-tool" title="Negrito (Ctrl+B)"    ${md} onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
+                    <button type="button" class="nb-tool" title="Itálico (Ctrl+I)"    ${md} onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
+                    <button type="button" class="nb-tool" title="Sublinhado (Ctrl+U)" ${md} onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
+                    <button type="button" class="nb-tool" title="Riscado"             ${md} onclick="Templates.notebooks._exec('strikeThrough')"><s>S</s></button>
+                    <button type="button" class="nb-tool" title="Destacar"            ${md} onclick="Templates.notebooks._highlight()"><i class="fas fa-highlighter"></i></button>
+                    <button type="button" class="nb-tool" title="Código inline"       ${md} onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
-                    <!-- Lists -->
-                    <button class="nb-tool" title="Lista com pontos" onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
-                    <button class="nb-tool" title="Lista numerada" onclick="Templates.notebooks._exec('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+                    <!-- Listas -->
+                    <button type="button" class="nb-tool" title="Lista com pontos" ${md} onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                    <button type="button" class="nb-tool" title="Lista numerada"   ${md} onclick="Templates.notebooks._exec('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
-                    <!-- Alignment -->
-                    <button class="nb-tool" title="Alinhar à esquerda" onclick="Templates.notebooks._exec('justifyLeft')"><i class="fas fa-align-left"></i></button>
-                    <button class="nb-tool" title="Centrar" onclick="Templates.notebooks._exec('justifyCenter')"><i class="fas fa-align-center"></i></button>
-                    <button class="nb-tool" title="Alinhar à direita" onclick="Templates.notebooks._exec('justifyRight')"><i class="fas fa-align-right"></i></button>
+                    <!-- Alinhamento -->
+                    <button type="button" class="nb-tool" title="Alinhar à esquerda" ${md} onclick="Templates.notebooks._exec('justifyLeft')"><i class="fas fa-align-left"></i></button>
+                    <button type="button" class="nb-tool" title="Centrar"            ${md} onclick="Templates.notebooks._exec('justifyCenter')"><i class="fas fa-align-center"></i></button>
+                    <button type="button" class="nb-tool" title="Alinhar à direita"  ${md} onclick="Templates.notebooks._exec('justifyRight')"><i class="fas fa-align-right"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
                     <!-- Extras -->
-                    <button class="nb-tool" title="Inserir separador" onclick="Templates.notebooks._exec('insertHorizontalRule')"><i class="fas fa-minus"></i></button>
-                    <button class="nb-tool" title="Remover formatação" onclick="Templates.notebooks._exec('removeFormat')"><i class="fas fa-remove-format"></i></button>
+                    <button type="button" class="nb-tool" title="Inserir separador"    ${md} onclick="Templates.notebooks._exec('insertHorizontalRule')"><i class="fas fa-minus"></i></button>
+                    <button type="button" class="nb-tool" title="Remover formatação"   ${md} onclick="Templates.notebooks._exec('removeFormat')"><i class="fas fa-remove-format"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
-                    <!-- Text colors (mousedown para não perder a seleção) -->
-                    <span style="font-size:11px;color:var(--text-secondary);margin-right:2px;">Cor:</span>
-                    ${['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6','#1a1f36'].map(c =>
+                    <!-- Cores de texto -->
+                    <span class="nb-tool-label">Cor:</span>
+                    ${['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'].map(c =>
                         `<span class="nb-color-btn" style="background:${c}" title="${c}" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','${c}')"></span>`
                     ).join('')}
-                    <span class="nb-color-btn" style="background:#000" title="Preto" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','#000')"></span>
-                    <span class="nb-color-btn" style="background:#fff;box-shadow:0 0 0 1px #bbb" title="Branco" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','#fff')"></span>
+                    <span class="nb-color-btn" style="background:var(--text)" title="Padrão" onmousedown="event.preventDefault();Templates.notebooks._exec('removeFormat')"></span>
                 </div>
             `;
         },
@@ -2687,7 +2692,7 @@ window.Templates = {
             const itemId = notebookView ? notebookView.getAttribute('data-notebook-id') : null;
             if (!itemId) return;
 
-            listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#8892a4;"><i class="fas fa-spinner fa-spin"></i> A carregar...</div>';
+            listEl.innerHTML = `<div class="loading"><i class="fas fa-spinner fa-spin"></i><p>A carregar…</p></div>`;
 
             try {
                 const resp = await fetch(`${API_URL}/get_versions.php?item_id=${itemId}`);
@@ -2695,33 +2700,34 @@ window.Templates = {
 
                 if (!data.success || !data.data || data.data.length === 0) {
                     listEl.innerHTML = `
-                        <div style="text-align:center;padding:30px 20px;color:#8892a4;">
-                            <i class="fas fa-inbox" style="font-size:32px;opacity:0.3;display:block;margin-bottom:10px;"></i>
-                            Sem versões anteriores.<br>
-                            <small>As versões são criadas automaticamente ao guardar.</small>
+                        <div class="empty-state" style="padding:28px 20px;">
+                            <i class="fas fa-inbox"></i>
+                            <h3>Sem versões</h3>
+                            <p>As versões são criadas automaticamente ao guardar.</p>
                         </div>`;
                     return;
                 }
 
-                listEl.innerHTML = data.data.map(v => `
+                listEl.innerHTML = data.data.map(v => {
+                    const isManual = v.saved_by === 'manual';
+                    return `
                     <div class="nb-version-item">
-                        <div class="nb-version-icon" style="background:${v.saved_by === 'manual' ? '#eafaf1' : '#eaf4fb'};">
-                            <i class="fas ${v.saved_by === 'manual' ? 'fa-save' : 'fa-robot'}"
-                               style="color:${v.saved_by === 'manual' ? '#27ae60' : '#2980b9'};"></i>
+                        <div class="nb-version-icon" style="background:${isManual ? 'var(--primary-weak)' : 'var(--bg-muted)'};">
+                            <i class="fas ${isManual ? 'fa-save' : 'fa-robot'}" style="color:${isManual ? 'var(--primary)' : 'var(--success)'};"></i>
                         </div>
                         <div class="nb-version-info">
                             <strong>Versão ${v.version}</strong>
-                            <span class="nb-version-badge ${v.saved_by}">${v.saved_by === 'manual' ? 'Manual' : 'Auto'}</span>
+                            <span class="nb-version-badge ${isManual ? 'manual' : 'autosave'}">${isManual ? 'Manual' : 'Auto'}</span>
                             <div class="nb-version-date">${new Date(v.created_at).toLocaleString('pt-PT')} · ${Math.round(v.content_length / 1024 * 10) / 10} KB</div>
                         </div>
                         <button class="nb-version-restore" onclick="Templates.notebooks.restoreVersion(${itemId}, ${v.version})">
                             <i class="fas fa-undo"></i> Restaurar
                         </button>
-                    </div>
-                `).join('');
+                    </div>`;
+                }).join('');
             } catch (err) {
                 console.error(err);
-                listEl.innerHTML = '<div style="text-align:center;padding:20px;color:#e74c3c;"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar versões</div>';
+                listEl.innerHTML = `<div class="empty-state" style="color:var(--danger);padding:20px;"><i class="fas fa-exclamation-triangle"></i><h3>Erro ao carregar</h3><p>${escapeHtml(err.message || '')}</p></div>`;
             }
         },
 

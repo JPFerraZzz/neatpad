@@ -729,6 +729,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const vmBtn = document.getElementById('versionManagerBtn');
     if (vmBtn) vmBtn.addEventListener('click', () => openVersionManager());
 
+    // Logo → Home (fecha modais/popups abertos)
+    const logoBtn = document.getElementById('logoHome');
+    if (logoBtn) logoBtn.addEventListener('click', () => {
+        document.querySelectorAll('.modal.active, .popup-modal.active').forEach(m => m.classList.remove('active'));
+        switchView('home');
+    });
+
     // Hero CTAs
     const ctaSee = document.getElementById('ctaSeeCategories');
     if (ctaSee) ctaSee.addEventListener('click', () => switchView('categories'));
