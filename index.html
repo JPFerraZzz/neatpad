@@ -41,18 +41,17 @@
         </div>
     </div>
 
-    <!-- Verificação de sessão antes de renderizar a página -->
-    <script>
-        (async () => {
-            try {
-                const r = await fetch('api/auth.php', { credentials: 'same-origin' });
-                const d = await r.json();
-                if (!d.success) window.location.replace('login.html');
-                else window.__currentUser = d.data;
-            } catch (e) {
-                window.location.replace('login.html');
+    <!--
+         Bootstrap de sessão (corre depois do Firebase + auth.js carregarem).
+         Estratégia: tenta sessão PHP existente; se falhar, recria-a a partir do
+         Firebase Auth persistido localmente, evitando o "logout ao refresh".
+    -->
+    <script defer>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof bootstrapAuthenticatedPage === 'function') {
+                bootstrapAuthenticatedPage();
             }
-        })();
+        });
     </script>
 
     <!-- Header -->
@@ -80,7 +79,8 @@
                         <i class="fas fa-cog"></i>
                     </button>
                     <div id="userMenu" class="hide-mobile">
-                        <span id="userDisplayName"></span>
+                        <span id="userAvatar" aria-hidden="true"><i class="fas fa-user"></i></span>
+                        <span id="userDisplayName" title="Sessão iniciada"></span>
                         <button class="btn btn-ghost btn-icon" onclick="logout()" title="Terminar sessão" aria-label="Terminar sessão">
                             <i class="fas fa-sign-out-alt"></i>
                         </button>
@@ -472,15 +472,21 @@
             if (s) s.classList.add('gone');
             setTimeout(() => s && s.remove(), 300);
         }
-        document.addEventListener('DOMContentLoaded', () => {
-            if (window.__currentUser) {
-                const nameEl = document.getElementById('userDisplayName');
-                if (nameEl) nameEl.textContent = window.__currentUser.name || window.__currentUser.email;
-            }
-            // Esconde o splash depois do primeiro render
-            setTimeout(hideSplash, 250);
+        function paintUserName(user) {
+            if (!user) return;
+            const nameEl = document.getElementById('userDisplayName');
+            if (nameEl) nameEl.textContent = user.name || user.email || 'Utilizador';
+        }
+        // Quando o bootstrap conclui, pintamos o nome e escondemos o splash
+        document.addEventListener('neatpad:auth-ready', (ev) => {
+            paintUserName(ev.detail);
+            hideSplash();
         });
-        // Safety net: se algo correr mal, remove o splash passados 4s.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Caso o evento já tenha ocorrido (sessão PHP rápida), pintamos já
+            if (window.__currentUser) paintUserName(window.__currentUser);
+        });
+        // Safety net: se o auth demorar, escondemos splash passados 4s
         setTimeout(hideSplash, 4000);
     </script>
 </body>

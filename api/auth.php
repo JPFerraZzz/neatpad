@@ -7,20 +7,26 @@
  * DELETE — Termina sessão (logout)
  */
 require_once __DIR__ . '/session_db.php';
+require_once __DIR__ . '/security.php';
+require_once __DIR__ . '/db.php';   // CORS + jsonResponse + IS_PRODUCTION
+
 initDbSession();
+sendSecureHeaders();
+
 if (session_status() === PHP_SESSION_NONE) session_start();
 
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/firebase_verify.php';
 
-header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
-
 $method = $_SERVER['REQUEST_METHOD'];
+
+// CSRF para POST/DELETE (state-changing)
+assertCsrfSafe();
+
+// Rate limit por IP — defesa contra brute force / spam de logins
+if ($method === 'POST') {
+    rateLimit('login:' . clientIp(), 10, 300);  // 10 tentativas / 5 min
+}
 
 // GET — estado da sessão
 if ($method === 'GET') {
@@ -71,9 +77,16 @@ if ($method === 'POST') {
             exit;
         }
 
+        // Defesa contra session fixation: novo ID assim que o user autentica.
+        if (function_exists('session_regenerate_id')) {
+            @session_regenerate_id(true);
+        }
+
         $_SESSION['uid']   = $payload['sub'];
         $_SESSION['email'] = $payload['email'] ?? '';
         $_SESSION['name']  = $payload['name']  ?? ($payload['email'] ?? 'Utilizador');
+        $_SESSION['fp']    = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|neatpad');
+        $_SESSION['login_at'] = time();
 
         echo json_encode([
             'success' => true,

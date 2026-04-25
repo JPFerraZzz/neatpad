@@ -12,13 +12,50 @@ define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: getenv('MYSQL_
 
 date_default_timezone_set('Europe/Lisbon');
 
+// IS_PRODUCTION — quando true, mensagens de erro genéricas (sem stack traces).
+// Define NEATPAD_ENV=production no servidor para activar.
+if (!defined('NEATPAD_IS_PRODUCTION')) {
+    define('NEATPAD_IS_PRODUCTION', getenv('NEATPAD_ENV') === 'production');
+}
+
 header('Content-Type: application/json; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+
+// CORS restrito: só responde com Allow-Origin se o pedido vier de um host
+// que conhecemos (mesma origem ou lista whitelist via env ALLOWED_ORIGINS,
+// separado por vírgulas). Cookies de sessão exigem Allow-Origin específico
+// (não pode ser '*') quando Allow-Credentials é true.
+(function () {
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+    if ($origin === '') return;
+
+    $allowed = [];
+    $env = getenv('ALLOWED_ORIGINS');
+    if ($env) {
+        foreach (explode(',', $env) as $o) {
+            $o = trim($o);
+            if ($o !== '') $allowed[] = $o;
+        }
+    }
+    // Mesmo origin sempre aceite (host atual)
+    $hostScheme = (
+        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+    ) ? 'https://' : 'http://';
+    $selfOrigin = $hostScheme . ($_SERVER['HTTP_HOST'] ?? '');
+    if (!in_array($selfOrigin, $allowed, true)) $allowed[] = $selfOrigin;
+
+    if (in_array($origin, $allowed, true)) {
+        header('Access-Control-Allow-Origin: ' . $origin);
+        header('Vary: Origin');
+        header('Access-Control-Allow-Credentials: true');
+        header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type, X-Requested-With');
+        header('Access-Control-Max-Age: 600');
+    }
+})();
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
+    http_response_code(204);
     exit;
 }
 
@@ -37,7 +74,8 @@ function getDB(): PDO {
                 ]
             );
         } catch (PDOException $e) {
-            jsonResponse(false, null, 'Erro de conexão: ' . $e->getMessage(), 500);
+            error_log('[NeatPad] DB connect failed: ' . $e->getMessage());
+            jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Base de dados indisponível' : 'Erro de conexão: ' . $e->getMessage(), 500);
         }
     }
     return $pdo;
@@ -45,6 +83,14 @@ function getDB(): PDO {
 
 function jsonResponse(bool $success, $data = null, ?string $error = null, int $httpCode = 200): void {
     http_response_code($httpCode);
+    // Em produção, nunca devolvemos stack traces ou mensagens internas (DB schema, etc.)
+    if (!$success && NEATPAD_IS_PRODUCTION && $error !== null) {
+        // Mantém códigos de validação (400/404) com mensagem; substitui apenas em 5xx
+        if ($httpCode >= 500) {
+            error_log('[NeatPad] ' . $httpCode . ': ' . $error);
+            $error = 'Erro interno do servidor';
+        }
+    }
     echo json_encode([
         'success' => $success,
         'data'    => $data,

@@ -1836,12 +1836,17 @@ window.Templates = {
                     border-bottom: 1px solid var(--border);
                 }
 
-                /* Tablet landscape & desktop: duas colunas */
+                /* Tablet landscape & desktop: duas colunas (tipo Notion) */
                 @media (min-width: 1024px) {
                     .nb-shell {
-                        grid-template-columns: 280px 1fr;
+                        grid-template-columns: 300px 1fr;
                         grid-template-rows: 1fr;
-                        height: 72vh;
+                        /* O .modal-body tem flex:1 + (com :has(.nb-shell)) padding:0 overflow:hidden,
+                           portanto basta ocupar 100% da altura disponível. */
+                        height: 100%;
+                        min-height: 0;
+                        border: none;
+                        border-radius: 0;
                     }
                     .nb-shell .nb-sidebar {
                         max-height: none;
@@ -1965,10 +1970,17 @@ window.Templates = {
                     overflow-y: auto;
                     display: flex; flex-direction: column;
                     position: relative;
+                    min-width: 0;   /* permite shrink dentro do grid */
                 }
                 #nbContent { flex: 1; padding: 0; }
-                .nb-content-inner { padding: 16px; }
-                @media (min-width: 768px) { .nb-content-inner { padding: 24px; } }
+                .nb-content-inner {
+                    padding: 16px;
+                    max-width: 880px;
+                    margin: 0 auto;
+                    width: 100%;
+                }
+                @media (min-width: 768px)  { .nb-content-inner { padding: 24px; } }
+                @media (min-width: 1280px) { .nb-content-inner { padding: 32px 40px; } }
 
                 /* ── Notebook view ──────────────────────── */
                 /* Mobile-first: título em cima, ações em baixo (sem sobreposição em tablet portrait) */

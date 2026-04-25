@@ -3,10 +3,25 @@ require_once __DIR__ . '/auth_check.php';
 $uid = requireAuth();
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/sanitize.php';
 
 $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = getInput();
+
+// Sanitiza conteúdo rich-text quando o pedido vem com `content` HTML
+if (is_array($input) && isset($input['content']) && is_string($input['content'])) {
+    if (strlen($input['content']) > 1048576) {
+        jsonResponse(false, null, 'Conteúdo demasiado grande', 413);
+    }
+    $input['content'] = neatpad_sanitize_html($input['content']);
+}
+// Sanitiza títulos e campos textuais simples (remove tags por completo)
+foreach (['title'] as $textField) {
+    if (isset($input[$textField]) && is_string($input[$textField])) {
+        $input[$textField] = trim(strip_tags($input[$textField]));
+    }
+}
 
 function ownedCategoryExists(PDO $db, int $categoryId, string $uid): bool {
     $stmt = $db->prepare("SELECT id FROM categories WHERE id = ? AND user_uid = ?");

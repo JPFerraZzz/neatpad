@@ -12,7 +12,24 @@ function initDbSession(): void {
     // Duração da sessão: 7 dias de inatividade (em segundos). Override com SESSION_MAX_LIFETIME no Railway.
     $maxLifetime = (int) (getenv('SESSION_MAX_LIFETIME') ?: 604800);
     ini_set('session.gc_maxlifetime', (string) $maxLifetime);
-    session_set_cookie_params(['lifetime' => $maxLifetime, 'path' => '/', 'samesite' => 'Lax']);
+    ini_set('session.use_strict_mode', '1');     // Rejeita IDs de sessão arbitrários enviados pelo cliente
+    ini_set('session.use_only_cookies', '1');    // Não aceita session id em URL (evita session fixation)
+    ini_set('session.cookie_httponly', '1');     // Cookie inacessível ao JavaScript
+
+    $isHttps = (
+        (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https')
+        || (($_SERVER['SERVER_PORT'] ?? '') == 443)
+    );
+
+    session_set_cookie_params([
+        'lifetime' => $maxLifetime,
+        'path'     => '/',
+        'samesite' => 'Lax',
+        'httponly' => true,
+        'secure'   => $isHttps,
+    ]);
+    session_name('NEATPAD_SID');
 
     $pdo = getDB();
 

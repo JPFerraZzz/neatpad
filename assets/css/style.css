@@ -401,10 +401,22 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     display: flex; align-items: center; gap: 8px;
     padding-left: 12px; border-left: 1px solid var(--border);
 }
+#userAvatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--primary-weak); color: var(--primary);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+}
 #userDisplayName {
-    color: var(--text-muted); font-size: 13px; font-weight: 500;
-    max-width: 160px;
+    color: var(--text); font-size: 13px; font-weight: 600;
+    max-width: 180px;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+#userDisplayName:empty::before {
+    content: '…';
+    color: var(--text-subtle);
 }
 
 .main-content { padding: 20px 0 24px; }
@@ -881,6 +893,21 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     .modal-header { padding: 14px 24px; }
     .modal-header h3 { font-size: 18px; }
     .modal-body { padding: 24px; }
+}
+
+/* Desktop ≥1024px: layout tipo Notion para cadernos —
+   o modal vai a full-bleed e o body não tem padding, dando todo o espaço
+   ao shell (sidebar fixa + área de conteúdo) que se encarrega do scroll. */
+@media (min-width: 1024px) {
+    .modal-large .modal-content:has(.nb-shell) {
+        max-width: 100%;
+        border-left: none;
+        border-right: none;
+    }
+    .modal-body:has(.nb-shell) {
+        padding: 0;
+        overflow: hidden;
+    }
 }
 
 /* Em mobile, os botões do header da view colapsam para ícones */

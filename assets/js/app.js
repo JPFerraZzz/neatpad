@@ -719,8 +719,15 @@ function showNotification(message, type = 'info') {
 // ====================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Carregar categorias
-    fetchCategories();
+    // Carregar categorias só depois da sessão estar pronta — evita 401 inicial
+    // quando a sessão PHP precisa de ser recriada a partir do Firebase.
+    if (window.__currentUser) {
+        fetchCategories();
+    } else {
+        document.addEventListener('neatpad:auth-ready', () => fetchCategories(), { once: true });
+        // Fallback: se o evento nunca chegar (sem auth.js a carregar), tenta de qualquer modo
+        setTimeout(() => { if (!AppState.categories.length) fetchCategories(); }, 8000);
+    }
 
     // Event Listeners (alguns botões só existem em desktop; null-safe)
     const newCatBtn = document.getElementById('newCategoryBtn');

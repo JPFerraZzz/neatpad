@@ -8,6 +8,23 @@ $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = getInput();
 
+// Sanitização: nome sem tags; cor restrita a #RRGGBB; icon e template a slugs simples
+if (is_array($input)) {
+    if (isset($input['name']) && is_string($input['name'])) {
+        $input['name'] = trim(strip_tags($input['name']));
+        if (mb_strlen($input['name']) > 100) $input['name'] = mb_substr($input['name'], 0, 100);
+    }
+    if (isset($input['icon']) && is_string($input['icon'])) {
+        $input['icon'] = preg_replace('/[^a-z0-9_-]/i', '', $input['icon']) ?: 'folder';
+    }
+    if (isset($input['template_type']) && is_string($input['template_type'])) {
+        $input['template_type'] = preg_replace('/[^a-z0-9_-]/i', '', $input['template_type']) ?: 'simple';
+    }
+    if (isset($input['color']) && is_string($input['color'])) {
+        $input['color'] = preg_match('/^#[0-9a-f]{6}$/i', $input['color']) ? $input['color'] : '#3498db';
+    }
+}
+
 try {
     switch ($method) {
         case 'GET':

@@ -3,6 +3,7 @@ require_once __DIR__ . '/auth_check.php';
 $uid = requireAuth();
 
 require_once __DIR__ . '/db.php';
+require_once __DIR__ . '/sanitize.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(false, null, 'Método não suportado', 405);
@@ -21,6 +22,15 @@ $isSnapshot = ($savedBy === 'manual_snapshot');
 
 if (!$isSnapshot && $content === null) {
     jsonResponse(false, null, 'content é obrigatório', 400);
+}
+
+// Sanitização de XSS no conteúdo rich-text antes de tocar na BD
+if (!$isSnapshot && is_string($content)) {
+    // Limite defensivo de tamanho (1 MiB) — evita abuso e payloads gigantes
+    if (strlen($content) > 1048576) {
+        jsonResponse(false, null, 'Conteúdo demasiado grande', 413);
+    }
+    $content = neatpad_sanitize_html($content);
 }
 
 try {

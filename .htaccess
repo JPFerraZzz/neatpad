@@ -9,11 +9,46 @@ AddDefaultCharset UTF-8
 # Segurança: Prevenir listagem de diretórios
 Options -Indexes
 
-# Segurança: Bloquear acesso direto apenas ao .htaccess
-<FilesMatch "^(\.htaccess)$">
-    Order Allow,Deny
-    Deny from all
+# ── Bloquear acesso direto a ficheiros sensíveis ────────────────────
+# .htaccess, .env, configs, SQL, scripts de setup, docs internos
+<FilesMatch "^(\.htaccess|\.env.*|config\.php|.*\.example\.(php|js)|.*\.sql|setup-linux\.sh|composer\.(json|lock)|README\.md|\.gitignore)$">
+    Require all denied
 </FilesMatch>
+
+# Bloquear acesso direto a /api/db.php, /api/session_db.php, /api/firebase_verify.php,
+# /api/auth_check.php, /api/migrate.php (são includes, não devem ser chamados directamente)
+<FilesMatch "^(db|session_db|firebase_verify|auth_check|migrate)\.php$">
+    Require all denied
+</FilesMatch>
+
+# Bloquear pastas potencialmente sensíveis se existirem (.git, docs, vendor, node_modules)
+RedirectMatch 404 /\.git(/|$)
+RedirectMatch 404 /vendor(/|$)
+RedirectMatch 404 /node_modules(/|$)
+RedirectMatch 404 /docs(/|$)
+
+# ── Headers de segurança (recomendados pela OWASP) ──────────────────
+<IfModule mod_headers.c>
+    # Impede que o site seja embebido em <iframe> de outros domínios (clickjacking)
+    Header always set X-Frame-Options "DENY"
+
+    # Impede sniffing do MIME type pelo browser
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Limita o que é enviado no cabeçalho Referer
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Desliga capacidades poderosas que a app não usa
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), accelerometer=(), gyroscope=()"
+
+    # Força HTTPS por 6 meses (apenas se servir em HTTPS)
+    Header always set Strict-Transport-Security "max-age=15552000; includeSubDomains"
+
+    # CSP — afinada para Firebase + Google Fonts + Font Awesome.
+    # Inclui 'unsafe-inline' nos scripts/styles porque o app tem inline scripts em index.html;
+    # podemos endurecer mais tarde com nonces se quisermos.
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://*.firebaseio.com https://apis.google.com https://www.googleapis.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; img-src 'self' https: data: blob:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://www.googleapis.com; frame-src https://*.firebaseapp.com https://accounts.google.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+</IfModule>
 
 # MIME types para PWA
 <IfModule mod_mime.c>

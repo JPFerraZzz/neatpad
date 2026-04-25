@@ -2,15 +2,47 @@
 // NeatPad — Autenticação Firebase
 // ================================================
 
+// Shim global: injecta X-Requested-With em todos os pedidos para a API (CSRF
+// "lite") e força credentials:'same-origin' para o cookie de sessão viajar.
+// Aplicado uma única vez, antes de qualquer outro código fazer fetch().
+(function patchFetchForApi() {
+    if (window.__neatpadFetchPatched) return;
+    window.__neatpadFetchPatched = true;
+
+    const origFetch = window.fetch.bind(window);
+    window.fetch = function (input, init) {
+        try {
+            const url = typeof input === 'string' ? input : (input && input.url) || '';
+            // Só toca em chamadas internas para api/ — não interfere com Firebase, fonts, etc.
+            if (/(^|\/)api\//.test(url)) {
+                init = init || {};
+                if (init.credentials === undefined) init.credentials = 'same-origin';
+                const headers = new Headers(init.headers || (input && input.headers) || {});
+                if (!headers.has('X-Requested-With')) {
+                    headers.set('X-Requested-With', 'XMLHttpRequest');
+                }
+                init.headers = headers;
+            }
+        } catch (_) { /* fail open: nunca quebrar o fetch original */ }
+        return origFetch(input, init);
+    };
+})();
+
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
+
+// Garantir persistência local da sessão Firebase mesmo após refresh/fecho do browser
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
 
 // Envia o ID token Firebase para o backend PHP criar a sessão
 async function createPhpSession(user) {
     const token = await user.getIdToken();
     const res = await fetch('api/auth.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+        },
         credentials: 'same-origin',
         body: JSON.stringify({ token }),
     });
@@ -26,6 +58,86 @@ async function createPhpSession(user) {
     }
     return data;
 }
+
+// Espera por uma decisão definitiva do Firebase Auth (com timeout)
+function waitForFirebaseUser(timeoutMs = 6000) {
+    return new Promise((resolve) => {
+        let done = false;
+        const t = setTimeout(() => { if (!done) { done = true; resolve(null); } }, timeoutMs);
+        const unsub = auth.onAuthStateChanged((user) => {
+            if (done) return;
+            done = true;
+            clearTimeout(t);
+            unsub();
+            resolve(user || null);
+        });
+    });
+}
+
+/**
+ * Bootstrap da sessão para páginas protegidas (chamado por index.html).
+ * Estratégia:
+ *   1. GET /api/auth.php — sessão PHP ainda válida? Usa.
+ *   2. Caso contrário, espera pelo Firebase Auth (que persiste em localStorage)
+ *      e recria a sessão PHP com o ID token.
+ *   3. Se nem isso, redirige para o login.
+ *
+ * Este fluxo evita o "logout ao refresh" típico de quando o cookie de sessão
+ * PHP expira mas o Firebase ainda tem o utilizador autenticado localmente.
+ */
+async function bootstrapAuthenticatedPage() {
+    // Tentativa 1: sessão PHP existente
+    try {
+        const r = await fetch('api/auth.php', {
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
+        if (r.ok) {
+            const d = await r.json();
+            if (d && d.success && d.data) {
+                window.__currentUser = d.data;
+                document.dispatchEvent(new CustomEvent('neatpad:auth-ready', { detail: d.data }));
+                return d.data;
+            }
+        }
+    } catch (_) { /* continua para fallback Firebase */ }
+
+    // Tentativa 2: Firebase persistido localmente → recriar sessão PHP
+    const user = await waitForFirebaseUser();
+    if (user) {
+        try {
+            const d = await createPhpSession(user);
+            if (d && d.success && d.data) {
+                window.__currentUser = d.data;
+                document.dispatchEvent(new CustomEvent('neatpad:auth-ready', { detail: d.data }));
+                return d.data;
+            }
+        } catch (e) {
+            console.error('Não foi possível recriar a sessão PHP a partir do Firebase:', e);
+        }
+    }
+
+    // Sem sessão e sem Firebase user → login
+    window.location.replace('login.html');
+    return null;
+}
+
+// Renovação automática do PHP cookie sempre que o Firebase rota o ID token.
+// Sem isto, em sessões longas o cookie PHP pode expirar enquanto o Firebase
+// continua válido — daí o "logout misterioso" ao refresh.
+auth.onIdTokenChanged((user) => {
+    if (!user) return;
+    if (window.location.pathname.endsWith('login.html')) return;
+
+    // Pinta o nome assim que o Firebase responde, mesmo antes da sessão PHP voltar.
+    if (user.displayName) {
+        const nameEl = document.getElementById('userDisplayName');
+        if (nameEl && !nameEl.textContent.trim()) nameEl.textContent = user.displayName;
+    }
+    createPhpSession(user).catch(() => { /* silencioso: bootstrap trata se falhar */ });
+});
+
+window.bootstrapAuthenticatedPage = bootstrapAuthenticatedPage;
 
 function setLoading(btnId, loading) {
     const btn = document.getElementById(btnId);
@@ -126,7 +238,11 @@ async function loginGoogle() {
 // Logout — chamado a partir do index.html
 async function logout() {
     try {
-        await fetch('api/auth.php', { method: 'DELETE', credentials: 'same-origin' });
+        await fetch('api/auth.php', {
+            method: 'DELETE',
+            credentials: 'same-origin',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        });
         await auth.signOut();
     } catch (_) {}
     window.location.replace('login.html');
