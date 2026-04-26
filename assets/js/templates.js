@@ -2533,6 +2533,7 @@ window.Templates = {
 
                 /* ── Navegação mobile em duas camadas (lista ↔ detalhe) ── */
                 @media (max-width: 768px) {
+                    /* Base mobile (lista) */
                     .nb-shell.nb-mobile {
                         display: flex;
                         flex-direction: column;
@@ -2549,32 +2550,191 @@ window.Templates = {
                         flex-direction: column;
                         min-height: 60vh;
                     }
-                    .nb-shell.nb-mobile--detail .nb-sidebar {
-                        display: none;
+                    /* Notion-like mobile editor (camada detalhe) */
+                    .nb-shell.nb-mobile--detail {
+                        position: fixed;
+                        top: 0; left: 0; right: 0; bottom: 0;
+                        z-index: 1000; /* above everything */
+                        background: #0d0d0d;
+                        color: #ffffff;
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 100dvh;
+                        border-radius: 0;
+                        border: none;
                     }
                     .nb-shell.nb-mobile--detail .nb-main {
                         display: flex;
+                        flex-direction: column;
+                        flex: 1;
+                        background: transparent;
+                        height: 100dvh;
                     }
-                    #nbBackBtn {
+                    /* Ocultar elementos desktop */
+                    .nb-shell.nb-mobile--detail .nb-sidebar,
+                    .nb-shell.nb-mobile--detail .nb-view-header,
+                    .nb-shell.nb-mobile--detail .nb-editor-actions {
+                        display: none !important;
+                    }
+                    /* Topbar mobile */
+                    .nb-shell.nb-mobile--detail .nb-mobile-topbar {
+                        display: flex !important;
+                        align-items: center;
+                        justify-content: space-between;
+                        padding: 8px 16px;
+                        padding-top: calc(8px + env(safe-area-inset-top));
+                        background: #1a1a1a;
+                        flex-shrink: 0;
+                    }
+                    .nb-mobile-topbar-btn {
+                        background: transparent;
+                        border: none;
+                        color: #a0a0a0;
+                        font-size: 16px;
                         display: flex;
                         align-items: center;
                         gap: 8px;
-                        padding: 12px 16px;
-                        background: var(--bg-surface);
-                        border: none;
-                        border-bottom: 1px solid var(--border);
-                        color: var(--primary);
-                        font-size: 14px;
-                        font-weight: 600;
                         cursor: pointer;
-                        width: 100%;
-                        text-align: left;
-                        font-family: var(--font);
+                        padding: 4px 8px;
                     }
-                    #nbBackBtn:active {
-                        background: var(--bg-subtle);
+                    .nb-mobile-topbar-btn:active {
+                        color: #ffffff;
                     }
-                    #nbBackBtn i { font-size: 12px; }
+                    .nb-mobile-topbar-actions {
+                        display: flex;
+                        gap: 16px;
+                    }
+                    /* Área de escrita */
+                    .nb-shell.nb-mobile--detail .nb-content-inner {
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 16px 16px calc(60px + env(safe-area-inset-bottom)); /* Espaço para a toolbar */
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    /* O content-inner do desktop tem max-width. Removemos isso em mobile fixed */
+                    .nb-shell.nb-mobile--detail .nb-content-inner { max-width: none; }
+                    /* Título inline mobile */
+                    .nb-shell.nb-mobile--detail .nb-mobile-title-input {
+                        display: block !important;
+                        font-size: 32px;
+                        font-weight: 700;
+                        color: #ffffff;
+                        outline: none;
+                        border: none;
+                        margin-bottom: 16px;
+                        line-height: 1.2;
+                        min-height: 40px;
+                        word-break: break-word;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-mobile-title-input:empty::before {
+                        content: attr(data-placeholder);
+                        color: #555555;
+                        pointer-events: none;
+                    }
+                    /* Reset do rich editor para mobile */
+                    .nb-shell.nb-mobile--detail .nb-rich-editor {
+                        border: none !important;
+                        padding: 0 !important;
+                        background: transparent !important;
+                        color: #ffffff !important;
+                        min-height: 50vh;
+                        font-size: 16px;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-rich-editor[data-placeholder]:empty::before {
+                        color: #555555;
+                    }
+                    .nb-shell.nb-mobile--detail #notebookEditorArea {
+                        display: flex !important;
+                        flex-direction: column;
+                        flex: 1;
+                    }
+                    /* Bottom Sheet para blocos (slash menu mobile) */
+                    .nb-shell.nb-mobile--detail .nb-slash-menu {
+                        width: 100vw !important;
+                        max-height: 70vh !important;
+                        top: auto !important;
+                        bottom: 0 !important;
+                        left: 0 !important;
+                        transform: none !important;
+                        background: #1a1a1a;
+                        border-radius: 12px 12px 0 0;
+                        border: none;
+                        box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+                        padding: 16px 12px calc(16px + env(safe-area-inset-bottom));
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-menu::before {
+                        content: '';
+                        display: block;
+                        width: 40px;
+                        height: 4px;
+                        background: #333333;
+                        border-radius: 2px;
+                        margin: 0 auto 16px;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-items {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 8px;
+                        overflow-y: auto;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-header {
+                        grid-column: 1 / -1;
+                        font-size: 13px;
+                        color: #888888;
+                        padding-left: 4px;
+                        margin-top: 8px;
+                        margin-bottom: 4px;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-item {
+                        background: #262626;
+                        border-radius: 8px;
+                        padding: 12px;
+                        margin: 0;
+                        flex-direction: column;
+                        align-items: flex-start;
+                        gap: 8px;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-icon {
+                        background: transparent;
+                        width: auto; height: auto;
+                        font-size: 24px;
+                        color: #ffffff;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-label {
+                        font-weight: 600;
+                        font-size: 14px;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-slash-desc {
+                        display: none; /* Notion esconde a descrição na grid */
+                    }
+                    
+                    /* Mobile Toolbars */
+                    .nb-shell.nb-mobile--detail .nb-mobile-toolbar {
+                        background: #1a1a1a;
+                        border-top: 1px solid #2a2a2a;
+                        height: 44px;
+                        padding: 0 8px;
+                        padding-bottom: env(safe-area-inset-bottom);
+                        display: flex;
+                        align-items: center;
+                        gap: 0;
+                        overflow-x: auto;
+                        flex-wrap: nowrap;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-mtool {
+                        min-width: 40px;
+                        height: 44px;
+                        border-radius: 0;
+                        color: #ffffff;
+                        font-size: 18px;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-mtool:active,
+                    .nb-shell.nb-mobile--detail .nb-mtool.active {
+                        background: #333333;
+                    }
                 }
 
                 /* ── Slash menu ────────────────────────── */
@@ -2823,6 +2983,17 @@ window.Templates = {
             return `
                 <div class="nb-view" data-notebook-id="${notebook.id}">
 
+                    <!-- TOPBAR MOBILE (escondida em desktop via CSS) -->
+                    <div id="nbMobileTopbar" class="nb-mobile-topbar" style="display: none;">
+                        <button class="nb-mobile-topbar-btn" onclick="Templates.notebooks._mobileNavBack()">
+                            <i class="fas fa-chevron-left"></i> Cadernos
+                        </button>
+                        <div class="nb-mobile-topbar-actions">
+                            <button class="nb-mobile-topbar-btn"><i class="fas fa-share-alt"></i></button>
+                            <button class="nb-mobile-topbar-btn"><i class="fas fa-ellipsis-h"></i></button>
+                        </div>
+                    </div>
+
                     <div id="notebookToolbarSlot" style="display:none;">
                         ${this._buildToolbar()}
                     </div>
@@ -2880,6 +3051,7 @@ window.Templates = {
                         </div>
 
                         <div id="notebookEditorArea" style="display:none;">
+                            <div id="nbMobileTitleInput" class="nb-mobile-title-input" contenteditable="true" data-placeholder="Sem título" style="display:none;">${escapeHtml(notebook.title)}</div>
                             <div id="notebookRichEditor" class="nb-rich-editor"
                                  contenteditable="true"
                                  data-placeholder="Começa a escrever aqui…"
@@ -3819,8 +3991,219 @@ window.Templates = {
         },
 
         // ═══════════════════════════════════════════════════════════════════
-        // MOBILE TOOLBAR (B/I/U + slash + save fixos acima do teclado)
+        // AÇÕES MOBILE EXTRA (Notion-like)
         // ═══════════════════════════════════════════════════════════════════
+
+        _toggleInlineFormatToolbar() {
+            const mainTb = document.getElementById('nbMobileToolbar');
+            const formatTb = document.getElementById('nbMobileFormatToolbar');
+            if (!mainTb || !formatTb) return;
+            
+            if (mainTb.style.display !== 'none') {
+                mainTb.style.display = 'none';
+                formatTb.style.display = 'flex';
+            } else {
+                mainTb.style.display = 'flex';
+                formatTb.style.display = 'none';
+            }
+        },
+
+        _startVoiceDictation() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showNotification('Ditado por voz não suportado neste browser.', 'error');
+                return;
+            }
+            
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'pt-PT';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+            
+            showNotification('A ouvir... Fale agora.', 'info');
+            
+            recognition.start();
+            
+            recognition.onresult = (event) => {
+                const speechResult = event.results[0][0].transcript;
+                editor.focus();
+                document.execCommand('insertText', false, speechResult + ' ');
+            };
+            
+            recognition.onerror = (event) => {
+                showNotification('Erro no ditado: ' + event.error, 'error');
+            };
+        },
+
+        _insertImagePrompt() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            const url = window.prompt('URL da Imagem:', 'https://');
+            if (url && url !== 'https://') {
+                // Segurança
+                const safeUrl = /^(https?:)/i.test(url) ? url : null;
+                if (safeUrl) document.execCommand('insertImage', false, safeUrl);
+            }
+        },
+
+        _closeKeyboard() {
+            const editor = document.getElementById('notebookRichEditor');
+            const titleInput = document.getElementById('nbMobileTitleInput');
+            if (editor) editor.blur();
+            if (titleInput) titleInput.blur();
+        },
+
+        _openSlashMenuMobile() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+
+            // Simula clique no '+' abrindo o menu sem inserir o caractere '/'
+            setTimeout(() => {
+                this._openSlashMenu();
+                
+                // Em mobile, garante que o input de filtro do Notion-like é inserido
+                const menu = document.getElementById('nbSlashMenu');
+                if (menu && window.innerWidth <= 768 && !menu.querySelector('.nb-slash-mobile-search')) {
+                    const searchBox = document.createElement('input');
+                    searchBox.type = 'text';
+                    searchBox.className = 'nb-slash-mobile-search';
+                    searchBox.placeholder = 'Pesquisar blocos...';
+                    searchBox.oninput = (e) => {
+                        this._slashFilter = e.target.value.toLowerCase();
+                        this._filterSlashItems();
+                    };
+                    
+                    // CSS inline apenas para este search box mobile
+                    searchBox.style.width = '100%';
+                    searchBox.style.padding = '12px';
+                    searchBox.style.background = '#262626';
+                    searchBox.style.border = 'none';
+                    searchBox.style.borderRadius = '8px';
+                    searchBox.style.color = '#fff';
+                    searchBox.style.marginBottom = '12px';
+                    searchBox.style.outline = 'none';
+                    searchBox.style.fontSize = '14px';
+
+                    menu.insertBefore(searchBox, menu.firstChild);
+                    
+                    // Coloca o foco no input
+                    setTimeout(() => searchBox.focus(), 50);
+                }
+            }, 0);
+        },
+
+        _addComment() {
+            showNotification('Comentários em desenvolvimento...', 'info');
+        },
+
+        _openBlockAIActions() {
+            showNotification('Menu IA em desenvolvimento...', 'info');
+        },
+
+        _openTransformMenu() {
+            // Reutiliza a lógica do slash menu, mas só com as opções de transformar
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            
+            // Simula slash
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return;
+            
+            // Apresenta as opções de transformação
+            this._slashFilter = '';
+            this._openSlashMenu();
+            
+            const menu = document.getElementById('nbSlashMenu');
+            if (menu) {
+                const header = menu.querySelector('.nb-slash-header');
+                if (header) header.textContent = 'Transformar em';
+                
+                // Esconde as opções que não são tipos de bloco básicos
+                menu.querySelectorAll('.nb-slash-item').forEach(item => {
+                    const action = item.getAttribute('data-action');
+                    if (!['h1','h2','h3','ul','ol','blockquote','pre'].includes(action)) {
+                        item.classList.add('hidden');
+                    } else {
+                        item.classList.remove('hidden');
+                    }
+                });
+            }
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TOOLBAR DE BLOCO (Long press em mobile)
+        // ═══════════════════════════════════════════════════════════════════
+
+        _currentBlock: null,
+
+        _showBlockToolbar(target) {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor || !editor.contains(target)) return;
+
+            // Encontra o bloco atual (p, h1, li, etc.)
+            const blockTags = new Set(['P','DIV','LI','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','PRE','TD','TH']);
+            let block = target;
+            while (block && block !== editor && !blockTags.has(block.tagName)) {
+                block = block.parentNode;
+            }
+            if (!block || block === editor) block = target; // Fallback
+            
+            this._currentBlock = block;
+
+            // Esconde todas as toolbars e mostra a de bloco
+            const tb1 = document.getElementById('nbMobileToolbar');
+            const tb2 = document.getElementById('nbMobileFormatToolbar');
+            const tb3 = document.getElementById('nbMobileBlockToolbar');
+            
+            if (tb1) tb1.style.display = 'none';
+            if (tb2) tb2.style.display = 'none';
+            if (tb3) tb3.style.display = 'flex';
+            
+            // Seleciona visualmente o bloco (opcional, ajuda visual)
+            if (block.nodeType === Node.ELEMENT_NODE) {
+                block.style.backgroundColor = '#262626';
+                setTimeout(() => { block.style.backgroundColor = ''; }, 1000);
+            }
+        },
+
+        _closeBlockToolbar() {
+            this._currentBlock = null;
+            const tb1 = document.getElementById('nbMobileToolbar');
+            const tb2 = document.getElementById('nbMobileFormatToolbar');
+            const tb3 = document.getElementById('nbMobileBlockToolbar');
+            
+            if (tb1) tb1.style.display = 'flex';
+            if (tb2) tb2.style.display = 'none';
+            if (tb3) tb3.style.display = 'none';
+        },
+
+        _deleteCurrentBlock() {
+            if (!this._currentBlock) return;
+            this._currentBlock.remove();
+            this._closeBlockToolbar();
+            if (this._autosaveTrigger) this._autosaveTrigger();
+        },
+
+        _moveBlock(dir) {
+            if (!this._currentBlock) return;
+            const b = this._currentBlock;
+            if (dir === -1 && b.previousElementSibling) {
+                b.parentNode.insertBefore(b, b.previousElementSibling);
+            } else if (dir === 1 && b.nextElementSibling) {
+                b.parentNode.insertBefore(b.nextElementSibling, b);
+            }
+            if (this._autosaveTrigger) this._autosaveTrigger();
+        },
+
+        _openBlockActionsSheet() {
+            showNotification('Mais ações em desenvolvimento', 'info');
+        },
 
         _mountMobileToolbar() {
             if (window.innerWidth > 768) return;
@@ -3828,26 +4211,87 @@ window.Templates = {
             const wrap = document.createElement('div');
             wrap.innerHTML = `
                 <div id="nbMobileToolbar" class="nb-mobile-toolbar">
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
-                    <button class="nb-mtool nb-mtool--slash" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openSlashFromButton()">/</button>
-                    <button class="nb-mtool nb-mtool--save" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks.saveInlineEdit()"><i class="fas fa-save"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openBlockAIActions()"><i class="fas fa-sparkles"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openSlashMenuMobile()"><i class="fas fa-plus"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._toggleInlineFormatToolbar()">Aa</button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._startVoiceDictation()"><i class="fas fa-microphone"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._insertImagePrompt()"><i class="fas fa-image"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openTransformMenu()"><i class="fas fa-sync-alt"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('undo')"><i class="fas fa-undo"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._addComment()"><i class="fas fa-comment-alt"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._closeKeyboard()"><i class="fas fa-keyboard"></i></button>
+                </div>
+                <!-- Toolbar de Formatação Inline (escondida por defeito) -->
+                <div id="nbMobileFormatToolbar" class="nb-mobile-toolbar" style="display:none;">
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._toggleInlineFormatToolbar()"><i class="fas fa-arrow-left"></i></button>
+                    <button class="nb-mtool" type="button" data-cmd="bold" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
+                    <button class="nb-mtool" type="button" data-cmd="italic" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
+                    <button class="nb-mtool" type="button" data-cmd="underline" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
+                    <button class="nb-mtool" type="button" data-cmd="strikeThrough" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('strikeThrough')"><s>S</s></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._insertLink()"><i class="fas fa-link"></i></button>
+                    <button class="nb-mtool" type="button" data-cmd="code" onmousedown="event.preventDefault()" onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
+                </div>
+                <!-- Toolbar de Bloco (escondida por defeito) -->
+                <div id="nbMobileBlockToolbar" class="nb-mobile-toolbar" style="display:none;">
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._addComment()"><i class="fas fa-comment-alt"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="showNotification('Mentions em breve', 'info')">@</button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._deleteCurrentBlock()" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('indent')"><i class="fas fa-indent"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('outdent')"><i class="fas fa-outdent"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._moveBlock(-1)"><i class="fas fa-arrow-up"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._moveBlock(1)"><i class="fas fa-arrow-down"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openBlockActionsSheet()"><i class="fas fa-ellipsis-h"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._closeBlockToolbar()"><i class="fas fa-keyboard"></i></button>
                 </div>
             `;
-            document.body.appendChild(wrap.firstElementChild);
+            // Adiciona todas as toolbars ao body
+            while(wrap.firstChild) {
+                document.body.appendChild(wrap.firstChild);
+            }
 
-            // Em mobile escondemos o toolbar desktop (sticky) — slash menu chega
+            // Adiciona detector de long press no editor para mostrar a Block Toolbar
+            const editor = document.getElementById('notebookRichEditor');
+            if (editor && !this._longPressHandler) {
+                let pressTimer;
+                this._longPressHandler = {
+                    start: (e) => {
+                        if (e.touches && e.touches.length > 1) return;
+                        pressTimer = setTimeout(() => {
+                            // Encontra o bloco e mostra a toolbar
+                            Templates.notebooks._showBlockToolbar(e.target);
+                        }, 500); // 500ms long press
+                    },
+                    cancel: () => {
+                        clearTimeout(pressTimer);
+                    }
+                };
+                editor.addEventListener('touchstart', this._longPressHandler.start, {passive: true});
+                editor.addEventListener('touchend', this._longPressHandler.cancel, {passive: true});
+                editor.addEventListener('touchmove', this._longPressHandler.cancel, {passive: true});
+            }
+
+            // Em mobile escondemos o toolbar desktop (sticky)
             const slot = document.getElementById('notebookToolbarSlot');
             if (slot) slot.dataset.prevDisplay = slot.style.display || '';
             if (slot) slot.style.display = 'none';
         },
 
         _unmountMobileToolbar() {
-            const tb = document.getElementById('nbMobileToolbar');
-            if (tb) tb.remove();
+            const tb1 = document.getElementById('nbMobileToolbar');
+            const tb2 = document.getElementById('nbMobileFormatToolbar');
+            const tb3 = document.getElementById('nbMobileBlockToolbar');
+            if (tb1) tb1.remove();
+            if (tb2) tb2.remove();
+            if (tb3) tb3.remove();
+
+            const editor = document.getElementById('notebookRichEditor');
+            if (editor && this._longPressHandler) {
+                editor.removeEventListener('touchstart', this._longPressHandler.start);
+                editor.removeEventListener('touchend', this._longPressHandler.cancel);
+                editor.removeEventListener('touchmove', this._longPressHandler.cancel);
+                this._longPressHandler = null;
+            }
+
             const slot = document.getElementById('notebookToolbarSlot');
             if (slot && 'prevDisplay' in slot.dataset) {
                 slot.style.display = slot.dataset.prevDisplay;
@@ -3973,23 +4417,30 @@ window.Templates = {
             }
         },
 
-        async saveInlineEdit() {
+        async saveInlineEdit(silent = false) {
             const richEditor = document.getElementById('notebookRichEditor');
             const notebookView = document.querySelector('.nb-view');
             const editorArea = document.getElementById('notebookEditorArea');
 
             if (!richEditor || !notebookView) {
-                showNotification('Erro ao guardar', 'error');
+                if (!silent) showNotification('Erro ao guardar', 'error');
                 return;
             }
 
             const notebookId = notebookView.getAttribute('data-notebook-id');
             const newContent = richEditor.innerHTML;
+            
+            // Verifica título inline mobile
+            const titleInput = document.getElementById('nbMobileTitleInput');
+            const newTitle = titleInput ? titleInput.innerText.trim() : null;
 
             const saveBtn = editorArea.querySelector('.btn-success');
-            const origText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…';
-            saveBtn.disabled = true;
+            let origText = '';
+            if (saveBtn) {
+                origText = saveBtn.innerHTML;
+                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…';
+                saveBtn.disabled = true;
+            }
 
             try {
                 // Unregister autosave before manual save
@@ -4006,15 +4457,18 @@ window.Templates = {
                 if (this._slashMenuOpen) this._closeSlashMenu();
                 this._unmountMobileToolbar();
 
-                // Save directly via save_note.php (versioning + content)
+                const payload = {
+                    item_id: Number(notebookId),
+                    content: newContent,
+                    saved_by: silent ? 'autosave' : 'manual',
+                };
+                if (newTitle) payload.title = newTitle;
+
+                // Save directly via save_note.php (versioning + content + title)
                 const response = await fetch(`${API_URL}/save_note.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        item_id: Number(notebookId),
-                        content: newContent,
-                        saved_by: 'manual',
-                    }),
+                    body: JSON.stringify(payload),
                 });
                 const data = await response.json();
                 if (!data.success) throw new Error(data.error || 'Erro ao guardar');
@@ -4022,14 +4476,20 @@ window.Templates = {
                 // Clear local draft
                 if (window.Autosave) Autosave.clearDraft(notebookId);
 
-                showNotification('Caderno guardado!', 'success');
+                if (!silent) showNotification('Caderno guardado!', 'success');
 
-                // Re-render notebook view (exits edit mode)
-                await this.showNotebook(notebookId);
+                if (!silent) {
+                    // Re-render notebook view (exits edit mode)
+                    await this.showNotebook(notebookId);
+                }
 
-                // Update sidebar preview + date
+                // Update sidebar preview + date + title
                 const sidebarItem = document.querySelector(`.nb-list-item[data-notebook-id="${notebookId}"]`);
                 if (sidebarItem) {
+                    if (newTitle) {
+                        const titleEl = sidebarItem.querySelector('.nb-item-title');
+                        if (titleEl) titleEl.textContent = newTitle;
+                    }
                     const preview = newContent.replace(/<[^>]+>/g, '').slice(0, 60) || 'Caderno vazio…';
                     const previewEl = sidebarItem.querySelector('.nb-item-preview');
                     if (previewEl) previewEl.textContent = preview;
@@ -4037,12 +4497,14 @@ window.Templates = {
                     if (dateEl) dateEl.innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleDateString('pt-PT')}`;
                 }
 
-                fetchCategories();
+                if (!silent) fetchCategories();
             } catch (err) {
                 console.error('Save error:', err);
-                showNotification('Erro ao guardar: ' + err.message, 'error');
-                saveBtn.innerHTML = origText;
-                saveBtn.disabled = false;
+                if (!silent) showNotification('Erro ao guardar: ' + err.message, 'error');
+                if (saveBtn) {
+                    saveBtn.innerHTML = origText;
+                    saveBtn.disabled = false;
+                }
             }
         },
 
@@ -4228,9 +4690,8 @@ window.Templates = {
             }
 
             // Mobile: ao abrir um caderno passamos para a "camada detalhe"
-            // (esconde lista, mostra conteúdo a ecrã cheio + botão Voltar).
-            // Excepção: se o utilizador acabou de carregar em "Voltar" durante
-            // a edição, não queremos voltar a abrir o detalhe.
+            // (esconde lista, mostra conteúdo a ecrã cheio).
+            // O botão voltar e a topbar já estão dentro do HTML renderizado.
             if (window.innerWidth <= 768 && !this._suppressMobileDetail) {
                 const shell = document.querySelector('.nb-shell');
                 if (shell) {
@@ -4238,6 +4699,9 @@ window.Templates = {
                     shell.classList.add('nb-mobile--detail');
                     const main = shell.querySelector('.nb-main');
                     if (main) main.scrollTop = 0;
+                    
+                    // Notion UX: Mobile entra imediatamente em modo de edição
+                    this.enableEditMode();
                 }
             }
             this._suppressMobileDetail = false;
@@ -4245,28 +4709,15 @@ window.Templates = {
 
         // Inicializa a navegação em duas camadas em mobile:
         // - shell ganha .nb-mobile (lista a ecrã cheio, sem o painel direito)
-        // - injecta o botão "← Cadernos" no topo de .nb-main
         // - clicar num caderno → adiciona .nb-mobile--detail (esconde lista,
-        //   mostra conteúdo + botão voltar)
-        // - botão voltar → remove .nb-mobile--detail
+        //   mostra conteúdo + topbar)
         _initMobileNav() {
             const shell = document.querySelector('.nb-shell');
             if (!shell) return;
             shell.classList.add('nb-mobile');
             shell.classList.remove('nb-mobile--detail');
 
-            const main = shell.querySelector('.nb-main');
-            if (main && !main.querySelector('#nbBackBtn')) {
-                const back = document.createElement('button');
-                back.id = 'nbBackBtn';
-                back.type = 'button';
-                back.innerHTML = '<i class="fas fa-arrow-left"></i> <span>Cadernos</span>';
-                back.onclick = () => Templates.notebooks._mobileNavBack();
-                main.insertBefore(back, main.firstChild);
-            }
-
-            // Listener único para limpar/recolocar o estado quando o utilizador
-            // muda a largura do ecrã (rotate, redimensionar janela em DevTools).
+            // Listener único para limpar/recolocar o estado quando o utilizador muda a largura do ecrã
             if (!this._mobileResizeHandler) {
                 this._mobileResizeHandler = () => {
                     const sh = document.querySelector('.nb-shell');
@@ -4274,7 +4725,7 @@ window.Templates = {
                     if (window.innerWidth > 768) {
                         sh.classList.remove('nb-mobile', 'nb-mobile--detail');
                     } else {
-                        // Garante o setup mobile (incluindo botão "Voltar")
+                        // Garante o setup mobile
                         Templates.notebooks._initMobileNav();
                     }
                 };
@@ -4283,13 +4734,11 @@ window.Templates = {
         },
 
         _mobileNavBack() {
-            // Se o utilizador está em modo de edição, sai primeiro (autosave já guardou).
-            // Marcamos para que o showNotebook subsequente não reabra a camada detalhe.
-            const editorArea = document.getElementById('notebookEditorArea');
-            if (editorArea && editorArea.style.display !== 'none') {
-                this._suppressMobileDetail = true;
-                this.cancelEditMode();
-            }
+            // Guarda silenciosamente se o título ou conteúdo mudaram
+            this.saveInlineEdit(true); 
+            
+            this.cancelEditMode();
+            
             const shell = document.querySelector('.nb-shell');
             if (shell) shell.classList.remove('nb-mobile--detail');
         },
