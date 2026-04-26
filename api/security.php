@@ -32,6 +32,32 @@ function sendSecureHeaders(): void {
 }
 
 /**
+ * Reduz o User-Agent à sua família estável (apple-mobile, android, windows…),
+ * sem incluir versões. Usado como fingerprint leve da sessão sem causar
+ * "logout falso" quando:
+ *   - o browser/SO é atualizado (mudam as versões no UA)
+ *   - o utilizador instala a PWA "Add to Home Screen" (UA muda mas continua
+ *     a ser o mesmo aparelho — caso típico do mobile)
+ *   - alterna entre janelas normais e "private" no mesmo browser
+ */
+function uaFamilyFingerprint(): string {
+    $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+    $family = 'unknown';
+    if (stripos($ua, 'iPhone') !== false || stripos($ua, 'iPad') !== false || stripos($ua, 'iPod') !== false) {
+        $family = 'apple-mobile';
+    } elseif (stripos($ua, 'Android') !== false) {
+        $family = 'android';
+    } elseif (stripos($ua, 'Macintosh') !== false || stripos($ua, 'Mac OS') !== false) {
+        $family = 'macos';
+    } elseif (stripos($ua, 'Windows') !== false) {
+        $family = 'windows';
+    } elseif (stripos($ua, 'Linux') !== false || stripos($ua, 'X11') !== false) {
+        $family = 'linux';
+    }
+    return hash('sha256', $family . '|neatpad');
+}
+
+/**
  * Mitigação CSRF para endpoints state-changing.
  *
  * Bloqueia POST/PUT/DELETE sem o header `X-Requested-With: XMLHttpRequest`.

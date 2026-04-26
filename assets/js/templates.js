@@ -1548,19 +1548,30 @@ window.Templates = {
     excel: {
         render(container, items) {
             window.__lastExcelItems = items;
-            if (items.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
+
+            const toolbar = `
+                <div class="excel-toolbar">
+                    <div class="excel-toolbar-info">
+                        <i class="fas fa-table"></i>
+                        <span>${items.length} tabela${items.length !== 1 ? 's' : ''}</span>
+                    </div>
+                    <div class="excel-toolbar-actions">
+                        <button type="button" class="btn btn-secondary excel-import-btn" onclick="Templates.excel.openImportPicker()" title="Importar CSV como nova tabela">
+                            <i class="fas fa-file-import"></i>
+                            <span>Importar CSV</span>
+                        </button>
+                    </div>
+                    <input type="file" id="excelImportInput" accept=".csv,text/csv" hidden onchange="Templates.excel.handleImportFile(event)">
+                </div>
+            `;
+
+            const list = items.length === 0
+                ? `<div class="empty-state">
                         <i class="fas fa-table"></i>
                         <h3>Sem tabelas</h3>
-                        <p>Clica em "Novo" para criar uma tabela</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = `
-                <div class="excel-list">
+                        <p>Cria uma com "Novo" ou importa um ficheiro CSV.</p>
+                   </div>`
+                : `<div class="excel-list">
                     ${items.map(item => {
                         const metadata = item.metadata || {};
                         const data = metadata.data || [];
@@ -1570,21 +1581,25 @@ window.Templates = {
                             <div class="excel-card">
                                 <div class="excel-header">
                                     <h4 class="excel-title">
-                                        <i class="fas fa-table"></i> ${escapeHtml(item.title)}
+                                        <i class="fas fa-table"></i>
+                                        <span>${escapeHtml(item.title)}</span>
                                     </h4>
                                     <div class="excel-actions">
-                                        <button class="category-action-btn" onclick="Templates.excel.exportToCsv(${item.id})" title="Exportar para CSV">
-                                            <i class="fas fa-file-csv"></i> Exportar CSV
+                                        <button type="button" class="excel-action-btn" onclick="Templates.excel.exportToCsv(${item.id})" title="Exportar para CSV">
+                                            <i class="fas fa-file-csv"></i>
+                                            <span>CSV</span>
                                         </button>
-                                        <button class="category-action-btn" onclick="openItemEditor(${item.id})" title="Editar">
+                                        <button type="button" class="excel-action-btn" onclick="openItemEditor(${item.id})" title="Editar">
                                             <i class="fas fa-edit"></i>
+                                            <span>Editar</span>
                                         </button>
-                                        <button class="category-action-btn delete" onclick="deleteItem(${item.id})" title="Eliminar">
+                                        <button type="button" class="excel-action-btn excel-action-danger" onclick="deleteItem(${item.id})" title="Eliminar">
                                             <i class="fas fa-trash"></i>
+                                            <span>Eliminar</span>
                                         </button>
                                     </div>
                                 </div>
-                                
+
                                 ${headers.length > 0 ? `
                                     <div class="excel-table-container">
                                         <table class="excel-table">
@@ -1601,64 +1616,144 @@ window.Templates = {
                                                 `).join('')}
                                             </tbody>
                                         </table>
-                                        ${data.length > 5 ? `<p class="excel-more-rows">+${data.length - 5} linhas...</p>` : ''}
+                                        ${data.length > 5 ? `<p class="excel-more-rows">+${data.length - 5} linhas…</p>` : ''}
                                     </div>
-                                ` : '<p class="excel-empty-hint">Tabela vazia</p>'}
+                                ` : '<p class="excel-empty-hint">Tabela vazia. Clica em "Editar" para adicionar dados.</p>'}
                             </div>
                         `;
                     }).join('')}
-                </div>
+                </div>`;
+
+            container.innerHTML = `
+                ${toolbar}
+                ${list}
                 <style>
-                    .excel-list { display: flex; flex-direction: column; gap: 20px; }
-                    .excel-card {
-                        background: var(--bg-card);
-                        border: 2px solid var(--border-color);
-                        border-radius: 12px;
-                        padding: 25px;
+                    .excel-toolbar {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 12px;
+                        margin-bottom: 16px;
+                        padding: 10px 14px;
+                        background: var(--bg-surface);
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-lg);
+                        flex-wrap: wrap;
                     }
+                    .excel-toolbar-info {
+                        display: inline-flex; align-items: center; gap: 8px;
+                        color: var(--text-muted); font-size: 13px; font-weight: 500;
+                    }
+                    .excel-toolbar-actions { display: inline-flex; gap: 8px; flex-wrap: wrap; }
+                    .excel-import-btn {
+                        display: inline-flex; align-items: center; gap: 8px;
+                        height: var(--touch-min);
+                        padding: 0 16px;
+                    }
+                    @media (min-width: 768px) {
+                        .excel-import-btn { height: 38px; padding: 0 14px; font-size: 14px; }
+                    }
+
+                    .excel-list { display: flex; flex-direction: column; gap: 16px; }
+                    .excel-card {
+                        background: var(--bg-surface);
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius-lg);
+                        padding: 16px;
+                    }
+                    @media (min-width: 768px) { .excel-card { padding: 20px; } }
                     .excel-header {
                         display: flex;
                         justify-content: space-between;
-                        align-items: center;
-                        margin-bottom: 20px;
+                        align-items: flex-start;
+                        gap: 12px;
+                        margin-bottom: 14px;
+                        flex-wrap: wrap;
                     }
                     .excel-title {
-                        font-size: 18px;
-                        font-weight: 600;
-                        color: var(--text-primary);
-                        display: flex;
+                        font-size: 16px;
+                        font-weight: 700;
+                        color: var(--text);
+                        display: inline-flex;
                         align-items: center;
                         gap: 10px;
+                        margin: 0;
+                        word-break: break-word;
+                        min-width: 0;
+                        flex: 1;
                     }
-                    .excel-actions { display: flex; gap: 8px; }
-                    .excel-table-container { overflow-x: auto; }
+                    .excel-title i { color: var(--primary); }
+                    .excel-actions {
+                        display: inline-flex;
+                        gap: 6px;
+                        flex-wrap: wrap;
+                    }
+                    .excel-action-btn {
+                        display: inline-flex; align-items: center; gap: 6px;
+                        padding: 0 12px;
+                        height: 34px;
+                        border-radius: var(--radius);
+                        border: 1px solid var(--border);
+                        background: var(--bg-surface);
+                        color: var(--text-muted);
+                        font-size: 13px; font-weight: 500;
+                        cursor: pointer;
+                        transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+                    }
+                    .excel-action-btn:hover {
+                        background: var(--bg-subtle);
+                        color: var(--text);
+                        border-color: var(--border-strong);
+                    }
+                    .excel-action-btn:focus-visible {
+                        outline: 2px solid var(--focus-ring, var(--primary));
+                        outline-offset: 1px;
+                    }
+                    .excel-action-btn.excel-action-danger:hover {
+                        background: var(--danger-weak);
+                        color: var(--danger);
+                        border-color: var(--danger);
+                    }
+                    /* Mobile: ações em fila full-width para serem fáceis de tocar */
+                    @media (max-width: 480px) {
+                        .excel-actions { width: 100%; }
+                        .excel-action-btn {
+                            flex: 1 1 0;
+                            justify-content: center;
+                            min-height: var(--touch-min);
+                        }
+                    }
+
+                    .excel-table-container {
+                        overflow-x: auto;
+                        border: 1px solid var(--border);
+                        border-radius: var(--radius);
+                    }
                     .excel-table {
                         width: 100%;
                         border-collapse: collapse;
-                        font-size: 14px;
-                        color: var(--text-primary);
+                        font-size: 13px;
+                        color: var(--text);
+                        background: var(--bg-surface);
                     }
                     .excel-table th {
-                        background: var(--primary-color);
-                        color: #fff;
-                        padding: 12px;
+                        background: var(--bg-subtle);
+                        color: var(--text);
+                        padding: 10px 12px;
                         text-align: left;
                         font-weight: 600;
+                        border-bottom: 1px solid var(--border);
+                        white-space: nowrap;
                     }
                     .excel-table td {
-                        padding: 10px 12px;
-                        border: 1px solid var(--border-color);
-                        color: var(--text-primary);
-                        background: var(--bg-card);
+                        padding: 9px 12px;
+                        border-bottom: 1px solid var(--border);
+                        color: var(--text);
                     }
-                    .excel-table tbody tr:nth-child(even) td {
-                        background: var(--bg-input);
-                    }
-                    .excel-table tbody tr:hover td {
-                        background: var(--bg-badge);
-                    }
+                    .excel-table tbody tr:last-child td { border-bottom: none; }
+                    .excel-table tbody tr:hover td { background: var(--bg-subtle); }
                     .excel-more-rows, .excel-empty-hint {
-                        color: var(--text-secondary);
+                        color: var(--text-muted);
                         margin-top: 10px;
                         font-size: 13px;
                     }
@@ -1690,7 +1785,7 @@ window.Templates = {
 
                     <div class="form-group">
                         <label>Dados (uma linha por entrada, células separadas por vírgula)</label>
-                        <textarea id="excelData" class="form-control" rows="10" placeholder="Ex:\nRecurso 1, https://..., Cursos\nRecurso 2, https://..., Tools">${metadata.data.map(row => row.map(cell => escapeHtml(cell)).join(', ')).join('\n')}</textarea>
+                        <textarea id="excelData" class="form-control" rows="6" placeholder="Ex:\nRecurso 1, https://..., Cursos\nRecurso 2, https://..., Tools" style="font-family: var(--font-mono); font-size: 13px;">${metadata.data.map(row => row.map(cell => escapeHtml(cell)).join(', ')).join('\n')}</textarea>
                         <small class="form-help">Cada linha representa uma entrada na tabela</small>
                     </div>
 
@@ -1754,6 +1849,113 @@ window.Templates = {
             a.click();
             URL.revokeObjectURL(a.href);
             showNotification('CSV exportado', 'success');
+        },
+
+        // Abre o seletor de ficheiro CSV (delegado ao input hidden no toolbar)
+        openImportPicker() {
+            const input = document.getElementById('excelImportInput');
+            if (!input) return;
+            input.value = ''; // permite reimportar o mesmo ficheiro
+            input.click();
+        },
+
+        async handleImportFile(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+
+            const MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+            if (file.size > MAX_BYTES) {
+                showNotification('Ficheiro demasiado grande (máx. 2 MB)', 'error');
+                return;
+            }
+
+            try {
+                const text = await file.text();
+                const parsed = this._parseCsv(text);
+                if (!parsed.headers.length && !parsed.data.length) {
+                    showNotification('CSV vazio ou inválido', 'error');
+                    return;
+                }
+
+                if (!AppState.currentCategory || !AppState.currentCategory.id) {
+                    showNotification('Categoria não disponível', 'error');
+                    return;
+                }
+
+                const baseName = (file.name || 'tabela importada').replace(/\.[^.]+$/, '');
+                const itemData = {
+                    id: null,
+                    category_id: AppState.currentCategory.id,
+                    title: baseName.slice(0, 100) || 'Tabela importada',
+                    status: 'pending',
+                    priority: 'medium',
+                    metadata: {
+                        headers: parsed.headers,
+                        data: parsed.data,
+                    },
+                };
+
+                const btn = document.querySelector('.excel-import-btn');
+                if (btn && typeof setButtonLoading === 'function') setButtonLoading(btn, true);
+
+                await saveItem(itemData);
+                showNotification(`Importado "${itemData.title}" (${parsed.data.length} linhas)`, 'success');
+                if (btn && typeof setButtonLoading === 'function') setButtonLoading(btn, false);
+            } catch (err) {
+                console.error('Erro ao importar CSV:', err);
+                showNotification('Erro ao importar CSV', 'error');
+            } finally {
+                event.target.value = '';
+            }
+        },
+
+        // Parser de CSV minimalista mas correcto: suporta aspas, escape de aspas
+        // duplas, separadores , ou ; (auto-detetado), e quebras de linha em CRLF/LF.
+        // Não depende de nenhuma biblioteca externa.
+        _parseCsv(text) {
+            // Remove BOM
+            if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+
+            // Auto-deteta separador analisando a primeira linha não vazia
+            const firstLine = (text.split(/\r?\n/).find(l => l.trim().length) || '');
+            const sep = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+
+            const rows = [];
+            let row = [];
+            let cell = '';
+            let inQuotes = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const ch = text[i];
+                if (inQuotes) {
+                    if (ch === '"') {
+                        if (text[i + 1] === '"') { cell += '"'; i++; }
+                        else { inQuotes = false; }
+                    } else {
+                        cell += ch;
+                    }
+                } else {
+                    if (ch === '"') { inQuotes = true; }
+                    else if (ch === sep) { row.push(cell); cell = ''; }
+                    else if (ch === '\n') { row.push(cell); rows.push(row); row = []; cell = ''; }
+                    else if (ch === '\r') { /* ignora — \n trata o newline */ }
+                    else { cell += ch; }
+                }
+            }
+            // Último valor / última linha
+            if (cell.length || row.length) { row.push(cell); rows.push(row); }
+
+            // Remove linhas totalmente vazias
+            const clean = rows.filter(r => r.some(c => String(c).trim() !== ''));
+            if (!clean.length) return { headers: [], data: [] };
+
+            const headers = clean[0].map(h => String(h).trim());
+            const data = clean.slice(1).map(r => {
+                // Normaliza para o mesmo nº de colunas dos headers
+                const out = headers.map((_, i) => (r[i] != null ? String(r[i]) : ''));
+                return out;
+            });
+            return { headers, data };
         }
     },
 
@@ -2158,12 +2360,27 @@ window.Templates = {
                     padding: 0 6px;
                 }
                 .nb-tool:hover { background: var(--bg-subtle); color: var(--text); }
-                .nb-tool.active { background: var(--primary); color: var(--primary-text); }
+                .nb-tool:focus-visible {
+                    outline: 2px solid var(--focus-ring, var(--primary));
+                    outline-offset: 1px;
+                }
+                .nb-tool.active {
+                    background: var(--primary-weak);
+                    color: var(--primary);
+                    box-shadow: inset 0 0 0 1px var(--primary);
+                }
+                .nb-tool.active:hover {
+                    background: var(--primary-weak);
+                    color: var(--primary);
+                }
                 .nb-tool-select {
                     height: 30px; border: 1px solid var(--border); border-radius: 6px;
                     padding: 0 8px; font-size: 13px; color: var(--text);
                     background: var(--bg-surface); cursor: pointer; outline: none;
+                    transition: border-color 0.12s ease, box-shadow 0.12s ease;
                 }
+                .nb-tool-select:hover { border-color: var(--border-strong); }
+                .nb-tool-select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--focus-ring); }
                 .nb-color-btn {
                     width: 20px; height: 20px; border-radius: 50%;
                     border: 2px solid var(--bg-surface); box-shadow: 0 0 0 1px var(--border-strong);
@@ -2191,12 +2408,38 @@ window.Templates = {
                     content: attr(data-placeholder);
                     color: var(--text-subtle); pointer-events: none;
                 }
-                .nb-rich-editor h1 { font-size: 22px; font-weight: 700; color: var(--text); }
-                .nb-rich-editor h2 { font-size: 19px; font-weight: 700; color: var(--text); }
-                .nb-rich-editor h3 { font-size: 16px; font-weight: 600; color: var(--text); }
+                .nb-rich-editor h1 { font-size: 26px; font-weight: 700; color: var(--text); margin: 18px 0 8px; line-height: 1.25; }
+                .nb-rich-editor h2 { font-size: 21px; font-weight: 700; color: var(--text); margin: 16px 0 6px; line-height: 1.3; }
+                .nb-rich-editor h3 { font-size: 17px; font-weight: 700; color: var(--text); margin: 14px 0 4px; line-height: 1.35; }
+                .nb-rich-editor p  { margin: 0 0 10px; }
+                .nb-rich-editor ul, .nb-rich-editor ol { margin: 6px 0 12px; padding-left: 26px; }
+                .nb-rich-editor li { margin: 2px 0; }
+                .nb-rich-editor a  { color: var(--primary); text-decoration: underline; text-underline-offset: 2px; }
+                .nb-rich-editor a:hover { color: var(--primary-strong); }
+                .nb-rich-editor hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
                 .nb-rich-editor code { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-family: var(--font-mono); font-size: 13px; color: var(--danger); }
-                .nb-rich-editor blockquote { border-left: 3px solid var(--primary); background: var(--bg-subtle); border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 8px 0; }
-                .nb-rich-editor mark { background: #fff3a3; }
+                .nb-rich-editor pre {
+                    background: var(--bg-subtle);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius);
+                    padding: 12px 14px;
+                    margin: 10px 0;
+                    font-family: var(--font-mono);
+                    font-size: 13px;
+                    color: var(--text);
+                    white-space: pre-wrap;
+                    overflow-x: auto;
+                }
+                .nb-rich-editor pre code { background: transparent; border: none; padding: 0; color: inherit; }
+                .nb-rich-editor blockquote {
+                    border-left: 3px solid var(--primary);
+                    background: var(--bg-subtle);
+                    border-radius: 0 6px 6px 0;
+                    padding: 10px 14px;
+                    margin: 10px 0;
+                    color: var(--text);
+                }
+                .nb-rich-editor mark { background: #fff3a3; color: #1f1d2b; padding: 0 2px; border-radius: 2px; }
                 [data-theme="dark"] .nb-rich-editor mark { background: #433a12; color: #F2D87A; }
 
                 /* bottom actions */
@@ -2414,51 +2657,54 @@ window.Templates = {
         },
 
         _buildToolbar() {
-            // mousedown preventDefault para não perder a seleção do editor ao clicar em botões
+            // mousedown preventDefault em <button>: impede que o editor perca foco
+            // ao clicar e mata a seleção. NÃO aplicamos isto a <select> porque
+            // mousedown é o evento que abre o dropdown nativo.
             const md = `onmousedown="event.preventDefault()"`;
             return `
                 <div class="nb-toolbar" id="nbToolbar">
                     <!-- Cabeçalhos -->
-                    <select class="nb-tool-select"
-                            ${md}
-                            onchange="Templates.notebooks._formatBlock(this.value); this.value='p';"
-                            title="Estilo">
+                    <select class="nb-tool-select" id="nbBlockSelect"
+                            onmousedown="Templates.notebooks._stashSelection()"
+                            onchange="Templates.notebooks._formatBlock(this.value)"
+                            title="Estilo do parágrafo">
                         <option value="p">Parágrafo</option>
                         <option value="h1">Título 1</option>
                         <option value="h2">Título 2</option>
                         <option value="h3">Título 3</option>
-                        <option value="pre">Código</option>
+                        <option value="pre">Código (bloco)</option>
                         <option value="blockquote">Citação</option>
                     </select>
 
                     <div class="nb-tool-sep"></div>
 
                     <!-- Estilo de texto -->
-                    <button type="button" class="nb-tool" title="Negrito (Ctrl+B)"    ${md} onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
-                    <button type="button" class="nb-tool" title="Itálico (Ctrl+I)"    ${md} onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
-                    <button type="button" class="nb-tool" title="Sublinhado (Ctrl+U)" ${md} onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
-                    <button type="button" class="nb-tool" title="Riscado"             ${md} onclick="Templates.notebooks._exec('strikeThrough')"><s>S</s></button>
-                    <button type="button" class="nb-tool" title="Destacar"            ${md} onclick="Templates.notebooks._highlight()"><i class="fas fa-highlighter"></i></button>
-                    <button type="button" class="nb-tool" title="Código inline"       ${md} onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
+                    <button type="button" data-cmd="bold"          class="nb-tool" title="Negrito (Ctrl+B)"    ${md} onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
+                    <button type="button" data-cmd="italic"        class="nb-tool" title="Itálico (Ctrl+I)"    ${md} onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
+                    <button type="button" data-cmd="underline"     class="nb-tool" title="Sublinhado (Ctrl+U)" ${md} onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
+                    <button type="button" data-cmd="strikeThrough" class="nb-tool" title="Riscado"             ${md} onclick="Templates.notebooks._exec('strikeThrough')"><s>S</s></button>
+                    <button type="button" data-cmd="hilite"        class="nb-tool" title="Destacar"            ${md} onclick="Templates.notebooks._highlight()"><i class="fas fa-highlighter"></i></button>
+                    <button type="button" data-cmd="code"          class="nb-tool" title="Código inline"       ${md} onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
                     <!-- Listas -->
-                    <button type="button" class="nb-tool" title="Lista com pontos" ${md} onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
-                    <button type="button" class="nb-tool" title="Lista numerada"   ${md} onclick="Templates.notebooks._exec('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+                    <button type="button" data-cmd="insertUnorderedList" class="nb-tool" title="Lista com pontos" ${md} onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                    <button type="button" data-cmd="insertOrderedList"   class="nb-tool" title="Lista numerada"   ${md} onclick="Templates.notebooks._exec('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
                     <!-- Alinhamento -->
-                    <button type="button" class="nb-tool" title="Alinhar à esquerda" ${md} onclick="Templates.notebooks._exec('justifyLeft')"><i class="fas fa-align-left"></i></button>
-                    <button type="button" class="nb-tool" title="Centrar"            ${md} onclick="Templates.notebooks._exec('justifyCenter')"><i class="fas fa-align-center"></i></button>
-                    <button type="button" class="nb-tool" title="Alinhar à direita"  ${md} onclick="Templates.notebooks._exec('justifyRight')"><i class="fas fa-align-right"></i></button>
+                    <button type="button" data-cmd="justifyLeft"   class="nb-tool" title="Alinhar à esquerda" ${md} onclick="Templates.notebooks._exec('justifyLeft')"><i class="fas fa-align-left"></i></button>
+                    <button type="button" data-cmd="justifyCenter" class="nb-tool" title="Centrar"            ${md} onclick="Templates.notebooks._exec('justifyCenter')"><i class="fas fa-align-center"></i></button>
+                    <button type="button" data-cmd="justifyRight"  class="nb-tool" title="Alinhar à direita"  ${md} onclick="Templates.notebooks._exec('justifyRight')"><i class="fas fa-align-right"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
                     <!-- Extras -->
                     <button type="button" class="nb-tool" title="Inserir separador"    ${md} onclick="Templates.notebooks._exec('insertHorizontalRule')"><i class="fas fa-minus"></i></button>
-                    <button type="button" class="nb-tool" title="Remover formatação"   ${md} onclick="Templates.notebooks._exec('removeFormat')"><i class="fas fa-remove-format"></i></button>
+                    <button type="button" class="nb-tool" title="Inserir link"         ${md} onclick="Templates.notebooks._insertLink()"><i class="fas fa-link"></i></button>
+                    <button type="button" class="nb-tool" title="Remover formatação"   ${md} onclick="Templates.notebooks._clearFormatting()"><i class="fas fa-remove-format"></i></button>
 
                     <div class="nb-tool-sep"></div>
 
@@ -2467,45 +2713,203 @@ window.Templates = {
                     ${['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'].map(c =>
                         `<span class="nb-color-btn" style="background:${c}" title="${c}" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','${c}')"></span>`
                     ).join('')}
-                    <span class="nb-color-btn" style="background:var(--text)" title="Padrão" onmousedown="event.preventDefault();Templates.notebooks._exec('removeFormat')"></span>
+                    <span class="nb-color-btn" style="background:var(--text)" title="Padrão" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor', null);Templates.notebooks._exec('removeFormat')"></span>
                 </div>
             `;
         },
 
-        _exec(command, value = null) {
-            document.getElementById('notebookRichEditor').focus();
-            document.execCommand(command, false, value);
-            this._updateWordCount();
+        // Guarda a seleção atual antes de o <select> abrir o dropdown nativo,
+        // para podermos restaurá-la quando o utilizador escolhe um estilo
+        // (clicar no select tira o foco ao editor → seleção perde-se).
+        _stashSelection() {
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) {
+                this._savedRange = null;
+                return;
+            }
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            const range = sel.getRangeAt(0);
+            // só guarda se a seleção estiver dentro do editor
+            if (editor.contains(range.commonAncestorContainer) || range.commonAncestorContainer === editor) {
+                this._savedRange = range.cloneRange();
+            }
         },
 
-        _formatBlock(tag) {
+        _restoreSelection() {
             const editor = document.getElementById('notebookRichEditor');
             if (!editor) return;
             editor.focus();
-            // 'p' = parágrafo (texto normal); formatBlock com tag vazia não limpa em alguns browsers
-            document.execCommand('formatBlock', false, tag === 'p' || !tag ? 'p' : tag);
+            if (this._savedRange) {
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(this._savedRange);
+            }
+        },
+
+        _exec(command, value = null) {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand(command, false, value);
             this._updateWordCount();
+            this._refreshToolbarState();
+        },
+
+        _formatBlock(tag) {
+            const select = document.getElementById('nbBlockSelect');
+            // Restaura a seleção que estava antes do dropdown abrir (senão o
+            // formatBlock aplicar-se-ia ao elemento <select>, não ao editor).
+            this._restoreSelection();
+            const value = (!tag || tag === 'p') ? 'p' : tag;
+            // O Chrome aceita o nome direto; alguns browsers exigem <tag>.
+            try {
+                document.execCommand('formatBlock', false, value);
+            } catch (_) {
+                document.execCommand('formatBlock', false, '<' + value + '>');
+            }
+            this._updateWordCount();
+            this._refreshToolbarState();
+            // Reset para "Parágrafo" só fica bem depois de já termos aplicado
+            if (select) select.value = 'p';
         },
 
         _highlight() {
-            document.getElementById('notebookRichEditor').focus();
-            document.execCommand('hiliteColor', false, '#fff3a3');
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            // toggle: se já está destacado, remove a cor de fundo
+            const current = document.queryCommandValue('hiliteColor') || document.queryCommandValue('backColor');
+            const isHighlighted = current && current !== 'transparent' && !/^rgba?\(0,\s*0,\s*0,\s*0\)$/.test(current);
+            document.execCommand('hiliteColor', false, isHighlighted ? 'transparent' : '#fff3a3');
             this._updateWordCount();
+            this._refreshToolbarState();
+        },
+
+        _insertLink() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            const url = window.prompt('URL do link:', 'https://');
+            if (!url) return;
+            // Validação básica para evitar javascript: ou data:
+            const safe = /^(https?:|mailto:|#)/i.test(url) ? url : 'https://' + url.replace(/^\/+/, '');
+            document.execCommand('createLink', false, safe);
+        },
+
+        _clearFormatting() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+            document.execCommand('removeFormat');
+            // formatBlock para 'p' garante que cabeçalhos/quotes voltam a parágrafo
+            document.execCommand('formatBlock', false, 'p');
+            this._refreshToolbarState();
         },
 
         _inlineCode() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
             const sel = window.getSelection();
-            if (!sel.rangeCount) return;
+            if (!sel || !sel.rangeCount) return;
             const range = sel.getRangeAt(0);
-            const code = document.createElement('code');
-            try {
-                range.surroundContents(code);
-            } catch(e) {
-                const frag = range.extractContents();
-                code.appendChild(frag);
-                range.insertNode(code);
+
+            // Toggle: se a seleção já está dentro de um <code>, desfaz; senão envolve
+            const codeAncestor = (function findCode(node) {
+                while (node && node !== editor) {
+                    if (node.nodeType === 1 && node.tagName === 'CODE') return node;
+                    node = node.parentNode;
+                }
+                return null;
+            })(range.commonAncestorContainer);
+
+            if (codeAncestor) {
+                const parent = codeAncestor.parentNode;
+                while (codeAncestor.firstChild) parent.insertBefore(codeAncestor.firstChild, codeAncestor);
+                parent.removeChild(codeAncestor);
+            } else if (!range.collapsed) {
+                const code = document.createElement('code');
+                try {
+                    range.surroundContents(code);
+                } catch(e) {
+                    const frag = range.extractContents();
+                    code.appendChild(frag);
+                    range.insertNode(code);
+                }
             }
             this._updateWordCount();
+            this._refreshToolbarState();
+        },
+
+        // Atualiza visualmente os botões da toolbar com base na seleção actual.
+        // Chamado em selectionchange, keyup e após cada execCommand.
+        _refreshToolbarState() {
+            const toolbar = document.getElementById('nbToolbar');
+            if (!toolbar) return;
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+
+            // Só queremos refletir estado quando a seleção está dentro do editor
+            const sel = window.getSelection();
+            const inEditor = sel && sel.rangeCount &&
+                (editor.contains(sel.anchorNode) || sel.anchorNode === editor);
+
+            const cmds = ['bold','italic','underline','strikeThrough','insertUnorderedList','insertOrderedList','justifyLeft','justifyCenter','justifyRight'];
+            cmds.forEach(cmd => {
+                const btn = toolbar.querySelector(`.nb-tool[data-cmd="${cmd}"]`);
+                if (!btn) return;
+                let active = false;
+                if (inEditor) {
+                    try { active = document.queryCommandState(cmd); } catch (_) {}
+                }
+                btn.classList.toggle('active', active);
+            });
+
+            // Highlight (hiliteColor): considera ativo se há cor de fundo não-transparente
+            const hiliteBtn = toolbar.querySelector('.nb-tool[data-cmd="hilite"]');
+            if (hiliteBtn) {
+                let activeH = false;
+                if (inEditor) {
+                    const c = document.queryCommandValue('hiliteColor') || document.queryCommandValue('backColor');
+                    activeH = !!c && c !== 'transparent' && !/^rgba?\(0,\s*0,\s*0,\s*0\)$/.test(c) && !/^#?fff(fff)?$/i.test(c);
+                }
+                hiliteBtn.classList.toggle('active', activeH);
+            }
+
+            // Inline code: ativo se a seleção está dentro de um <code>
+            const codeBtn = toolbar.querySelector('.nb-tool[data-cmd="code"]');
+            if (codeBtn && inEditor && sel.anchorNode) {
+                let n = sel.anchorNode;
+                let inCode = false;
+                while (n && n !== editor) {
+                    if (n.nodeType === 1 && n.tagName === 'CODE') { inCode = true; break; }
+                    n = n.parentNode;
+                }
+                codeBtn.classList.toggle('active', inCode);
+            }
+
+            // Block select: reflete o tipo de bloco onde está o cursor
+            const blockSelect = document.getElementById('nbBlockSelect');
+            if (blockSelect && inEditor) {
+                let blockTag = 'p';
+                try {
+                    const v = document.queryCommandValue('formatBlock');
+                    if (v) blockTag = String(v).toLowerCase().replace(/[<>]/g, '');
+                } catch (_) {}
+                const allowed = ['p','h1','h2','h3','pre','blockquote'];
+                if (!allowed.includes(blockTag)) {
+                    // pode vir como "div" ou outros — vasculhamos manualmente
+                    let n = sel.anchorNode;
+                    while (n && n !== editor) {
+                        if (n.nodeType === 1 && allowed.includes(n.tagName.toLowerCase())) {
+                            blockTag = n.tagName.toLowerCase(); break;
+                        }
+                        n = n.parentNode;
+                    }
+                }
+                blockSelect.value = allowed.includes(blockTag) ? blockTag : 'p';
+            }
         },
 
         _onEditorInput() {
@@ -2591,7 +2995,14 @@ window.Templates = {
             sel.removeAllRanges();
             sel.addRange(range);
 
+            // Sincronização visual da toolbar com a seleção
+            this._toolbarSyncHandler = () => this._refreshToolbarState();
+            document.addEventListener('selectionchange', this._toolbarSyncHandler);
+            richEditor.addEventListener('keyup', this._toolbarSyncHandler);
+            richEditor.addEventListener('mouseup', this._toolbarSyncHandler);
+
             this._updateWordCount();
+            this._refreshToolbarState();
         },
 
         cancelEditMode() {
@@ -2600,6 +3011,15 @@ window.Templates = {
                 Autosave.unregister(richEditor.getAttribute('data-item-id'));
             }
             this._autosaveTrigger = null;
+            // Desliga listeners de sincronização da toolbar
+            if (this._toolbarSyncHandler) {
+                document.removeEventListener('selectionchange', this._toolbarSyncHandler);
+                if (richEditor) {
+                    richEditor.removeEventListener('keyup', this._toolbarSyncHandler);
+                    richEditor.removeEventListener('mouseup', this._toolbarSyncHandler);
+                }
+                this._toolbarSyncHandler = null;
+            }
 
             const notebookView = document.querySelector('.nb-view');
             if (notebookView) {
@@ -2629,6 +3049,13 @@ window.Templates = {
                 // Unregister autosave before manual save
                 if (window.Autosave) Autosave.unregister(notebookId);
                 this._autosaveTrigger = null;
+                // Limpa também o sync da toolbar (vamos sair do modo de edição)
+                if (this._toolbarSyncHandler) {
+                    document.removeEventListener('selectionchange', this._toolbarSyncHandler);
+                    richEditor.removeEventListener('keyup', this._toolbarSyncHandler);
+                    richEditor.removeEventListener('mouseup', this._toolbarSyncHandler);
+                    this._toolbarSyncHandler = null;
+                }
 
                 // Save directly via save_note.php (versioning + content)
                 const response = await fetch(`${API_URL}/save_note.php`, {

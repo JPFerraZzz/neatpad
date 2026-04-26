@@ -59,7 +59,10 @@
     }
 
     function closeAllViews() {
-        document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+        // Fecha tanto views (.modal) como o popup central (.popup-modal),
+        // senão clicar em "Início" deixa o popup de criar categoria aberto.
+        document.querySelectorAll('.modal.active, .popup-modal.active')
+            .forEach(m => m.classList.remove('active'));
     }
 
     // ── Painel de Definições ───────────────────────────────────────────

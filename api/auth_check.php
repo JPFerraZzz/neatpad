@@ -30,18 +30,20 @@ function requireAuth(): string {
         echo json_encode(['success' => false, 'error' => 'Não autenticado', 'data' => null]);
         exit;
     }
-    // Defesa contra session hijacking entre user-agents radicalmente diferentes.
-    // Não usamos IP porque NAT móvel/wifi alterna o IP frequentemente.
-    $fp = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|neatpad');
+    // Fingerprint de família (não de versão), tolerante a updates de browser
+    // e à transição browser → PWA standalone (mesmo aparelho, UA diferente).
+    // O cookie já é HttpOnly + Secure + SameSite=Lax + use_strict_mode, por
+    // isso esta verificação é apenas uma camada extra leve, não a principal.
+    $fp = uaFamilyFingerprint();
     if (!isset($_SESSION['fp'])) {
         $_SESSION['fp'] = $fp;
     } elseif (!hash_equals($_SESSION['fp'], $fp)) {
-        session_unset();
-        session_destroy();
-        header('Content-Type: application/json; charset=utf-8');
-        http_response_code(401);
-        echo json_encode(['success' => false, 'error' => 'Sessão inválida', 'data' => null]);
-        exit;
+        // Em vez de destruir a sessão (causa 401 + logout falso no mobile),
+        // limitamo-nos a atualizar o fingerprint e a registar a discrepância.
+        // Mudança de família real (mobile→desktop, etc.) vai continuar a ser
+        // possível, mas é raríssima dentro do mesmo navegador autenticado.
+        @error_log('NeatPad: UA family changed mid-session for uid=' . $_SESSION['uid']);
+        $_SESSION['fp'] = $fp;
     }
     return $_SESSION['uid'];
 }

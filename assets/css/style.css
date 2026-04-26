@@ -771,6 +771,9 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
         height: 100dvh;
         border-radius: 0;
         border: none;
+        /* Respeita o notch e a home bar no iOS / Android */
+        padding-top: var(--safe-top);
+        padding-bottom: var(--safe-bottom);
     }
     .popup-body { padding: 16px; }
 }

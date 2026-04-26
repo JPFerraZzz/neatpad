@@ -109,16 +109,26 @@ window.appConfirm = appConfirm;
 // Funções de API
 // ====================================
 
-async function fetchCategories() {
+async function fetchCategories(_retryAfterAuth = false) {
     try {
         const response = await fetch(`${API_URL}/categories.php`, { credentials: 'same-origin' });
-        const data = await response.json();
-        
-        if (data.success) {
+
+        // 401 = sessão PHP em falta. No mobile isto pode acontecer se o
+        // bootstrap demorar demasiado (Firebase a recriar a sessão). Em vez
+        // de mostrar erro, tentamos uma vez recriar a sessão e refazer.
+        if (response.status === 401 && !_retryAfterAuth && typeof bootstrapAuthenticatedPage === 'function') {
+            const u = await bootstrapAuthenticatedPage();
+            if (u) return fetchCategories(true);
+        }
+
+        const data = await response.json().catch(() => ({ success: false }));
+
+        if (data && data.success) {
             AppState.categories = data.data;
             renderCategories();
         } else {
-            showNotification('Erro ao carregar categorias', 'error');
+            const msg = (data && data.error) ? data.error : 'Erro ao carregar categorias';
+            showNotification(msg, 'error');
         }
     } catch (error) {
         console.error('Erro:', error);
@@ -198,15 +208,23 @@ async function deleteCategory(categoryId) {
     }
 }
 
-async function fetchItems(categoryId) {
+async function fetchItems(categoryId, _retryAfterAuth = false) {
     try {
         const response = await fetch(`${API_URL}/items.php?category_id=${categoryId}`, { credentials: 'same-origin' });
-        const data = await response.json();
-        
-        if (data.success) {
+
+        // 401 → tenta recriar sessão a partir do Firebase (caso típico mobile)
+        if (response.status === 401 && !_retryAfterAuth && typeof bootstrapAuthenticatedPage === 'function') {
+            const u = await bootstrapAuthenticatedPage();
+            if (u) return fetchItems(categoryId, true);
+        }
+
+        const data = await response.json().catch(() => ({ success: false }));
+
+        if (data && data.success) {
             return data.data;
         } else {
-            showNotification('Erro ao carregar itens', 'error');
+            const msg = (data && data.error) ? data.error : 'Erro ao carregar itens';
+            showNotification(msg, 'error');
             return [];
         }
     } catch (error) {

@@ -85,7 +85,9 @@ if ($method === 'POST') {
         $_SESSION['uid']   = $payload['sub'];
         $_SESSION['email'] = $payload['email'] ?? '';
         $_SESSION['name']  = $payload['name']  ?? ($payload['email'] ?? 'Utilizador');
-        $_SESSION['fp']    = hash('sha256', ($_SERVER['HTTP_USER_AGENT'] ?? '') . '|neatpad');
+        // Fingerprint estável por família de UA (ver auth_check.php :: uaFamilyFingerprint).
+        // Tolerante a updates de browser e à transição browser→PWA standalone.
+        $_SESSION['fp']    = uaFamilyFingerprint();
         $_SESSION['login_at'] = time();
 
         echo json_encode([
