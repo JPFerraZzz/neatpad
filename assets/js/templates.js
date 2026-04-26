@@ -2530,12 +2530,259 @@ window.Templates = {
                     min-height: 32px;
                 }
                 .nb-version-restore:hover { background: var(--primary); color: var(--primary-text); }
+
+                /* ── Navegação mobile em duas camadas (lista ↔ detalhe) ── */
+                @media (max-width: 768px) {
+                    .nb-shell.nb-mobile {
+                        display: flex;
+                        flex-direction: column;
+                        min-height: 70vh;
+                    }
+                    .nb-shell.nb-mobile .nb-sidebar {
+                        max-height: none;
+                        height: 100%;
+                        border-bottom: none;
+                        flex: 1 1 auto;
+                    }
+                    .nb-shell.nb-mobile .nb-main {
+                        display: none;
+                        flex-direction: column;
+                        min-height: 60vh;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-sidebar {
+                        display: none;
+                    }
+                    .nb-shell.nb-mobile--detail .nb-main {
+                        display: flex;
+                    }
+                    #nbBackBtn {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 12px 16px;
+                        background: var(--bg-surface);
+                        border: none;
+                        border-bottom: 1px solid var(--border);
+                        color: var(--primary);
+                        font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        width: 100%;
+                        text-align: left;
+                        font-family: var(--font);
+                    }
+                    #nbBackBtn:active {
+                        background: var(--bg-subtle);
+                    }
+                    #nbBackBtn i { font-size: 12px; }
+                }
+
+                /* ── Slash menu ────────────────────────── */
+                .nb-slash-menu {
+                    position: fixed;
+                    z-index: 9999;
+                    background: var(--bg-surface);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius-lg);
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+                    width: 280px;
+                    max-height: 360px;
+                    overflow-y: auto;
+                    font-family: var(--font);
+                    padding: 6px 0 8px;
+                }
+                .nb-slash-header {
+                    padding: 8px 12px 4px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.06em;
+                    color: var(--text-subtle);
+                }
+                .nb-slash-empty {
+                    padding: 8px 16px 12px;
+                    font-size: 12px;
+                    color: var(--text-subtle);
+                    font-style: italic;
+                }
+                .nb-slash-item {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 8px 12px;
+                    cursor: pointer;
+                    border-radius: 6px;
+                    margin: 0 4px;
+                    transition: background 0.1s ease;
+                }
+                .nb-slash-item:hover,
+                .nb-slash-item.active {
+                    background: var(--primary-weak);
+                }
+                .nb-slash-icon {
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 6px;
+                    background: var(--bg-subtle);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--text-muted);
+                    font-size: 13px;
+                    flex-shrink: 0;
+                }
+                .nb-slash-info { min-width: 0; flex: 1; }
+                .nb-slash-label {
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: var(--text);
+                }
+                .nb-slash-desc {
+                    font-size: 11px;
+                    color: var(--text-subtle);
+                }
+                .nb-slash-item.hidden { display: none; }
+                @media (max-width: 768px) {
+                    .nb-slash-menu {
+                        width: min(92vw, 360px);
+                        max-height: 60vh;
+                    }
+                }
+
+                /* ── Callouts ───────────────────────────── */
+                .nb-callout {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 10px;
+                    border-radius: var(--radius);
+                    padding: 12px 16px;
+                    margin: 10px 0;
+                    border-left: 4px solid transparent;
+                }
+                .nb-callout--info    { background: #e8f4fd; border-left-color: #3498db; }
+                .nb-callout--warning { background: #fef9e7; border-left-color: #f39c12; }
+                .nb-callout--error   { background: #fdf2f2; border-left-color: #e74c3c; }
+                .nb-callout--success { background: #eafaf1; border-left-color: #2ecc71; }
+                [data-theme="dark"] .nb-callout--info    { background: rgba(52,152,219,0.15); }
+                [data-theme="dark"] .nb-callout--warning { background: rgba(243,156,18,0.15); }
+                [data-theme="dark"] .nb-callout--error   { background: rgba(231,76,60,0.15); }
+                [data-theme="dark"] .nb-callout--success { background: rgba(46,204,113,0.15); }
+                .nb-callout-icon {
+                    font-size: 18px;
+                    flex-shrink: 0;
+                    cursor: pointer;
+                    user-select: none;
+                    line-height: 1.5;
+                }
+                .nb-callout-text {
+                    flex: 1;
+                    outline: none;
+                    font-size: 14px;
+                    line-height: 1.6;
+                    color: var(--text);
+                    min-height: 24px;
+                    word-break: break-word;
+                }
+                .nb-callout-text:empty::before,
+                .nb-callout-text:has(> br:only-child)::before {
+                    content: attr(data-placeholder);
+                    color: var(--text-subtle);
+                    pointer-events: none;
+                }
+                /* Em modo de visualização (display) os callouts não devem
+                   parecer editáveis nem terem cursor de texto. */
+                .nb-view-body .nb-callout-icon { cursor: default; }
+
+                /* ── Tabela inserida via slash ─────────── */
+                .nb-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 12px 0;
+                    font-size: 14px;
+                }
+                .nb-table th, .nb-table td {
+                    border: 1px solid var(--border);
+                    padding: 8px 12px;
+                    text-align: left;
+                    min-width: 80px;
+                    vertical-align: top;
+                    color: var(--text);
+                }
+                .nb-table th {
+                    background: var(--bg-subtle);
+                    font-weight: 700;
+                }
+                .nb-table th:focus, .nb-table td:focus {
+                    outline: 2px solid var(--primary);
+                    outline-offset: -2px;
+                    background: var(--primary-weak);
+                }
+
+                /* ── Mobile toolbar (acima do teclado em edição) ── */
+                .nb-mobile-toolbar {
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    z-index: 500;
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+                    background: var(--bg-surface);
+                    border-top: 1px solid var(--border);
+                    padding: 8px 10px;
+                    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+                    overflow-x: auto;
+                    -webkit-overflow-scrolling: touch;
+                }
+                .nb-mtool {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 40px;
+                    height: 40px;
+                    border-radius: 8px;
+                    border: none;
+                    background: transparent;
+                    color: var(--text-muted);
+                    font-size: 15px;
+                    font-weight: 700;
+                    cursor: pointer;
+                    flex-shrink: 0;
+                    transition: background 0.1s ease, color 0.1s ease;
+                    font-family: var(--font);
+                }
+                .nb-mtool:active { background: var(--primary-weak); color: var(--primary); }
+                .nb-mtool--slash {
+                    font-family: var(--font-mono);
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: var(--primary);
+                }
+                .nb-mtool--save {
+                    margin-left: auto;
+                    background: var(--primary);
+                    color: var(--primary-text);
+                    border-radius: 8px;
+                    padding: 0 14px;
+                    min-width: 48px;
+                }
+                .nb-mtool--save:active {
+                    background: var(--primary);
+                    filter: brightness(0.9);
+                    color: var(--primary-text);
+                }
                 </style>
             `;
 
             // Auto open first
             if (items.length > 0) {
                 // Already rendered above
+            }
+
+            // Mobile: navegação em duas camadas (lista → detalhe)
+            if (window.innerWidth <= 768) {
+                this._initMobileNav();
             }
         },
 
@@ -2567,6 +2814,11 @@ window.Templates = {
                     .map(line => line.trim() ? `<p>${escapeHtml(line)}</p>` : '<br>')
                     .join('');
             }
+            // Em modo de visualização não queremos áreas editáveis (heranças
+            // do editor: callouts, tabelas, etc.). Removemos o atributo;
+            // a estrutura visual mantém-se. Em modo de edição, _normalizeCallouts
+            // volta a aplicar contenteditable nos sítios certos.
+            htmlContent = htmlContent.replace(/\s+contenteditable\s*=\s*("[^"]*"|'[^']*'|\S+)/gi, '');
 
             return `
                 <div class="nb-view" data-notebook-id="${notebook.id}">
@@ -2916,10 +3168,691 @@ window.Templates = {
             this._updateWordCount();
             // Trigger autosave debounce
             if (this._autosaveTrigger) this._autosaveTrigger();
+
+            // Se o slash menu está aberto, refiltra com o texto digitado
+            // depois do "/". Assim "/tit" deixa só os títulos, "/cal" os callouts, etc.
+            if (this._slashMenuOpen) this._updateSlashFilter();
         },
 
         _editorKeydown(e) {
+            // 1) Slash menu aberto → captura navegação antes de tudo o resto
+            if (this._slashMenuOpen) {
+                if (e.key === 'ArrowDown') { e.preventDefault(); this._navigateSlashMenu(1);  return; }
+                if (e.key === 'ArrowUp')   { e.preventDefault(); this._navigateSlashMenu(-1); return; }
+                if (e.key === 'Enter')     { e.preventDefault(); this._selectActiveSlashItem(); return; }
+                if (e.key === 'Escape')    { e.preventDefault(); this._closeSlashMenu();        return; }
+                // backspace que apague o "/" deve também fechar o menu
+                if (e.key === 'Backspace') {
+                    setTimeout(() => this._maybeCloseSlashIfTriggerGone(), 0);
+                }
+            }
+
+            // 2) Pressionar "/" abre o slash menu (depois do caractere ser inserido)
+            if (e.key === '/' && !this._slashMenuOpen) {
+                setTimeout(() => this._maybeOpenSlashMenu(), 0);
+                // Não preventDefault — deixamos o "/" ser inserido normalmente.
+            }
+
+            // 3) Markdown shortcuts ao pressionar espaço (#, ##, -, 1., >, etc.)
+            if (e.key === ' ' && !e.ctrlKey && !e.metaKey && !this._slashMenuOpen) {
+                if (this._maybeApplyMarkdownShortcut(e)) return;
+            }
+
+            // 4) Enter dentro de um callout: se o cursor está no fim do texto,
+            //    sai do callout e cria um <p> abaixo.
+            if (e.key === 'Enter' && !e.shiftKey && !this._slashMenuOpen) {
+                if (this._handleCalloutEnter(e)) return;
+            }
+
+            // 5) Comportamento existente: Ctrl+S guarda
             if (e.ctrlKey && e.key === 's') { e.preventDefault(); this.saveInlineEdit(); }
+        },
+
+        // ─────────────────────────────────────────────────────────────────
+        // Markdown auto-shortcuts
+        // ─────────────────────────────────────────────────────────────────
+        // Devolve true se aplicou alguma transformação (e fez preventDefault).
+        _maybeApplyMarkdownShortcut(e) {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return false;
+
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return false;
+            const range = sel.getRangeAt(0);
+            if (!range.collapsed) return false;
+
+            const node = range.startContainer;
+            if (node.nodeType !== Node.TEXT_NODE) return false;
+            // Tem de estar dentro do editor
+            if (!editor.contains(node)) return false;
+
+            const offset = range.startOffset;
+            const textBefore = node.textContent.slice(0, offset);
+
+            // Só ativa no início de uma linha/bloco — evita transformar
+            // "ver isto # algo" em h1 quando o utilizador escreve uma frase normal.
+            if (!this._isAtStartOfBlock(node)) return false;
+
+            // Determina trigger
+            let action = null, triggerLen = 0;
+            if      (textBefore === '#')   { action = 'h1';         triggerLen = 1; }
+            else if (textBefore === '##')  { action = 'h2';         triggerLen = 2; }
+            else if (textBefore === '###') { action = 'h3';         triggerLen = 3; }
+            else if (textBefore === '-' || textBefore === '*' || textBefore === '+') {
+                                              action = 'ul';         triggerLen = 1;
+            }
+            else if (textBefore === '1.')  { action = 'ol';         triggerLen = 2; }
+            else if (textBefore === '>')   { action = 'blockquote'; triggerLen = 1; }
+            else if (textBefore === '---') { action = 'hr';         triggerLen = 3; }
+            else if (textBefore === '```') { action = 'pre';        triggerLen = 3; }
+
+            if (!action) return false;
+
+            e.preventDefault();
+
+            // Apaga o trigger
+            const delRange = document.createRange();
+            delRange.setStart(node, offset - triggerLen);
+            delRange.setEnd(node, offset);
+            delRange.deleteContents();
+
+            // Recoloca o cursor no sítio onde o trigger estava
+            const after = document.createRange();
+            after.setStart(node, Math.max(0, offset - triggerLen));
+            after.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(after);
+
+            // Aplica a transformação
+            if (['h1','h2','h3','blockquote','pre'].includes(action)) {
+                this._formatBlock(action);
+            } else if (action === 'ul') {
+                this._exec('insertUnorderedList');
+            } else if (action === 'ol') {
+                this._exec('insertOrderedList');
+            } else if (action === 'hr') {
+                this._exec('insertHorizontalRule');
+                // Garante uma linha nova editável a seguir ao <hr>
+                this._exec('formatBlock', 'p');
+            }
+            return true;
+        },
+
+        // Verifica se o nó de texto é o primeiro nó significativo do bloco
+        // que o contém — o trigger só vale no início de uma linha.
+        _isAtStartOfBlock(textNode) {
+            const blockTags = new Set(['P','DIV','LI','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','PRE','TD','TH']);
+            let n = textNode;
+            // Se há um irmão antes, só é "início" se esse irmão for vazio (br/whitespace)
+            while (n) {
+                let prev = n.previousSibling;
+                while (prev) {
+                    if (prev.nodeType === Node.TEXT_NODE && prev.textContent.trim() !== '') return false;
+                    if (prev.nodeType === Node.ELEMENT_NODE && prev.tagName !== 'BR') return false;
+                    prev = prev.previousSibling;
+                }
+                const parent = n.parentNode;
+                if (!parent) return false;
+                if (blockTags.has(parent.tagName) || parent.id === 'notebookRichEditor') return true;
+                n = parent;
+            }
+            return false;
+        },
+
+        // ─────────────────────────────────────────────────────────────────
+        // Callouts: lidar com Enter no fim
+        // ─────────────────────────────────────────────────────────────────
+        _handleCalloutEnter(e) {
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return false;
+
+            // Procura .nb-callout-text como ancestral do cursor
+            let node = sel.anchorNode;
+            let calloutText = null;
+            while (node) {
+                if (node.nodeType === Node.ELEMENT_NODE && node.classList && node.classList.contains('nb-callout-text')) {
+                    calloutText = node;
+                    break;
+                }
+                node = node.parentNode;
+            }
+            if (!calloutText) return false;
+
+            // Verifica se o cursor está no fim do texto do callout
+            const range = sel.getRangeAt(0);
+            const test = range.cloneRange();
+            test.selectNodeContents(calloutText);
+            test.setStart(range.endContainer, range.endOffset);
+            const tail = test.toString();
+            // Se há texto não vazio depois do cursor, deixa o Enter normal
+            if (tail.replace(/\s+$/g, '') !== '') return false;
+
+            e.preventDefault();
+            const callout = calloutText.closest('.nb-callout');
+            if (!callout) return false;
+
+            // Cria <p><br></p> imediatamente a seguir e move cursor para lá
+            const p = document.createElement('p');
+            p.appendChild(document.createElement('br'));
+            callout.parentNode.insertBefore(p, callout.nextSibling);
+
+            const newRange = document.createRange();
+            newRange.setStart(p, 0);
+            newRange.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            return true;
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // SLASH MENU — opções de blocos com filtro em tempo real
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Estado interno
+        _slashMenuOpen: false,
+        _slashRange: null,        // range a apontar para a posição do "/"
+        _slashOutsideHandler: null,
+        _slashFilter: '',
+
+        _slashItems() {
+            return [
+                { action: 'h1',               icon: 'fa-heading',               label: 'Título 1',         desc: 'Cabeçalho grande',     keywords: 'titulo h1 heading t1' },
+                { action: 'h2',               icon: 'fa-heading',               label: 'Título 2',         desc: 'Cabeçalho médio',      keywords: 'titulo h2 heading t2' },
+                { action: 'h3',               icon: 'fa-heading',               label: 'Título 3',         desc: 'Cabeçalho pequeno',    keywords: 'titulo h3 heading t3' },
+                { action: 'ul',               icon: 'fa-list-ul',               label: 'Lista',            desc: 'Lista com pontos',     keywords: 'lista ul bullet' },
+                { action: 'ol',               icon: 'fa-list-ol',               label: 'Lista numerada',   desc: 'Lista com números',    keywords: 'lista ol numero numerada' },
+                { action: 'blockquote',       icon: 'fa-quote-right',           label: 'Citação',          desc: 'Bloco de citação',     keywords: 'citacao quote blockquote' },
+                { action: 'pre',              icon: 'fa-code',                  label: 'Código',           desc: 'Bloco de código',      keywords: 'codigo code pre' },
+                { action: 'hr',               icon: 'fa-minus',                 label: 'Separador',        desc: 'Linha divisória',      keywords: 'hr separador linha divisoria' },
+                { action: 'callout-info',     icon: 'fa-info-circle',           label: 'Info',             desc: 'Nota informativa azul',keywords: 'info callout azul nota' },
+                { action: 'callout-warning',  icon: 'fa-exclamation-triangle',  label: 'Aviso',            desc: 'Alerta amarelo',       keywords: 'aviso warning callout amarelo alerta' },
+                { action: 'callout-error',    icon: 'fa-times-circle',          label: 'Erro',             desc: 'Alerta vermelho',      keywords: 'erro error callout vermelho' },
+                { action: 'callout-success',  icon: 'fa-check-circle',          label: 'Sucesso',          desc: 'Confirmação verde',    keywords: 'sucesso success callout verde' },
+                { action: 'table',            icon: 'fa-table',                 label: 'Tabela',           desc: 'Tabela editável 2×3',  keywords: 'tabela table' },
+                { action: 'template-aula',    icon: 'fa-graduation-cap',        label: 'Template: Aula',   desc: 'Estrutura de aula',    keywords: 'aula template aula notas' },
+                { action: 'template-resumo',  icon: 'fa-book',                  label: 'Template: Resumo', desc: 'Estrutura de resumo',  keywords: 'resumo template' },
+                { action: 'template-reuniao', icon: 'fa-users',                 label: 'Template: Reunião',desc: 'Estrutura de reunião', keywords: 'reuniao template meeting' },
+                { action: 'template-bug',     icon: 'fa-bug',                   label: 'Template: Bug',    desc: 'Estrutura de bug report', keywords: 'bug template issue erro' },
+            ];
+        },
+
+        // Chamado num setTimeout(0) depois de o utilizador pressionar "/".
+        // Confirma que o "/" foi mesmo inserido no texto e abre o menu.
+        _maybeOpenSlashMenu() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return;
+            const range = sel.getRangeAt(0);
+            const node = range.startContainer;
+            if (node.nodeType !== Node.TEXT_NODE) return;
+            if (!editor.contains(node)) return;
+
+            const offset = range.startOffset;
+            if (offset === 0) return;
+            if (node.textContent[offset - 1] !== '/') return;
+
+            // O "/" só vale como trigger se vier no início da linha ou
+            // depois de um espaço — assim "https://" ou "a/b" não abrem o menu.
+            if (offset >= 2) {
+                const prevChar = node.textContent[offset - 2];
+                if (!/\s/.test(prevChar)) return;
+            }
+
+            // Guarda a posição do "/" — vai servir para apagar "/filtro" depois
+            this._slashRange = document.createRange();
+            this._slashRange.setStart(node, offset - 1);
+            this._slashRange.setEnd(node, offset - 1);
+
+            this._openSlashMenu();
+        },
+
+        _openSlashMenu() {
+            if (this._slashMenuOpen) return;
+            this._slashMenuOpen = true;
+            this._slashFilter = '';
+
+            const items = this._slashItems();
+            const menu = document.createElement('div');
+            menu.id = 'nbSlashMenu';
+            menu.className = 'nb-slash-menu';
+            menu.innerHTML = `
+                <div class="nb-slash-header">Blocos</div>
+                <div class="nb-slash-items">
+                    ${items.map((it, i) => `
+                        <div class="nb-slash-item ${i === 0 ? 'active' : ''}"
+                             data-action="${it.action}"
+                             data-label="${(it.label || '').toLowerCase()}"
+                             data-keywords="${(it.keywords || '').toLowerCase()}"
+                             onmousedown="event.preventDefault()"
+                             onclick="Templates.notebooks._executeSlashAction('${it.action}')">
+                            <div class="nb-slash-icon"><i class="fas ${it.icon}"></i></div>
+                            <div class="nb-slash-info">
+                                <div class="nb-slash-label">${it.label}</div>
+                                <div class="nb-slash-desc">${it.desc}</div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <div class="nb-slash-empty" style="display:none;">Sem resultados</div>
+                </div>
+            `;
+            document.body.appendChild(menu);
+
+            this._positionSlashMenu(menu);
+
+            // Fecha ao clicar fora (mousedown para apanhar antes do focus se mover)
+            this._slashOutsideHandler = (ev) => {
+                if (!menu.contains(ev.target)) this._closeSlashMenu();
+            };
+            // Atrasa a ligação para o próprio mousedown que originou o "/" não fechar imediatamente.
+            setTimeout(() => {
+                if (this._slashMenuOpen) {
+                    document.addEventListener('mousedown', this._slashOutsideHandler);
+                }
+            }, 0);
+        },
+
+        _positionSlashMenu(menu) {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                // Centrado horizontalmente, 30% do topo
+                menu.style.left = '50%';
+                menu.style.top  = '30%';
+                menu.style.transform = 'translate(-50%, 0)';
+                return;
+            }
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) {
+                menu.style.left = '50%';
+                menu.style.top  = '30%';
+                menu.style.transform = 'translate(-50%, 0)';
+                return;
+            }
+            const range = sel.getRangeAt(0).cloneRange();
+            range.collapse(true);
+            const rect = range.getBoundingClientRect();
+            // Se o range não tiver dimensão (cursor entre nós), usa o editor
+            const editor = document.getElementById('notebookRichEditor');
+            const editorRect = editor ? editor.getBoundingClientRect() : { left: 100, bottom: 100 };
+            const x = (rect && (rect.left || rect.right)) ? rect.left : editorRect.left;
+            const y = (rect && rect.bottom) ? rect.bottom : editorRect.bottom;
+
+            // Clamp à viewport
+            const menuW = 280, menuH = 360;
+            const left = Math.min(window.innerWidth - menuW - 12, Math.max(12, x));
+            const top  = Math.min(window.innerHeight - menuH - 12, Math.max(12, y + 6));
+            menu.style.left = left + 'px';
+            menu.style.top  = top + 'px';
+            menu.style.transform = 'none';
+        },
+
+        _closeSlashMenu() {
+            const menu = document.getElementById('nbSlashMenu');
+            if (menu) menu.remove();
+            if (this._slashOutsideHandler) {
+                document.removeEventListener('mousedown', this._slashOutsideHandler);
+                this._slashOutsideHandler = null;
+            }
+            this._slashMenuOpen = false;
+            this._slashRange = null;
+            this._slashFilter = '';
+        },
+
+        _navigateSlashMenu(direction) {
+            const menu = document.getElementById('nbSlashMenu');
+            if (!menu) return;
+            const visible = Array.from(menu.querySelectorAll('.nb-slash-item:not(.hidden)'));
+            if (!visible.length) return;
+            let idx = visible.findIndex(el => el.classList.contains('active'));
+            if (idx === -1) idx = 0;
+            idx = (idx + direction + visible.length) % visible.length;
+            visible.forEach(el => el.classList.remove('active'));
+            visible[idx].classList.add('active');
+            visible[idx].scrollIntoView({ block: 'nearest' });
+        },
+
+        _selectActiveSlashItem() {
+            const menu = document.getElementById('nbSlashMenu');
+            if (!menu) return;
+            const active = menu.querySelector('.nb-slash-item.active:not(.hidden)') ||
+                           menu.querySelector('.nb-slash-item:not(.hidden)');
+            if (active) this._executeSlashAction(active.getAttribute('data-action'));
+        },
+
+        // Lê o texto digitado entre o "/" e o cursor e usa-o como filtro.
+        _updateSlashFilter() {
+            if (!this._slashMenuOpen || !this._slashRange) return;
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return;
+
+            const startNode = this._slashRange.startContainer;
+            const startOffset = this._slashRange.startOffset;
+            const endRange = sel.getRangeAt(0);
+
+            // Se o cursor saiu do mesmo text node ou ficou antes do "/", fecha
+            if (endRange.endContainer !== startNode || endRange.endOffset <= startOffset) {
+                this._closeSlashMenu();
+                return;
+            }
+
+            const slice = startNode.textContent.slice(startOffset + 1, endRange.endOffset);
+            // Espaço termina o filtro → fecha
+            if (/\s/.test(slice)) {
+                this._closeSlashMenu();
+                return;
+            }
+            this._slashFilter = slice.toLowerCase();
+            this._filterSlashItems();
+        },
+
+        _filterSlashItems() {
+            const menu = document.getElementById('nbSlashMenu');
+            if (!menu) return;
+            const q = this._slashFilter || '';
+            const items = menu.querySelectorAll('.nb-slash-item');
+            let firstVisible = null;
+            let visibleCount = 0;
+            items.forEach(el => {
+                const label = el.getAttribute('data-label') || '';
+                const kw = el.getAttribute('data-keywords') || '';
+                const match = !q || label.includes(q) || kw.includes(q);
+                el.classList.toggle('hidden', !match);
+                el.classList.remove('active');
+                if (match) {
+                    if (!firstVisible) firstVisible = el;
+                    visibleCount++;
+                }
+            });
+            if (firstVisible) firstVisible.classList.add('active');
+            const empty = menu.querySelector('.nb-slash-empty');
+            if (empty) empty.style.display = visibleCount ? 'none' : 'block';
+        },
+
+        // Se o "/" original deixou de existir (ex: utilizador apagou), fecha o menu.
+        _maybeCloseSlashIfTriggerGone() {
+            if (!this._slashMenuOpen || !this._slashRange) return;
+            const node = this._slashRange.startContainer;
+            const off = this._slashRange.startOffset;
+            const ch = (node.textContent || '')[off];
+            if (ch !== '/') this._closeSlashMenu();
+        },
+
+        _executeSlashAction(action) {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) { this._closeSlashMenu(); return; }
+            editor.focus();
+
+            const sel = window.getSelection();
+            if (this._slashRange && sel && sel.rangeCount) {
+                const startNode = this._slashRange.startContainer;
+                const startOff  = this._slashRange.startOffset;
+                const cur = sel.getRangeAt(0);
+                if (cur.endContainer === startNode && cur.endOffset >= startOff) {
+                    const del = document.createRange();
+                    del.setStart(startNode, startOff);
+                    del.setEnd(cur.endContainer, cur.endOffset);
+                    del.deleteContents();
+                    const c = document.createRange();
+                    c.setStart(startNode, startOff);
+                    c.collapse(true);
+                    sel.removeAllRanges();
+                    sel.addRange(c);
+                }
+            }
+
+            this._closeSlashMenu();
+
+            if (['h1','h2','h3','blockquote','pre'].includes(action)) {
+                this._formatBlock(action);
+            } else if (action === 'ul') {
+                this._exec('insertUnorderedList');
+            } else if (action === 'ol') {
+                this._exec('insertOrderedList');
+            } else if (action === 'hr') {
+                this._exec('insertHorizontalRule');
+                this._exec('formatBlock', 'p');
+            } else if (action.startsWith('callout-')) {
+                this._insertCallout(action.slice('callout-'.length));
+            } else if (action === 'table') {
+                this._insertTable();
+            } else if (action.startsWith('template-')) {
+                this._insertTemplate(action.slice('template-'.length));
+            }
+        },
+
+        // Abre o slash menu a partir do botão "/" da toolbar mobile:
+        // garante focus no editor e abre o menu na posição actual do cursor,
+        // sem exigir que o "/" venha após espaço (foi clique intencional).
+        _openSlashFromButton() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.focus();
+
+            // Se não há seleção dentro do editor, posiciona o cursor no fim
+            let sel = window.getSelection();
+            if (!sel || !sel.rangeCount || !editor.contains(sel.anchorNode)) {
+                const r = document.createRange();
+                r.selectNodeContents(editor);
+                r.collapse(false);
+                sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(r);
+            }
+
+            // Insere "/" para servir de marcador (será apagado em _executeSlashAction)
+            document.execCommand('insertText', false, '/');
+
+            // Captura a posição do "/" e abre o menu directamente
+            setTimeout(() => {
+                const s = window.getSelection();
+                if (!s || !s.rangeCount) return;
+                const r = s.getRangeAt(0);
+                const node = r.startContainer;
+                const off = r.startOffset;
+                if (node.nodeType === Node.TEXT_NODE && off > 0 && node.textContent[off - 1] === '/') {
+                    this._slashRange = document.createRange();
+                    this._slashRange.setStart(node, off - 1);
+                    this._slashRange.setEnd(node, off - 1);
+                }
+                this._openSlashMenu();
+            }, 0);
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // CALLOUTS
+        // ═══════════════════════════════════════════════════════════════════
+
+        _calloutEmojis: {
+            info:    '💡',
+            warning: '⚠️',
+            error:   '❌',
+            success: '✅',
+        },
+
+        _insertCallout(variant) {
+            if (!['info','warning','error','success'].includes(variant)) variant = 'info';
+            const emoji = this._calloutEmojis[variant];
+            // contenteditable="false" no wrapper para que o cursor não pare lá;
+            // contenteditable="true" só dentro de .nb-callout-text para o utilizador escrever.
+            const html = `<div class="nb-callout nb-callout--${variant}" contenteditable="false" data-variant="${variant}">` +
+                            `<span class="nb-callout-icon" contenteditable="false" onclick="Templates.notebooks._toggleCalloutEmoji(this)">${emoji}</span>` +
+                            `<div class="nb-callout-text" contenteditable="true" data-placeholder="Escreve aqui..."><br></div>` +
+                         `</div><p><br></p>`;
+            document.execCommand('insertHTML', false, html);
+
+            // Move o cursor para dentro do callout-text
+            setTimeout(() => {
+                const editor = document.getElementById('notebookRichEditor');
+                if (!editor) return;
+                const all = editor.querySelectorAll('.nb-callout-text');
+                const last = all[all.length - 1];
+                if (last) {
+                    last.innerHTML = ''; // remove <br> placeholder para placeholder CSS aparecer
+                    const r = document.createRange();
+                    r.selectNodeContents(last);
+                    r.collapse(true);
+                    const s = window.getSelection();
+                    s.removeAllRanges();
+                    s.addRange(r);
+                }
+            }, 0);
+        },
+
+        // Cicla o emoji do callout ao clicar nele.
+        _toggleCalloutEmoji(span) {
+            const cycle = ['💡','⚠️','❌','✅','📌','🔥','ℹ️','⭐','🚀','🐛'];
+            const cur = (span.textContent || '').trim();
+            const idx = cycle.indexOf(cur);
+            const next = cycle[(idx + 1) % cycle.length] || cycle[0];
+            span.textContent = next;
+            // Atualiza autosave
+            if (this._autosaveTrigger) this._autosaveTrigger();
+        },
+
+        // O sanitizer pode descartar contenteditable; ao entrar em modo de
+        // edição, garantimos que todos os callouts estão estruturalmente
+        // corretos (wrapper non-editable, texto editable).
+        _normalizeCallouts() {
+            const editor = document.getElementById('notebookRichEditor');
+            if (!editor) return;
+            editor.querySelectorAll('.nb-callout').forEach(c => {
+                c.setAttribute('contenteditable', 'false');
+                const icon = c.querySelector('.nb-callout-icon');
+                if (icon) {
+                    icon.setAttribute('contenteditable', 'false');
+                    if (!icon.getAttribute('onclick')) {
+                        icon.setAttribute('onclick', 'Templates.notebooks._toggleCalloutEmoji(this)');
+                    }
+                }
+                const txt = c.querySelector('.nb-callout-text');
+                if (txt) {
+                    txt.setAttribute('contenteditable', 'true');
+                    if (!txt.getAttribute('data-placeholder')) {
+                        txt.setAttribute('data-placeholder', 'Escreve aqui...');
+                    }
+                }
+            });
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TABELA
+        // ═══════════════════════════════════════════════════════════════════
+        _insertTable() {
+            const html = `<table class="nb-table">` +
+                `<thead><tr><th contenteditable="true">Coluna 1</th><th contenteditable="true">Coluna 2</th></tr></thead>` +
+                `<tbody>` +
+                    `<tr><td contenteditable="true"><br></td><td contenteditable="true"><br></td></tr>` +
+                    `<tr><td contenteditable="true"><br></td><td contenteditable="true"><br></td></tr>` +
+                `</tbody>` +
+                `</table><p><br></p>`;
+            document.execCommand('insertHTML', false, html);
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // TEMPLATES (snippets de escrita rápida)
+        // ═══════════════════════════════════════════════════════════════════
+
+        _templates: {
+            aula: `
+                <h2>📚 Aula — [Título]</h2>
+                <p><strong>Data:</strong> [data]</p>
+                <hr>
+                <h3>Objetivos</h3>
+                <ul><li>[objetivo 1]</li><li>[objetivo 2]</li></ul>
+                <h3>Conteúdo</h3>
+                <p>[notas da aula]</p>
+                <h3>Dúvidas</h3>
+                <ul><li>[dúvida 1]</li></ul>
+                <h3>Resumo</h3>
+                <p>[resumo em 2-3 frases]</p>
+            `,
+            resumo: `
+                <h2>📖 Resumo — [Título]</h2>
+                <hr>
+                <h3>Ideia Principal</h3>
+                <p>[ideia central em 1-2 frases]</p>
+                <h3>Pontos-Chave</h3>
+                <ul><li>[ponto 1]</li><li>[ponto 2]</li><li>[ponto 3]</li></ul>
+                <h3>Conclusão</h3>
+                <p>[o que retirar disto]</p>
+            `,
+            reuniao: `
+                <h2>👥 Reunião — [Título]</h2>
+                <p><strong>Data:</strong> [data] &nbsp;|&nbsp; <strong>Participantes:</strong> [nomes]</p>
+                <hr>
+                <h3>Agenda</h3>
+                <ul><li>[ponto 1]</li><li>[ponto 2]</li></ul>
+                <h3>Notas</h3>
+                <p>[notas da reunião]</p>
+                <h3>Ações</h3>
+                <ul><li>[ ] [tarefa] — [responsável]</li></ul>
+            `,
+            bug: `
+                <h2>🐛 Bug Report — [título]</h2>
+                <hr>
+                <h3>Descrição</h3>
+                <p>[o que acontece]</p>
+                <h3>Passos para reproduzir</h3>
+                <ol><li>[passo 1]</li><li>[passo 2]</li></ol>
+                <h3>Comportamento esperado</h3>
+                <p>[o que deveria acontecer]</p>
+                <h3>Comportamento atual</h3>
+                <p>[o que acontece de facto]</p>
+                <h3>Notas / Screenshots</h3>
+                <p>[info adicional]</p>
+            `,
+        },
+
+        _insertTemplate(name) {
+            const tpl = this._templates[name];
+            if (!tpl) return;
+            // Compacta em uma única linha — execCommand sensível a whitespace entre tags
+            const html = tpl.replace(/>\s+</g, '><').trim();
+            document.execCommand('insertHTML', false, html);
+
+            // Move o cursor para o início do conteúdo inserido
+            setTimeout(() => {
+                const editor = document.getElementById('notebookRichEditor');
+                if (!editor) return;
+                editor.focus();
+            }, 0);
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // MOBILE TOOLBAR (B/I/U + slash + save fixos acima do teclado)
+        // ═══════════════════════════════════════════════════════════════════
+
+        _mountMobileToolbar() {
+            if (window.innerWidth > 768) return;
+            if (document.getElementById('nbMobileToolbar')) return;
+            const wrap = document.createElement('div');
+            wrap.innerHTML = `
+                <div id="nbMobileToolbar" class="nb-mobile-toolbar">
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                    <button class="nb-mtool nb-mtool--slash" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openSlashFromButton()">/</button>
+                    <button class="nb-mtool nb-mtool--save" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks.saveInlineEdit()"><i class="fas fa-save"></i></button>
+                </div>
+            `;
+            document.body.appendChild(wrap.firstElementChild);
+
+            // Em mobile escondemos o toolbar desktop (sticky) — slash menu chega
+            const slot = document.getElementById('notebookToolbarSlot');
+            if (slot) slot.dataset.prevDisplay = slot.style.display || '';
+            if (slot) slot.style.display = 'none';
+        },
+
+        _unmountMobileToolbar() {
+            const tb = document.getElementById('nbMobileToolbar');
+            if (tb) tb.remove();
+            const slot = document.getElementById('notebookToolbarSlot');
+            if (slot && 'prevDisplay' in slot.dataset) {
+                slot.style.display = slot.dataset.prevDisplay;
+                delete slot.dataset.prevDisplay;
+            }
         },
 
         _updateWordCount() {
@@ -2975,6 +3908,12 @@ window.Templates = {
 
             richEditor.innerHTML = useContent;
 
+            // Os callouts são guardados sem `contenteditable` (o sanitizer
+            // controla o que sobrevive). Aqui re-aplicamos a estrutura de
+            // edição para que o utilizador possa escrever no texto e o ícone
+            // continue clicável (cicla emojis) sem o cursor parar nele.
+            this._normalizeCallouts();
+
             displayArea.style.display = 'none';
             editorArea.style.display = 'block';
             const btnGroup = document.getElementById('nbViewButtons');
@@ -2983,6 +3922,10 @@ window.Templates = {
             if (versionPanel) versionPanel.style.display = 'none';
 
             if (toolbarSlot) toolbarSlot.style.display = 'block';
+
+            // Em mobile, montamos a toolbar fixa acima do teclado e escondemos
+            // a desktop (#notebookToolbarSlot). O slash menu cobre tudo o resto.
+            this._mountMobileToolbar();
 
             const nbMain = document.querySelector('.nb-main');
             if (nbMain) nbMain.scrollTop = 0;
@@ -3020,6 +3963,9 @@ window.Templates = {
                 }
                 this._toolbarSyncHandler = null;
             }
+            // Fecha slash menu se ainda estiver aberto e desmonta toolbar mobile
+            if (this._slashMenuOpen) this._closeSlashMenu();
+            this._unmountMobileToolbar();
 
             const notebookView = document.querySelector('.nb-view');
             if (notebookView) {
@@ -3056,6 +4002,9 @@ window.Templates = {
                     richEditor.removeEventListener('mouseup', this._toolbarSyncHandler);
                     this._toolbarSyncHandler = null;
                 }
+                // Fecha slash menu (se aberto) e desmonta toolbar mobile
+                if (this._slashMenuOpen) this._closeSlashMenu();
+                this._unmountMobileToolbar();
 
                 // Save directly via save_note.php (versioning + content)
                 const response = await fetch(`${API_URL}/save_note.php`, {
@@ -3277,6 +4226,72 @@ window.Templates = {
                 console.error(err);
                 showNotification('Erro ao carregar caderno', 'error');
             }
+
+            // Mobile: ao abrir um caderno passamos para a "camada detalhe"
+            // (esconde lista, mostra conteúdo a ecrã cheio + botão Voltar).
+            // Excepção: se o utilizador acabou de carregar em "Voltar" durante
+            // a edição, não queremos voltar a abrir o detalhe.
+            if (window.innerWidth <= 768 && !this._suppressMobileDetail) {
+                const shell = document.querySelector('.nb-shell');
+                if (shell) {
+                    if (!shell.classList.contains('nb-mobile')) this._initMobileNav();
+                    shell.classList.add('nb-mobile--detail');
+                    const main = shell.querySelector('.nb-main');
+                    if (main) main.scrollTop = 0;
+                }
+            }
+            this._suppressMobileDetail = false;
+        },
+
+        // Inicializa a navegação em duas camadas em mobile:
+        // - shell ganha .nb-mobile (lista a ecrã cheio, sem o painel direito)
+        // - injecta o botão "← Cadernos" no topo de .nb-main
+        // - clicar num caderno → adiciona .nb-mobile--detail (esconde lista,
+        //   mostra conteúdo + botão voltar)
+        // - botão voltar → remove .nb-mobile--detail
+        _initMobileNav() {
+            const shell = document.querySelector('.nb-shell');
+            if (!shell) return;
+            shell.classList.add('nb-mobile');
+            shell.classList.remove('nb-mobile--detail');
+
+            const main = shell.querySelector('.nb-main');
+            if (main && !main.querySelector('#nbBackBtn')) {
+                const back = document.createElement('button');
+                back.id = 'nbBackBtn';
+                back.type = 'button';
+                back.innerHTML = '<i class="fas fa-arrow-left"></i> <span>Cadernos</span>';
+                back.onclick = () => Templates.notebooks._mobileNavBack();
+                main.insertBefore(back, main.firstChild);
+            }
+
+            // Listener único para limpar/recolocar o estado quando o utilizador
+            // muda a largura do ecrã (rotate, redimensionar janela em DevTools).
+            if (!this._mobileResizeHandler) {
+                this._mobileResizeHandler = () => {
+                    const sh = document.querySelector('.nb-shell');
+                    if (!sh) return;
+                    if (window.innerWidth > 768) {
+                        sh.classList.remove('nb-mobile', 'nb-mobile--detail');
+                    } else {
+                        // Garante o setup mobile (incluindo botão "Voltar")
+                        Templates.notebooks._initMobileNav();
+                    }
+                };
+                window.addEventListener('resize', this._mobileResizeHandler);
+            }
+        },
+
+        _mobileNavBack() {
+            // Se o utilizador está em modo de edição, sai primeiro (autosave já guardou).
+            // Marcamos para que o showNotebook subsequente não reabra a camada detalhe.
+            const editorArea = document.getElementById('notebookEditorArea');
+            if (editorArea && editorArea.style.display !== 'none') {
+                this._suppressMobileDetail = true;
+                this.cancelEditMode();
+            }
+            const shell = document.querySelector('.nb-shell');
+            if (shell) shell.classList.remove('nb-mobile--detail');
         },
 
         renderEditor(container, item) {

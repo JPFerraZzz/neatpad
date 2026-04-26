@@ -7,7 +7,7 @@
  *  - Nunca cacheia dados dinâmicos do utilizador nem credenciais
  * ==========================================================================*/
 
-const VERSION      = 'neatpad-v2.0.0';
+const VERSION      = 'neatpad-v2.1.0';
 const STATIC_CACHE = `static-${VERSION}`;
 const RUNTIME_CACHE = `runtime-${VERSION}`;
 

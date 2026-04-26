@@ -28,7 +28,12 @@ const NEATPAD_ALLOWED_TAGS = [
 ];
 
 const NEATPAD_ALLOWED_ATTRS = [
-    '*'    => ['style', 'class', 'data-color', 'data-checked'],
+    // Atributos genéricos seguros em qualquer tag.
+    //
+    // contenteditable / data-placeholder são necessários para os blocos
+    // ricos do editor (callouts, tabelas, templates). Não executam JS,
+    // logo não acrescentam superfície de XSS — apenas controlam edição.
+    '*'    => ['style', 'class', 'data-color', 'data-checked', 'contenteditable', 'data-placeholder', 'data-variant'],
     'a'    => ['href', 'target', 'rel'],
     'span' => ['style', 'class'],
     'td'   => ['colspan', 'rowspan'],
@@ -143,6 +148,23 @@ function neatpad_walk_and_sanitize(DOMNode $node, DOMDocument $doc): void {
                     $clean = neatpad_sanitize_css($val);
                     if ($clean === '') $attrsToRemove[] = $attr->nodeName;
                     else $child->setAttribute('style', $clean);
+                    continue;
+                }
+                if ($name === 'contenteditable') {
+                    // Só aceitamos valores literais "true"/"false" — evita
+                    // confusão com outros atributos via parsing.
+                    $v = strtolower(trim($val));
+                    if ($v !== 'true' && $v !== 'false') {
+                        $attrsToRemove[] = $attr->nodeName;
+                    } else {
+                        $child->setAttribute('contenteditable', $v);
+                    }
+                    continue;
+                }
+                if ($name === 'data-placeholder' || $name === 'data-variant') {
+                    // Apenas texto curto — sem HTML.
+                    $clean = preg_replace('/[<>]/', '', (string)$val);
+                    $child->setAttribute($name, mb_substr($clean, 0, 80));
                     continue;
                 }
                 if ($name === 'href') {
