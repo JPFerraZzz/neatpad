@@ -1,9 +1,0 @@
-{
-    "name": "ferrazweb/neatpad",
-    "description": "NeatPad - O teu bloco de notas organizado",
-    "require": {
-        "php": ">=8.1",
-        "ext-pdo": "*",
-        "ext-pdo_mysql": "*"
-    }
-}

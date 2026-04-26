@@ -418,6 +418,21 @@
         </div>
     </aside>
 
+    <!-- Confirm modal próprio (não depende de window.confirm que pode ser
+         silenciado pelo browser quando o utilizador marca "impedir diálogos") -->
+    <div class="confirm-modal" id="appConfirmModal" role="dialog" aria-modal="true" aria-labelledby="appConfirmTitle" hidden>
+        <div class="confirm-backdrop" data-confirm-cancel></div>
+        <div class="confirm-box" role="document">
+            <div class="confirm-icon" id="appConfirmIcon"><i class="fas fa-question-circle"></i></div>
+            <h3 class="confirm-title" id="appConfirmTitle">Confirmar</h3>
+            <p class="confirm-message" id="appConfirmMessage"></p>
+            <div class="confirm-actions">
+                <button type="button" class="btn btn-secondary" id="appConfirmCancelBtn" data-confirm-cancel>Cancelar</button>
+                <button type="button" class="btn btn-primary" id="appConfirmOkBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Install gate (bloqueia mobile browser fora do PWA) -->
     <div id="pwa-install-gate" role="dialog" aria-modal="true" aria-labelledby="pwaGateTitle">
         <div class="gate-box">

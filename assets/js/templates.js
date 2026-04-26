@@ -55,26 +55,37 @@ window.Templates = {
                         }
                     }
                     .note-card {
+                        --note-ink: #1f1d2b;
+                        --note-ink-muted: rgba(31, 29, 43, 0.72);
+                        --note-ink-subtle: rgba(31, 29, 43, 0.55);
+                        --note-divider: rgba(31, 29, 43, 0.18);
                         border-radius: var(--radius-lg);
                         padding: 16px;
-                        border: 1px solid var(--border);
-                        transition: border-color 0.12s ease;
+                        border: 1px solid var(--note-divider);
+                        transition: border-color 0.12s ease, transform 0.12s ease;
                         min-height: 180px;
                         display: flex;
                         flex-direction: column;
+                        color: var(--note-ink);
                     }
-                    .note-card:hover { border-color: var(--border-strong); }
+                    .note-card:hover {
+                        border-color: rgba(31, 29, 43, 0.32);
+                        transform: translateY(-1px);
+                    }
                     .note-header {
                         display: flex;
                         justify-content: space-between;
                         align-items: flex-start;
                         margin-bottom: 10px;
+                        gap: 8px;
                     }
                     .note-title {
                         font-size: 16px;
-                        font-weight: 600;
-                        color: var(--text);
+                        font-weight: 700;
+                        color: var(--note-ink);
                         flex: 1;
+                        line-height: 1.3;
+                        word-break: break-word;
                     }
                     .note-actions {
                         display: flex;
@@ -86,18 +97,18 @@ window.Templates = {
                         border-radius: var(--radius);
                         width: 32px;
                         height: 32px;
-                        color: var(--text-muted);
+                        color: var(--note-ink-muted);
                         cursor: pointer;
                         display: inline-flex;
                         align-items: center;
                         justify-content: center;
                         transition: background 0.12s ease, color 0.12s ease;
                     }
-                    .note-action-btn:hover { background: var(--bg-subtle); color: var(--text); }
-                    .note-action-btn.delete:hover { background: var(--danger-weak); color: var(--danger); }
+                    .note-action-btn:hover { background: rgba(31, 29, 43, 0.10); color: var(--note-ink); }
+                    .note-action-btn.delete:hover { background: rgba(220, 38, 38, 0.15); color: #b91c1c; }
                     .note-content {
                         flex: 1;
-                        color: var(--text-muted);
+                        color: var(--note-ink-muted);
                         line-height: 1.55;
                         white-space: pre-wrap;
                         font-size: 13px;
@@ -105,8 +116,8 @@ window.Templates = {
                     .note-footer {
                         margin-top: 12px;
                         padding-top: 12px;
-                        border-top: 1px solid var(--border);
-                        color: var(--text-subtle);
+                        border-top: 1px solid var(--note-divider);
+                        color: var(--note-ink-subtle);
                         font-size: 12px;
                     }
                 </style>
@@ -1105,7 +1116,11 @@ window.Templates = {
             const notebookCategories = AppState.categories.filter(cat => cat.template_type === 'notebooks');
             
             if (notebookCategories.length === 0) {
-                if (confirm('Ainda não tens categorias de Cadernos!\n\nQueres criar uma agora?')) {
+                const ok = await appConfirm(
+                    'Ainda não tens categorias de Cadernos.\nQueres criar uma agora?',
+                    { title: 'Criar categoria de cadernos?', okLabel: 'Criar' }
+                );
+                if (ok) {
                     openCategoryModal();
                     showNotification('Cria uma categoria com o template "Cadernos"', 'info');
                 }
@@ -1240,9 +1255,11 @@ window.Templates = {
         },
 
         async unlinkNotebook(courseId, notebookId) {
-            if (!confirm('Desassociar este caderno do curso?\n\nO caderno não será eliminado, apenas desassociado.')) {
-                return;
-            }
+            const ok = await appConfirm(
+                'Desassociar este caderno do curso?\nO caderno não será eliminado, apenas desassociado.',
+                { title: 'Desassociar caderno?', okLabel: 'Desassociar' }
+            );
+            if (!ok) return;
 
             try {
                 // Buscar TODAS as categorias de cadernos
@@ -2794,7 +2811,11 @@ window.Templates = {
         },
 
         async restoreVersion(itemId, version) {
-            if (!confirm(`Restaurar a versão ${version}? O conteúdo actual será guardado como nova versão antes de restaurar.`)) return;
+            const ok = await appConfirm(
+                `Restaurar a versão ${version}?\nO conteúdo atual será guardado como nova versão antes de restaurar.`,
+                { title: 'Restaurar versão?', okLabel: 'Restaurar' }
+            );
+            if (!ok) return;
 
             try {
                 const resp = await fetch(`${API_URL}/get_versions.php`, {

@@ -775,6 +775,80 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     .popup-body { padding: 16px; }
 }
 
+/* ── Confirm modal (substitui window.confirm) ──────────────────────── */
+.confirm-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    pointer-events: none;
+}
+.confirm-modal[hidden] { display: none !important; }
+.confirm-modal.active { pointer-events: auto; }
+.confirm-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(8, 10, 18, 0.55);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    animation: fadeIn 0.15s ease-out;
+}
+.confirm-box {
+    position: relative;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--elev-3);
+    width: 100%;
+    max-width: 420px;
+    padding: 24px;
+    text-align: center;
+    animation: popIn 0.18s ease-out;
+}
+.confirm-icon {
+    width: 56px; height: 56px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: var(--primary-weak);
+    color: var(--primary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+}
+.confirm-modal--danger .confirm-icon {
+    background: var(--danger-weak);
+    color: var(--danger);
+}
+.confirm-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 6px;
+}
+.confirm-message {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin: 0 0 20px;
+    white-space: pre-line;
+}
+.confirm-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.confirm-actions .btn { min-width: 110px; }
+@media (max-width: 480px) {
+    .confirm-box { padding: 20px 18px; }
+    .confirm-actions { flex-direction: column-reverse; }
+    .confirm-actions .btn { width: 100%; }
+}
+
 /* ── 9. View modal (itensModal, itemEditor, versionManager) ────────── */
 
 .modal {
@@ -895,18 +969,42 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     .modal-body { padding: 24px; }
 }
 
-/* Desktop ≥1024px: layout tipo Notion para cadernos —
-   o modal vai a full-bleed e o body não tem padding, dando todo o espaço
-   ao shell (sidebar fixa + área de conteúdo) que se encarrega do scroll. */
+/* Tablet/desktop: o modal de cadernos preenche sempre toda a altura
+   disponível para que o painel da direita (ou o conteúdo abaixo da sidebar
+   em portrait) chegue até ao fundo, mesmo com 1 só item.
+   Chain de alturas: modal-body → wrapper (#itemsContainer) → .nb-shell.
+   Sem isto, o wrapper não tem altura definida e o `height:100%` do shell
+   fica encolhido ao tamanho do conteúdo, deixando "vazio" no fundo e
+   partindo o scroll interno do .nb-main. */
+@media (min-width: 768px) {
+    .modal-body:has(.nb-shell) {
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+    }
+    .modal-body:has(.nb-shell) > * {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-body:has(.nb-shell) > * > .nb-shell {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+    }
+}
+
+/* Desktop ≥1024px: layout tipo Notion para cadernos — o modal vai a
+   full-bleed e o shell pega em todo o espaço (sidebar fixa + conteúdo
+   à direita) com scroll independente em cada coluna. */
 @media (min-width: 1024px) {
     .modal-large .modal-content:has(.nb-shell) {
         max-width: 100%;
         border-left: none;
         border-right: none;
-    }
-    .modal-body:has(.nb-shell) {
-        padding: 0;
-        overflow: hidden;
     }
 }
 

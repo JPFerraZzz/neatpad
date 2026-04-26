@@ -3,7 +3,7 @@
 .env.local
 
 # ── Credenciais / Segredos (NUNCA COMMITAR) ──────
-# Configuração Firebase real (usar sempre firebase-config.example.js como modelo)
+# Configuração Firebase real (vive apenas no servidor)
 assets/js/firebase-config.js
 # Configuração do servidor com credenciais de BD e do projeto Firebase
 config.php

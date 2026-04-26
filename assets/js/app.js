@@ -37,6 +37,75 @@ function setButtonLoading(btn, loading) {
 const API_URL = 'api';
 
 // ====================================
+// appConfirm — confirm() próprio (não bloqueável pelo browser)
+// ====================================
+// O `window.confirm` nativo pode ser silenciado pelo Chrome/Firefox quando o
+// utilizador marca a caixa "impedir esta página de criar mais diálogos",
+// passando a devolver `false` automaticamente. Resultado: as ações de
+// "eliminar" deixam de funcionar sem qualquer feedback. Esta versão usa o
+// modal #appConfirmModal e devolve uma Promise<boolean>.
+function appConfirm(message, opts = {}) {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('appConfirmModal');
+        if (!modal) {
+            // Fallback defensivo: se o modal não existe (ex.: páginas antigas),
+            // usamos confirm() nativo. Pior solução, mas não bloqueia.
+            resolve(window.confirm(message));
+            return;
+        }
+        const titleEl   = modal.querySelector('#appConfirmTitle');
+        const msgEl     = modal.querySelector('#appConfirmMessage');
+        const iconEl    = modal.querySelector('#appConfirmIcon');
+        const okBtn     = modal.querySelector('#appConfirmOkBtn');
+        const cancelBtn = modal.querySelector('#appConfirmCancelBtn');
+
+        const danger = opts.danger === true;
+        modal.classList.toggle('confirm-modal--danger', danger);
+        if (titleEl) titleEl.textContent = opts.title || (danger ? 'Eliminar?' : 'Confirmar');
+        if (msgEl)   msgEl.textContent   = message || '';
+        if (iconEl) {
+            iconEl.innerHTML = danger
+                ? '<i class="fas fa-triangle-exclamation"></i>'
+                : '<i class="fas fa-circle-question"></i>';
+        }
+        if (okBtn) {
+            okBtn.textContent = opts.okLabel || (danger ? 'Eliminar' : 'Confirmar');
+            okBtn.className   = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+        }
+        if (cancelBtn) cancelBtn.textContent = opts.cancelLabel || 'Cancelar';
+
+        const cleanup = () => {
+            modal.removeEventListener('click', onBackdrop);
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            document.removeEventListener('keydown', onKey);
+            modal.classList.remove('active');
+            modal.setAttribute('hidden', '');
+        };
+        const onOk = () => { cleanup(); resolve(true); };
+        const onCancel = () => { cleanup(); resolve(false); };
+        const onBackdrop = (e) => {
+            if (e.target.matches('[data-confirm-cancel]')) onCancel();
+        };
+        const onKey = (e) => {
+            if (e.key === 'Escape') onCancel();
+            else if (e.key === 'Enter' && document.activeElement !== cancelBtn) onOk();
+        };
+
+        modal.addEventListener('click', onBackdrop);
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        document.addEventListener('keydown', onKey);
+
+        modal.removeAttribute('hidden');
+        modal.classList.add('active');
+        // Foco no botão de cancelar (mais seguro como default)
+        setTimeout(() => cancelBtn.focus(), 0);
+    });
+}
+window.appConfirm = appConfirm;
+
+// ====================================
 // Funções de API
 // ====================================
 
@@ -102,9 +171,11 @@ async function saveCategory(categoryData) {
 }
 
 async function deleteCategory(categoryId) {
-    if (!confirm('Tens a certeza que queres eliminar esta categoria? Todos os itens serão removidos.')) {
-        return;
-    }
+    const ok = await appConfirm(
+        'Tens a certeza que queres eliminar esta categoria?\nTodos os itens dentro dela serão removidos.',
+        { danger: true, title: 'Eliminar categoria?', okLabel: 'Eliminar' }
+    );
+    if (!ok) return;
 
     try {
         const response = await fetch(`${API_URL}/categories.php?id=${categoryId}`, {
@@ -172,9 +243,11 @@ async function saveItem(itemData) {
 }
 
 async function deleteItem(itemId) {
-    if (!confirm('Tens a certeza que queres eliminar este item?')) {
-        return;
-    }
+    const ok = await appConfirm(
+        'Tens a certeza que queres eliminar este item?',
+        { danger: true, title: 'Eliminar item?', okLabel: 'Eliminar' }
+    );
+    if (!ok) return;
 
     // Kill any autosave running for this item BEFORE deleting
     if (window.Autosave) {
@@ -1077,7 +1150,11 @@ async function deleteSingleVersion(versionId, itemId) {
 }
 
 async function deleteItemVersions(itemId) {
-    if (!confirm('Apagar TODAS as versões deste item? Esta ação é irreversível.')) return;
+    const ok = await appConfirm(
+        'Apagar TODAS as versões deste item?\nEsta ação é irreversível.',
+        { danger: true, title: 'Eliminar versões?', okLabel: 'Apagar tudo' }
+    );
+    if (!ok) return;
 
     try {
         const resp = await fetch(`${API_URL}/manage_versions.php?item_id=${itemId}`, { method: 'DELETE', credentials: 'same-origin' });
@@ -1092,7 +1169,11 @@ async function deleteItemVersions(itemId) {
 }
 
 async function deleteAllVersions() {
-    if (!confirm('ATENÇÃO: Isto apaga TODO o historial de versões de TODOS os itens. Continuar?')) return;
+    const ok = await appConfirm(
+        'ATENÇÃO: Isto apaga TODO o historial de versões de TODOS os itens.\nNão é possível recuperar.',
+        { danger: true, title: 'Limpar todas as versões?', okLabel: 'Apagar tudo' }
+    );
+    if (!ok) return;
 
     try {
         const resp = await fetch(`${API_URL}/manage_versions.php`, {
