@@ -88,6 +88,25 @@ try {
             if (empty($id)) {
                 jsonResponse(false, null, 'ID da categoria é obrigatório', 400);
             }
+            // Confirmar que a categoria pertence ao utilizador antes de apagar
+            $chk = $db->prepare("SELECT id FROM categories WHERE id = ? AND user_uid = ?");
+            $chk->execute([$id, $uid]);
+            if (!$chk->fetch()) {
+                jsonResponse(false, null, 'Categoria não encontrada', 404);
+            }
+            // Apaga registos dependentes explicitamente para garantir limpeza mesmo
+            // que a instância MySQL não tenha as FK CASCADE activas.
+            $db->prepare("
+                DELETE nv FROM note_versions nv
+                JOIN items i ON nv.item_id = i.id
+                WHERE i.category_id = ?
+            ")->execute([$id]);
+            $db->prepare("
+                DELETE s FROM subtasks s
+                JOIN items i ON s.item_id = i.id
+                WHERE i.category_id = ?
+            ")->execute([$id]);
+            $db->prepare("DELETE FROM items WHERE category_id = ?")->execute([$id]);
             $stmt = $db->prepare("DELETE FROM categories WHERE id = ? AND user_uid = ?");
             $stmt->execute([$id, $uid]);
             jsonResponse(true, ['message' => 'Categoria eliminada com sucesso']);

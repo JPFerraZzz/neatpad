@@ -199,6 +199,11 @@ try {
             if (!ownedItemExists($db, (int)$id, $uid)) {
                 jsonResponse(false, null, 'Item não encontrado', 404);
             }
+            // Apaga registos dependentes explicitamente para garantir limpeza mesmo
+            // que a instância MySQL não tenha as FK CASCADE activas (ex: bases de dados
+            // criadas antes da migração).
+            $db->prepare("DELETE FROM note_versions WHERE item_id = ?")->execute([$id]);
+            $db->prepare("DELETE FROM subtasks WHERE item_id = ?")->execute([$id]);
             $stmt = $db->prepare("DELETE FROM items WHERE id = ?");
             $stmt->execute([$id]);
             jsonResponse(true, ['message' => 'Item eliminado com sucesso']);

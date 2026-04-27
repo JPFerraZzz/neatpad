@@ -436,6 +436,102 @@ function renderQuickAccess() {
 }
 
 // ============================================================================
+// Últimas Atualizações — GitHub commits + Unsplash decorativo (desktop only)
+// ============================================================================
+(function initGitHubUpdates() {
+    // Só carrega em desktop (>768px) e uma vez por sessão
+    if (window.innerWidth <= 768) return;
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadGitHubUpdates);
+    } else {
+        loadGitHubUpdates();
+    }
+})();
+
+async function loadGitHubUpdates() {
+    if (window.innerWidth <= 768) return;
+    const wrap = document.getElementById('updatesSection');
+    const scroll = document.getElementById('updatesScroll');
+    if (!wrap || !scroll) return;
+
+    // Esqueleto de loading
+    scroll.innerHTML = Array(5).fill(0).map(() => `
+        <div class="upd-card upd-skeleton">
+            <div class="upd-img-wrap"></div>
+            <div class="upd-body">
+                <div class="upd-skel-line" style="width:80%"></div>
+                <div class="upd-skel-line" style="width:50%;margin-top:8px"></div>
+            </div>
+        </div>
+    `).join('');
+    wrap.style.display = 'block';
+
+    try {
+        const resp = await fetch(
+            'https://api.github.com/repos/JPFerraZzz/neatpad/commits?per_page=5',
+            { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+        );
+        if (!resp.ok) throw new Error(`GitHub API: ${resp.status}`);
+        const commits = await resp.json();
+        if (!Array.isArray(commits) || commits.length === 0) {
+            wrap.style.display = 'none';
+            return;
+        }
+        scroll.innerHTML = commits.map(c => {
+            const msg = (c.commit.message || '').split('\n')[0].slice(0, 80);
+            const author = c.commit.author.name || c.author?.login || 'autor';
+            const avatar = c.author?.avatar_url || '';
+            const date = _relativeDate(new Date(c.commit.author.date));
+            const sha = (c.sha || '').slice(0, 7);
+            const url = c.html_url || '#';
+            // Keyword para a imagem decorativa (1ª palavra relevante da mensagem)
+            const kw = _extractCommitKeyword(msg);
+            // Unsplash source — não requer API key, devolve imagem redirectada
+            const imgSrc = `https://source.unsplash.com/featured/320x160/?${encodeURIComponent(kw)},technology`;
+            return `
+                <a class="upd-card" href="${url}" target="_blank" rel="noopener noreferrer">
+                    <div class="upd-img-wrap">
+                        <img src="${imgSrc}" alt="${escapeHtml(kw)}" loading="lazy"
+                             onerror="this.parentElement.style.background='var(--bg-muted)'">
+                    </div>
+                    <div class="upd-body">
+                        <div class="upd-msg">${escapeHtml(msg)}</div>
+                        <div class="upd-meta">
+                            ${avatar ? `<img class="upd-avatar" src="${avatar}" alt="${escapeHtml(author)}" loading="lazy">` : `<span class="upd-avatar-fallback"><i class="fas fa-user"></i></span>`}
+                            <span class="upd-author">${escapeHtml(author)}</span>
+                            <span class="upd-dot">·</span>
+                            <span class="upd-date">${escapeHtml(date)}</span>
+                            <span class="upd-sha">${escapeHtml(sha)}</span>
+                        </div>
+                    </div>
+                </a>
+            `;
+        }).join('');
+    } catch (err) {
+        console.warn('GitHub updates:', err);
+        wrap.style.display = 'none';
+    }
+}
+
+function _extractCommitKeyword(msg) {
+    // Remove prefixos convencionais (feat:, fix:, chore:, etc.)
+    const cleaned = msg.replace(/^(feat|fix|chore|docs|style|refactor|test|perf|ci|build)(\([^)]*\))?:\s*/i, '');
+    // Pega a primeira palavra não trivial
+    const words = cleaned.split(/\s+/).filter(w => w.length > 3);
+    return (words[0] || 'software').replace(/[^a-zA-Z]/g, '').toLowerCase() || 'code';
+}
+
+function _relativeDate(date) {
+    const now = Date.now();
+    const diff = Math.floor((now - date.getTime()) / 1000);
+    if (diff < 60)  return 'agora';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min atrás`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} h atrás`;
+    if (diff < 2592000) return `${Math.floor(diff / 86400)} d atrás`;
+    return date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
+}
+
+// ============================================================================
 // View router (home ⇄ categories)
 // ============================================================================
 function switchView(name) {

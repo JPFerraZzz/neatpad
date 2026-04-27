@@ -2772,6 +2772,54 @@ window.Templates = {
                     filter: brightness(0.9);
                     color: var(--primary-text);
                 }
+
+                /* ── Sticky action bar (view + edit mode) ── */
+                @media (min-width: 769px) {
+                    .nb-sticky-bar {
+                        position: sticky;
+                        top: 0;
+                        z-index: 200;
+                        background: var(--bg-surface);
+                        border-bottom: 1px solid var(--border);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px 16px;
+                        /* Inicialmente oculta — aparece via JS quando botões saem do viewport */
+                        opacity: 0;
+                        pointer-events: none;
+                        transform: translateY(-100%);
+                        transition: opacity 0.18s ease, transform 0.18s ease;
+                    }
+                    .nb-sticky-bar.visible {
+                        opacity: 1;
+                        pointer-events: auto;
+                        transform: translateY(0);
+                    }
+                    .nb-sticky-bar .nb-sticky-title {
+                        font-size: 14px;
+                        font-weight: 600;
+                        color: var(--text-muted);
+                        flex: 1;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+                    /* Em edit mode, os botões de acção ficam sticky sem precisar
+                       de scroll — a área de edição ocupa o espaço restante. */
+                    .nb-editor-actions-sticky {
+                        position: sticky;
+                        top: 0;
+                        z-index: 200;
+                        background: var(--bg-surface);
+                        border-bottom: 1px solid var(--border);
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        padding: 8px 16px;
+                        flex-wrap: wrap;
+                    }
+                }
                 </style>
             `;
 
@@ -2822,6 +2870,22 @@ window.Templates = {
 
             return `
                 <div class="nb-view" data-notebook-id="${notebook.id}">
+
+                    <!-- Sticky bar: aparece quando os botões originais saem do viewport -->
+                    <div class="nb-sticky-bar" id="nbStickyViewBar">
+                        <span class="nb-sticky-title">${escapeHtml(notebook.title)}</span>
+                        <button class="nb-edit-btn" onclick="Templates.notebooks.enableEditMode()">
+                            <i class="fas fa-pencil-alt"></i> <span class="nb-btn-text">Editar</span>
+                        </button>
+                        <button class="nb-edit-btn nb-edit-btn--success"
+                                onclick="Templates.notebooks.saveCurrentVersion(${notebook.id})">
+                            <i class="fas fa-download"></i> <span class="nb-btn-text">Guardar Versão</span>
+                        </button>
+                        <button class="nb-edit-btn nb-edit-btn--ghost"
+                                onclick="Templates.notebooks.toggleVersionPanel()">
+                            <i class="fas fa-history"></i> <span class="nb-btn-text">Versões</span>
+                        </button>
+                    </div>
 
                     <div id="notebookToolbarSlot" style="display:none;">
                         ${this._buildToolbar()}
@@ -2880,15 +2944,8 @@ window.Templates = {
                         </div>
 
                         <div id="notebookEditorArea" style="display:none;">
-                            <div id="notebookRichEditor" class="nb-rich-editor"
-                                 contenteditable="true"
-                                 data-placeholder="Começa a escrever aqui…"
-                                 data-original-html="${encodeURIComponent(htmlContent)}"
-                                 data-item-id="${notebook.id}"
-                                 onkeydown="Templates.notebooks._editorKeydown(event)"
-                                 oninput="Templates.notebooks._onEditorInput()">
-                            </div>
-                            <div class="nb-editor-actions">
+                            <!-- Barra de acções sticky — sempre visível durante a edição (desktop) -->
+                            <div class="nb-editor-actions-sticky" id="nbEditActionBar">
                                 <button class="btn btn-success" onclick="Templates.notebooks.saveInlineEdit()">
                                     <i class="fas fa-save"></i> Guardar
                                 </button>
@@ -2901,6 +2958,14 @@ window.Templates = {
                                 <span class="nb-word-count" id="nbWordCount">
                                     <i class="fas fa-font"></i> 0 palavras
                                 </span>
+                            </div>
+                            <div id="notebookRichEditor" class="nb-rich-editor"
+                                 contenteditable="true"
+                                 data-placeholder="Começa a escrever aqui…"
+                                 data-original-html="${encodeURIComponent(htmlContent)}"
+                                 data-item-id="${notebook.id}"
+                                 onkeydown="Templates.notebooks._editorKeydown(event)"
+                                 oninput="Templates.notebooks._onEditorInput()">
                             </div>
                         </div>
                     </div>
@@ -2963,9 +3028,9 @@ window.Templates = {
                     <!-- Cores de texto -->
                     <span class="nb-tool-label">Cor:</span>
                     ${['#e74c3c','#e67e22','#f1c40f','#2ecc71','#3498db','#9b59b6'].map(c =>
-                        `<span class="nb-color-btn" style="background:${c}" title="${c}" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor','${c}')"></span>`
+                        `<span class="nb-color-btn" style="background:${c}" title="${c}" onmousedown="event.preventDefault();Templates.notebooks._setFontColor('${c}')"></span>`
                     ).join('')}
-                    <span class="nb-color-btn" style="background:var(--text)" title="Padrão" onmousedown="event.preventDefault();Templates.notebooks._exec('foreColor', null);Templates.notebooks._exec('removeFormat')"></span>
+                    <span class="nb-color-btn" style="background:var(--text)" title="Padrão" onmousedown="event.preventDefault();Templates.notebooks._resetFontColor()"></span>
                 </div>
             `;
         },
@@ -3006,6 +3071,60 @@ window.Templates = {
             document.execCommand(command, false, value);
             this._updateWordCount();
             this._refreshToolbarState();
+        },
+
+        // Aplica cor ao texto selecionado usando <span style="color:"> para
+        // garantir cross-browser (execCommand('foreColor') gera <font> em
+        // Safari/Firefox que o sanitizer PHP pode descartar).
+        _setFontColor(color) {
+            const editor = this._getEditor();
+            if (!editor) return;
+            editor.focus();
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount || sel.isCollapsed) return;
+            const range = sel.getRangeAt(0);
+            // Tenta execCommand primeiro (Chrome gera <span style> correctamente)
+            const ok = document.execCommand('foreColor', false, color);
+            // Se o resultado for um <font>, converte para <span style>
+            this._normalizeFontTags(editor);
+            this._updateWordCount();
+            this._refreshToolbarState();
+        },
+
+        // Remove cor do texto selecionado sem apagar outra formatação.
+        _resetFontColor() {
+            const editor = this._getEditor();
+            if (!editor) return;
+            editor.focus();
+            // Percorre a seleção e remove atributo color / style.color nos nós
+            document.execCommand('foreColor', false, '#000000');
+            // Substitui por herança (remove o style inline de cor)
+            const sel = window.getSelection();
+            if (sel && sel.rangeCount && !sel.isCollapsed) {
+                const range = sel.getRangeAt(0);
+                const frag = range.cloneContents();
+                frag.querySelectorAll('[style]').forEach(el => {
+                    el.style.color = '';
+                    if (!el.getAttribute('style').trim()) el.removeAttribute('style');
+                });
+                frag.querySelectorAll('font[color]').forEach(el => {
+                    el.removeAttribute('color');
+                });
+            }
+            this._normalizeFontTags(editor);
+            this._refreshToolbarState();
+        },
+
+        // Converte todos os <font color="…"> dentro de `root` em
+        // <span style="color:…">, preservando filhos.
+        _normalizeFontTags(root) {
+            root.querySelectorAll('font[color]').forEach(font => {
+                const span = document.createElement('span');
+                const color = font.getAttribute('color');
+                if (color) span.style.color = color;
+                while (font.firstChild) span.appendChild(font.firstChild);
+                font.parentNode.replaceChild(span, font);
+            });
         },
 
         _formatBlock(tag) {
@@ -3916,6 +4035,9 @@ window.Templates = {
                 );
             }
 
+            // Esconde a sticky view bar durante edição
+            this._teardownViewStickyBar();
+
             richEditor.innerHTML = useContent;
 
             // Os callouts são guardados sem `contenteditable` (o sanitizer
@@ -4239,7 +4361,12 @@ window.Templates = {
 
                 // Desktop: render na área #nbContent (comportamento existente)
                 const mainEl = document.getElementById('nbContent');
-                if (mainEl) mainEl.innerHTML = this.renderNotebookView(notebook);
+                if (mainEl) {
+                    mainEl.innerHTML = this.renderNotebookView(notebook);
+                    // IntersectionObserver: sticky view bar aparece quando
+                    // #nbViewButtons sai do viewport (scroll para baixo).
+                    this._setupViewStickyBar();
+                }
             } catch (err) {
                 console.error(err);
                 showNotification('Erro ao carregar caderno', 'error');
@@ -4312,6 +4439,38 @@ window.Templates = {
         _getEditor() {
             if (this._mobileEditorActive) return document.getElementById('nbeBody');
             return document.getElementById('notebookRichEditor');
+        },
+
+        // Activa IntersectionObserver para mostrar/ocultar a sticky view bar
+        // quando os botões originais #nbViewButtons entram/saem do viewport.
+        _nbStickyBarObserver: null,
+        _setupViewStickyBar() {
+            // Limpa observer anterior (ex: ao mudar de caderno sem sair da view)
+            if (this._nbStickyBarObserver) {
+                this._nbStickyBarObserver.disconnect();
+                this._nbStickyBarObserver = null;
+            }
+            if (window.innerWidth <= 768) return; // só desktop
+            const sentinel = document.getElementById('nbViewButtons');
+            const bar = document.getElementById('nbStickyViewBar');
+            if (!sentinel || !bar) return;
+            this._nbStickyBarObserver = new IntersectionObserver(
+                ([entry]) => {
+                    bar.classList.toggle('visible', !entry.isIntersecting);
+                },
+                { threshold: 0 }
+            );
+            this._nbStickyBarObserver.observe(sentinel);
+        },
+
+        // Para o observer quando o editor muda de caderno ou entra em edit mode
+        _teardownViewStickyBar() {
+            if (this._nbStickyBarObserver) {
+                this._nbStickyBarObserver.disconnect();
+                this._nbStickyBarObserver = null;
+            }
+            const bar = document.getElementById('nbStickyViewBar');
+            if (bar) bar.classList.remove('visible');
         },
 
         // ═══════════════════════════════════════════════════════════════════

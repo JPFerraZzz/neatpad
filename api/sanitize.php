@@ -25,6 +25,9 @@ const NEATPAD_ALLOWED_TAGS = [
     'sub', 'sup',
     // tabelas básicas (caso o utilizador cole de outro sítio)
     'table', 'thead', 'tbody', 'tr', 'td', 'th',
+    // <font> é gerado pelo execCommand('foreColor') em Safari/Firefox —
+    // o walker converte-o em <span style="color:…"> antes de filtrar.
+    'font',
 ];
 
 const NEATPAD_ALLOWED_ATTRS = [
@@ -38,6 +41,8 @@ const NEATPAD_ALLOWED_ATTRS = [
     'span' => ['style', 'class'],
     'td'   => ['colspan', 'rowspan'],
     'th'   => ['colspan', 'rowspan'],
+    // <font> atributos aceites antes da conversão para <span>
+    'font' => ['color', 'size', 'face'],
 ];
 
 /**
@@ -121,6 +126,29 @@ function neatpad_walk_and_sanitize(DOMNode $node, DOMDocument $doc): void {
 
         if ($child->nodeType === XML_ELEMENT_NODE) {
             $tag = strtolower($child->nodeName);
+
+            // Converte <font color="…"> em <span style="color:…"> para
+            // preservar a cor aplicada pelo execCommand('foreColor') em
+            // Safari/Firefox, que gera <font> em vez de <span style>.
+            if ($tag === 'font') {
+                $span = $doc->createElement('span');
+                $inlineStyle = [];
+                if ($child->hasAttribute('color')) {
+                    $c = preg_replace('/[^a-zA-Z0-9#(),. %]/', '', $child->getAttribute('color'));
+                    if ($c) $inlineStyle[] = 'color: ' . $c;
+                }
+                if ($inlineStyle) {
+                    $span->setAttribute('style', implode('; ', $inlineStyle));
+                }
+                // Move todos os filhos
+                while ($child->firstChild) {
+                    $span->appendChild($child->firstChild);
+                }
+                $child->parentNode->replaceChild($span, $child);
+                // Continua a processar o <span> recém-criado
+                neatpad_walk_and_sanitize($span, $doc);
+                continue;
+            }
 
             if (!in_array($tag, NEATPAD_ALLOWED_TAGS, true)) {
                 // Move filhos para fora e remove o nó
