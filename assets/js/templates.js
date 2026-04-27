@@ -2533,7 +2533,6 @@ window.Templates = {
 
                 /* ── Navegação mobile em duas camadas (lista ↔ detalhe) ── */
                 @media (max-width: 768px) {
-                    /* Base mobile (lista) */
                     .nb-shell.nb-mobile {
                         display: flex;
                         flex-direction: column;
@@ -2550,191 +2549,32 @@ window.Templates = {
                         flex-direction: column;
                         min-height: 60vh;
                     }
-                    /* Notion-like mobile editor (camada detalhe) */
-                    .nb-shell.nb-mobile--detail {
-                        position: fixed;
-                        top: 0; left: 0; right: 0; bottom: 0;
-                        z-index: 1000; /* above everything */
-                        background: #0d0d0d;
-                        color: #ffffff;
-                        display: flex;
-                        flex-direction: column;
-                        min-height: 100dvh;
-                        border-radius: 0;
-                        border: none;
+                    .nb-shell.nb-mobile--detail .nb-sidebar {
+                        display: none;
                     }
                     .nb-shell.nb-mobile--detail .nb-main {
                         display: flex;
-                        flex-direction: column;
-                        flex: 1;
-                        background: transparent;
-                        height: 100dvh;
                     }
-                    /* Ocultar elementos desktop */
-                    .nb-shell.nb-mobile--detail .nb-sidebar,
-                    .nb-shell.nb-mobile--detail .nb-view-header,
-                    .nb-shell.nb-mobile--detail .nb-editor-actions {
-                        display: none !important;
-                    }
-                    /* Topbar mobile */
-                    .nb-shell.nb-mobile--detail .nb-mobile-topbar {
-                        display: flex !important;
-                        align-items: center;
-                        justify-content: space-between;
-                        padding: 8px 16px;
-                        padding-top: calc(8px + env(safe-area-inset-top));
-                        background: #1a1a1a;
-                        flex-shrink: 0;
-                    }
-                    .nb-mobile-topbar-btn {
-                        background: transparent;
-                        border: none;
-                        color: #a0a0a0;
-                        font-size: 16px;
+                    #nbBackBtn {
                         display: flex;
                         align-items: center;
                         gap: 8px;
-                        cursor: pointer;
-                        padding: 4px 8px;
-                    }
-                    .nb-mobile-topbar-btn:active {
-                        color: #ffffff;
-                    }
-                    .nb-mobile-topbar-actions {
-                        display: flex;
-                        gap: 16px;
-                    }
-                    /* Área de escrita */
-                    .nb-shell.nb-mobile--detail .nb-content-inner {
-                        flex: 1;
-                        overflow-y: auto;
-                        padding: 16px 16px calc(60px + env(safe-area-inset-bottom)); /* Espaço para a toolbar */
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    /* O content-inner do desktop tem max-width. Removemos isso em mobile fixed */
-                    .nb-shell.nb-mobile--detail .nb-content-inner { max-width: none; }
-                    /* Título inline mobile */
-                    .nb-shell.nb-mobile--detail .nb-mobile-title-input {
-                        display: block !important;
-                        font-size: 32px;
-                        font-weight: 700;
-                        color: #ffffff;
-                        outline: none;
+                        padding: 12px 16px;
+                        background: var(--bg-surface);
                         border: none;
-                        margin-bottom: 16px;
-                        line-height: 1.2;
-                        min-height: 40px;
-                        word-break: break-word;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-mobile-title-input:empty::before {
-                        content: attr(data-placeholder);
-                        color: #555555;
-                        pointer-events: none;
-                    }
-                    /* Reset do rich editor para mobile */
-                    .nb-shell.nb-mobile--detail .nb-rich-editor {
-                        border: none !important;
-                        padding: 0 !important;
-                        background: transparent !important;
-                        color: #ffffff !important;
-                        min-height: 50vh;
-                        font-size: 16px;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-rich-editor[data-placeholder]:empty::before {
-                        color: #555555;
-                    }
-                    .nb-shell.nb-mobile--detail #notebookEditorArea {
-                        display: flex !important;
-                        flex-direction: column;
-                        flex: 1;
-                    }
-                    /* Bottom Sheet para blocos (slash menu mobile) */
-                    .nb-shell.nb-mobile--detail .nb-slash-menu {
-                        width: 100vw !important;
-                        max-height: 70vh !important;
-                        top: auto !important;
-                        bottom: 0 !important;
-                        left: 0 !important;
-                        transform: none !important;
-                        background: #1a1a1a;
-                        border-radius: 12px 12px 0 0;
-                        border: none;
-                        box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
-                        padding: 16px 12px calc(16px + env(safe-area-inset-bottom));
-                        display: flex;
-                        flex-direction: column;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-slash-menu::before {
-                        content: '';
-                        display: block;
-                        width: 40px;
-                        height: 4px;
-                        background: #333333;
-                        border-radius: 2px;
-                        margin: 0 auto 16px;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-slash-items {
-                        display: grid;
-                        grid-template-columns: 1fr 1fr;
-                        gap: 8px;
-                        overflow-y: auto;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-slash-header {
-                        grid-column: 1 / -1;
-                        font-size: 13px;
-                        color: #888888;
-                        padding-left: 4px;
-                        margin-top: 8px;
-                        margin-bottom: 4px;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-slash-item {
-                        background: #262626;
-                        border-radius: 8px;
-                        padding: 12px;
-                        margin: 0;
-                        flex-direction: column;
-                        align-items: flex-start;
-                        gap: 8px;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-slash-icon {
-                        background: transparent;
-                        width: auto; height: auto;
-                        font-size: 24px;
-                        color: #ffffff;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-slash-label {
-                        font-weight: 600;
+                        border-bottom: 1px solid var(--border);
+                        color: var(--primary);
                         font-size: 14px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        width: 100%;
+                        text-align: left;
+                        font-family: var(--font);
                     }
-                    .nb-shell.nb-mobile--detail .nb-slash-desc {
-                        display: none; /* Notion esconde a descrição na grid */
+                    #nbBackBtn:active {
+                        background: var(--bg-subtle);
                     }
-                    
-                    /* Mobile Toolbars */
-                    .nb-shell.nb-mobile--detail .nb-mobile-toolbar {
-                        background: #1a1a1a;
-                        border-top: 1px solid #2a2a2a;
-                        height: 44px;
-                        padding: 0 8px;
-                        padding-bottom: env(safe-area-inset-bottom);
-                        display: flex;
-                        align-items: center;
-                        gap: 0;
-                        overflow-x: auto;
-                        flex-wrap: nowrap;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-mtool {
-                        min-width: 40px;
-                        height: 44px;
-                        border-radius: 0;
-                        color: #ffffff;
-                        font-size: 18px;
-                    }
-                    .nb-shell.nb-mobile--detail .nb-mtool:active,
-                    .nb-shell.nb-mobile--detail .nb-mtool.active {
-                        background: #333333;
-                    }
+                    #nbBackBtn i { font-size: 12px; }
                 }
 
                 /* ── Slash menu ────────────────────────── */
@@ -2983,17 +2823,6 @@ window.Templates = {
             return `
                 <div class="nb-view" data-notebook-id="${notebook.id}">
 
-                    <!-- TOPBAR MOBILE (escondida em desktop via CSS) -->
-                    <div id="nbMobileTopbar" class="nb-mobile-topbar" style="display: none;">
-                        <button class="nb-mobile-topbar-btn" onclick="Templates.notebooks._mobileNavBack()">
-                            <i class="fas fa-chevron-left"></i> Cadernos
-                        </button>
-                        <div class="nb-mobile-topbar-actions">
-                            <button class="nb-mobile-topbar-btn"><i class="fas fa-share-alt"></i></button>
-                            <button class="nb-mobile-topbar-btn"><i class="fas fa-ellipsis-h"></i></button>
-                        </div>
-                    </div>
-
                     <div id="notebookToolbarSlot" style="display:none;">
                         ${this._buildToolbar()}
                     </div>
@@ -3051,7 +2880,6 @@ window.Templates = {
                         </div>
 
                         <div id="notebookEditorArea" style="display:none;">
-                            <div id="nbMobileTitleInput" class="nb-mobile-title-input" contenteditable="true" data-placeholder="Sem título" style="display:none;">${escapeHtml(notebook.title)}</div>
                             <div id="notebookRichEditor" class="nb-rich-editor"
                                  contenteditable="true"
                                  data-placeholder="Começa a escrever aqui…"
@@ -3151,7 +2979,7 @@ window.Templates = {
                 this._savedRange = null;
                 return;
             }
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             const range = sel.getRangeAt(0);
             // só guarda se a seleção estiver dentro do editor
@@ -3161,7 +2989,7 @@ window.Templates = {
         },
 
         _restoreSelection() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
             if (this._savedRange) {
@@ -3172,7 +3000,7 @@ window.Templates = {
         },
 
         _exec(command, value = null) {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
             document.execCommand(command, false, value);
@@ -3199,7 +3027,7 @@ window.Templates = {
         },
 
         _highlight() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
             // toggle: se já está destacado, remove a cor de fundo
@@ -3211,7 +3039,7 @@ window.Templates = {
         },
 
         _insertLink() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
             const url = window.prompt('URL do link:', 'https://');
@@ -3222,7 +3050,7 @@ window.Templates = {
         },
 
         _clearFormatting() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
             document.execCommand('removeFormat');
@@ -3232,7 +3060,7 @@ window.Templates = {
         },
 
         _inlineCode() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
             const sel = window.getSelection();
@@ -3269,9 +3097,14 @@ window.Templates = {
         // Atualiza visualmente os botões da toolbar com base na seleção actual.
         // Chamado em selectionchange, keyup e após cada execCommand.
         _refreshToolbarState() {
+            // No editor mobile: actualiza botões da toolbar do teclado e sai
+            if (this._mobileEditorActive) {
+                this._nbeUpdateKbToolbarState();
+                return;
+            }
             const toolbar = document.getElementById('nbToolbar');
             if (!toolbar) return;
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
 
             // Só queremos refletir estado quando a seleção está dentro do editor
@@ -3338,11 +3171,8 @@ window.Templates = {
 
         _onEditorInput() {
             this._updateWordCount();
-            // Trigger autosave debounce
             if (this._autosaveTrigger) this._autosaveTrigger();
-
-            // Se o slash menu está aberto, refiltra com o texto digitado
-            // depois do "/". Assim "/tit" deixa só os títulos, "/cal" os callouts, etc.
+            if (this._nbeAutoSaveTrigger) this._nbeAutoSaveTrigger();
             if (this._slashMenuOpen) this._updateSlashFilter();
         },
 
@@ -3385,7 +3215,7 @@ window.Templates = {
         // ─────────────────────────────────────────────────────────────────
         // Devolve true se aplicou alguma transformação (e fez preventDefault).
         _maybeApplyMarkdownShortcut(e) {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return false;
 
             const sel = window.getSelection();
@@ -3551,7 +3381,7 @@ window.Templates = {
         // Chamado num setTimeout(0) depois de o utilizador pressionar "/".
         // Confirma que o "/" foi mesmo inserido no texto e abre o menu.
         _maybeOpenSlashMenu() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             const sel = window.getSelection();
             if (!sel || !sel.rangeCount) return;
@@ -3583,6 +3413,13 @@ window.Templates = {
             if (this._slashMenuOpen) return;
             this._slashMenuOpen = true;
             this._slashFilter = '';
+
+            // No editor mobile a UX de slash é o bottom sheet de blocos (com pesquisa),
+            // não o menu flutuante desktop.
+            if (this._mobileEditorActive) {
+                this._openMobileBlockSheet(true);
+                return;
+            }
 
             const items = this._slashItems();
             const menu = document.createElement('div');
@@ -3644,7 +3481,7 @@ window.Templates = {
             range.collapse(true);
             const rect = range.getBoundingClientRect();
             // Se o range não tiver dimensão (cursor entre nós), usa o editor
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             const editorRect = editor ? editor.getBoundingClientRect() : { left: 100, bottom: 100 };
             const x = (rect && (rect.left || rect.right)) ? rect.left : editorRect.left;
             const y = (rect && rect.bottom) ? rect.bottom : editorRect.bottom;
@@ -3750,7 +3587,7 @@ window.Templates = {
         },
 
         _executeSlashAction(action) {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) { this._closeSlashMenu(); return; }
             editor.focus();
 
@@ -3796,7 +3633,7 @@ window.Templates = {
         // garante focus no editor e abre o menu na posição actual do cursor,
         // sem exigir que o "/" venha após espaço (foi clique intencional).
         _openSlashFromButton() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.focus();
 
@@ -3854,7 +3691,7 @@ window.Templates = {
 
             // Move o cursor para dentro do callout-text
             setTimeout(() => {
-                const editor = document.getElementById('notebookRichEditor');
+                const editor = this._getEditor();
                 if (!editor) return;
                 const all = editor.querySelectorAll('.nb-callout-text');
                 const last = all[all.length - 1];
@@ -3885,7 +3722,7 @@ window.Templates = {
         // edição, garantimos que todos os callouts estão estruturalmente
         // corretos (wrapper non-editable, texto editable).
         _normalizeCallouts() {
-            const editor = document.getElementById('notebookRichEditor');
+            const editor = this._getEditor();
             if (!editor) return;
             editor.querySelectorAll('.nb-callout').forEach(c => {
                 c.setAttribute('contenteditable', 'false');
@@ -3984,226 +3821,15 @@ window.Templates = {
 
             // Move o cursor para o início do conteúdo inserido
             setTimeout(() => {
-                const editor = document.getElementById('notebookRichEditor');
+                const editor = this._getEditor();
                 if (!editor) return;
                 editor.focus();
             }, 0);
         },
 
         // ═══════════════════════════════════════════════════════════════════
-        // AÇÕES MOBILE EXTRA (Notion-like)
+        // MOBILE TOOLBAR (B/I/U + slash + save fixos acima do teclado)
         // ═══════════════════════════════════════════════════════════════════
-
-        _toggleInlineFormatToolbar() {
-            const mainTb = document.getElementById('nbMobileToolbar');
-            const formatTb = document.getElementById('nbMobileFormatToolbar');
-            if (!mainTb || !formatTb) return;
-            
-            if (mainTb.style.display !== 'none') {
-                mainTb.style.display = 'none';
-                formatTb.style.display = 'flex';
-            } else {
-                mainTb.style.display = 'flex';
-                formatTb.style.display = 'none';
-            }
-        },
-
-        _startVoiceDictation() {
-            const editor = document.getElementById('notebookRichEditor');
-            if (!editor) return;
-            
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                showNotification('Ditado por voz não suportado neste browser.', 'error');
-                return;
-            }
-            
-            const recognition = new SpeechRecognition();
-            recognition.lang = 'pt-PT';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-            
-            showNotification('A ouvir... Fale agora.', 'info');
-            
-            recognition.start();
-            
-            recognition.onresult = (event) => {
-                const speechResult = event.results[0][0].transcript;
-                editor.focus();
-                document.execCommand('insertText', false, speechResult + ' ');
-            };
-            
-            recognition.onerror = (event) => {
-                showNotification('Erro no ditado: ' + event.error, 'error');
-            };
-        },
-
-        _insertImagePrompt() {
-            const editor = document.getElementById('notebookRichEditor');
-            if (!editor) return;
-            editor.focus();
-            const url = window.prompt('URL da Imagem:', 'https://');
-            if (url && url !== 'https://') {
-                // Segurança
-                const safeUrl = /^(https?:)/i.test(url) ? url : null;
-                if (safeUrl) document.execCommand('insertImage', false, safeUrl);
-            }
-        },
-
-        _closeKeyboard() {
-            const editor = document.getElementById('notebookRichEditor');
-            const titleInput = document.getElementById('nbMobileTitleInput');
-            if (editor) editor.blur();
-            if (titleInput) titleInput.blur();
-        },
-
-        _openSlashMenuMobile() {
-            const editor = document.getElementById('notebookRichEditor');
-            if (!editor) return;
-            editor.focus();
-
-            // Simula clique no '+' abrindo o menu sem inserir o caractere '/'
-            setTimeout(() => {
-                this._openSlashMenu();
-                
-                // Em mobile, garante que o input de filtro do Notion-like é inserido
-                const menu = document.getElementById('nbSlashMenu');
-                if (menu && window.innerWidth <= 768 && !menu.querySelector('.nb-slash-mobile-search')) {
-                    const searchBox = document.createElement('input');
-                    searchBox.type = 'text';
-                    searchBox.className = 'nb-slash-mobile-search';
-                    searchBox.placeholder = 'Pesquisar blocos...';
-                    searchBox.oninput = (e) => {
-                        this._slashFilter = e.target.value.toLowerCase();
-                        this._filterSlashItems();
-                    };
-                    
-                    // CSS inline apenas para este search box mobile
-                    searchBox.style.width = '100%';
-                    searchBox.style.padding = '12px';
-                    searchBox.style.background = '#262626';
-                    searchBox.style.border = 'none';
-                    searchBox.style.borderRadius = '8px';
-                    searchBox.style.color = '#fff';
-                    searchBox.style.marginBottom = '12px';
-                    searchBox.style.outline = 'none';
-                    searchBox.style.fontSize = '14px';
-
-                    menu.insertBefore(searchBox, menu.firstChild);
-                    
-                    // Coloca o foco no input
-                    setTimeout(() => searchBox.focus(), 50);
-                }
-            }, 0);
-        },
-
-        _addComment() {
-            showNotification('Comentários em desenvolvimento...', 'info');
-        },
-
-        _openBlockAIActions() {
-            showNotification('Menu IA em desenvolvimento...', 'info');
-        },
-
-        _openTransformMenu() {
-            // Reutiliza a lógica do slash menu, mas só com as opções de transformar
-            const editor = document.getElementById('notebookRichEditor');
-            if (!editor) return;
-            editor.focus();
-            
-            // Simula slash
-            const sel = window.getSelection();
-            if (!sel || !sel.rangeCount) return;
-            
-            // Apresenta as opções de transformação
-            this._slashFilter = '';
-            this._openSlashMenu();
-            
-            const menu = document.getElementById('nbSlashMenu');
-            if (menu) {
-                const header = menu.querySelector('.nb-slash-header');
-                if (header) header.textContent = 'Transformar em';
-                
-                // Esconde as opções que não são tipos de bloco básicos
-                menu.querySelectorAll('.nb-slash-item').forEach(item => {
-                    const action = item.getAttribute('data-action');
-                    if (!['h1','h2','h3','ul','ol','blockquote','pre'].includes(action)) {
-                        item.classList.add('hidden');
-                    } else {
-                        item.classList.remove('hidden');
-                    }
-                });
-            }
-        },
-
-        // ═══════════════════════════════════════════════════════════════════
-        // TOOLBAR DE BLOCO (Long press em mobile)
-        // ═══════════════════════════════════════════════════════════════════
-
-        _currentBlock: null,
-
-        _showBlockToolbar(target) {
-            const editor = document.getElementById('notebookRichEditor');
-            if (!editor || !editor.contains(target)) return;
-
-            // Encontra o bloco atual (p, h1, li, etc.)
-            const blockTags = new Set(['P','DIV','LI','BLOCKQUOTE','H1','H2','H3','H4','H5','H6','PRE','TD','TH']);
-            let block = target;
-            while (block && block !== editor && !blockTags.has(block.tagName)) {
-                block = block.parentNode;
-            }
-            if (!block || block === editor) block = target; // Fallback
-            
-            this._currentBlock = block;
-
-            // Esconde todas as toolbars e mostra a de bloco
-            const tb1 = document.getElementById('nbMobileToolbar');
-            const tb2 = document.getElementById('nbMobileFormatToolbar');
-            const tb3 = document.getElementById('nbMobileBlockToolbar');
-            
-            if (tb1) tb1.style.display = 'none';
-            if (tb2) tb2.style.display = 'none';
-            if (tb3) tb3.style.display = 'flex';
-            
-            // Seleciona visualmente o bloco (opcional, ajuda visual)
-            if (block.nodeType === Node.ELEMENT_NODE) {
-                block.style.backgroundColor = '#262626';
-                setTimeout(() => { block.style.backgroundColor = ''; }, 1000);
-            }
-        },
-
-        _closeBlockToolbar() {
-            this._currentBlock = null;
-            const tb1 = document.getElementById('nbMobileToolbar');
-            const tb2 = document.getElementById('nbMobileFormatToolbar');
-            const tb3 = document.getElementById('nbMobileBlockToolbar');
-            
-            if (tb1) tb1.style.display = 'flex';
-            if (tb2) tb2.style.display = 'none';
-            if (tb3) tb3.style.display = 'none';
-        },
-
-        _deleteCurrentBlock() {
-            if (!this._currentBlock) return;
-            this._currentBlock.remove();
-            this._closeBlockToolbar();
-            if (this._autosaveTrigger) this._autosaveTrigger();
-        },
-
-        _moveBlock(dir) {
-            if (!this._currentBlock) return;
-            const b = this._currentBlock;
-            if (dir === -1 && b.previousElementSibling) {
-                b.parentNode.insertBefore(b, b.previousElementSibling);
-            } else if (dir === 1 && b.nextElementSibling) {
-                b.parentNode.insertBefore(b.nextElementSibling, b);
-            }
-            if (this._autosaveTrigger) this._autosaveTrigger();
-        },
-
-        _openBlockActionsSheet() {
-            showNotification('Mais ações em desenvolvimento', 'info');
-        },
 
         _mountMobileToolbar() {
             if (window.innerWidth > 768) return;
@@ -4211,87 +3837,26 @@ window.Templates = {
             const wrap = document.createElement('div');
             wrap.innerHTML = `
                 <div id="nbMobileToolbar" class="nb-mobile-toolbar">
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openBlockAIActions()"><i class="fas fa-sparkles"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openSlashMenuMobile()"><i class="fas fa-plus"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._toggleInlineFormatToolbar()">Aa</button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._startVoiceDictation()"><i class="fas fa-microphone"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._insertImagePrompt()"><i class="fas fa-image"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openTransformMenu()"><i class="fas fa-sync-alt"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('undo')"><i class="fas fa-undo"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._addComment()"><i class="fas fa-comment-alt"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._closeKeyboard()"><i class="fas fa-keyboard"></i></button>
-                </div>
-                <!-- Toolbar de Formatação Inline (escondida por defeito) -->
-                <div id="nbMobileFormatToolbar" class="nb-mobile-toolbar" style="display:none;">
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._toggleInlineFormatToolbar()"><i class="fas fa-arrow-left"></i></button>
-                    <button class="nb-mtool" type="button" data-cmd="bold" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
-                    <button class="nb-mtool" type="button" data-cmd="italic" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
-                    <button class="nb-mtool" type="button" data-cmd="underline" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
-                    <button class="nb-mtool" type="button" data-cmd="strikeThrough" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('strikeThrough')"><s>S</s></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._insertLink()"><i class="fas fa-link"></i></button>
-                    <button class="nb-mtool" type="button" data-cmd="code" onmousedown="event.preventDefault()" onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
-                </div>
-                <!-- Toolbar de Bloco (escondida por defeito) -->
-                <div id="nbMobileBlockToolbar" class="nb-mobile-toolbar" style="display:none;">
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._addComment()"><i class="fas fa-comment-alt"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="showNotification('Mentions em breve', 'info')">@</button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._deleteCurrentBlock()" style="color:var(--danger)"><i class="fas fa-trash"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('indent')"><i class="fas fa-indent"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('outdent')"><i class="fas fa-outdent"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._moveBlock(-1)"><i class="fas fa-arrow-up"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._moveBlock(1)"><i class="fas fa-arrow-down"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openBlockActionsSheet()"><i class="fas fa-ellipsis-h"></i></button>
-                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._closeBlockToolbar()"><i class="fas fa-keyboard"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('bold')"><b>B</b></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('italic')"><i>I</i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('underline')"><u>U</u></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._inlineCode()"><i class="fas fa-code"></i></button>
+                    <button class="nb-mtool" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._exec('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+                    <button class="nb-mtool nb-mtool--slash" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks._openSlashFromButton()">/</button>
+                    <button class="nb-mtool nb-mtool--save" type="button" onmousedown="event.preventDefault()" onclick="Templates.notebooks.saveInlineEdit()"><i class="fas fa-save"></i></button>
                 </div>
             `;
-            // Adiciona todas as toolbars ao body
-            while(wrap.firstChild) {
-                document.body.appendChild(wrap.firstChild);
-            }
+            document.body.appendChild(wrap.firstElementChild);
 
-            // Adiciona detector de long press no editor para mostrar a Block Toolbar
-            const editor = document.getElementById('notebookRichEditor');
-            if (editor && !this._longPressHandler) {
-                let pressTimer;
-                this._longPressHandler = {
-                    start: (e) => {
-                        if (e.touches && e.touches.length > 1) return;
-                        pressTimer = setTimeout(() => {
-                            // Encontra o bloco e mostra a toolbar
-                            Templates.notebooks._showBlockToolbar(e.target);
-                        }, 500); // 500ms long press
-                    },
-                    cancel: () => {
-                        clearTimeout(pressTimer);
-                    }
-                };
-                editor.addEventListener('touchstart', this._longPressHandler.start, {passive: true});
-                editor.addEventListener('touchend', this._longPressHandler.cancel, {passive: true});
-                editor.addEventListener('touchmove', this._longPressHandler.cancel, {passive: true});
-            }
-
-            // Em mobile escondemos o toolbar desktop (sticky)
+            // Em mobile escondemos o toolbar desktop (sticky) — slash menu chega
             const slot = document.getElementById('notebookToolbarSlot');
             if (slot) slot.dataset.prevDisplay = slot.style.display || '';
             if (slot) slot.style.display = 'none';
         },
 
         _unmountMobileToolbar() {
-            const tb1 = document.getElementById('nbMobileToolbar');
-            const tb2 = document.getElementById('nbMobileFormatToolbar');
-            const tb3 = document.getElementById('nbMobileBlockToolbar');
-            if (tb1) tb1.remove();
-            if (tb2) tb2.remove();
-            if (tb3) tb3.remove();
-
-            const editor = document.getElementById('notebookRichEditor');
-            if (editor && this._longPressHandler) {
-                editor.removeEventListener('touchstart', this._longPressHandler.start);
-                editor.removeEventListener('touchend', this._longPressHandler.cancel);
-                editor.removeEventListener('touchmove', this._longPressHandler.cancel);
-                this._longPressHandler = null;
-            }
-
+            const tb = document.getElementById('nbMobileToolbar');
+            if (tb) tb.remove();
             const slot = document.getElementById('notebookToolbarSlot');
             if (slot && 'prevDisplay' in slot.dataset) {
                 slot.style.display = slot.dataset.prevDisplay;
@@ -4300,7 +3865,8 @@ window.Templates = {
         },
 
         _updateWordCount() {
-            const editor = document.getElementById('notebookRichEditor');
+            if (this._mobileEditorActive) return; // no word-count bar in mobile editor
+            const editor = this._getEditor();
             const wc = document.getElementById('nbWordCount');
             if (!editor || !wc) return;
             const text = (editor.innerText || '').trim();
@@ -4417,30 +3983,23 @@ window.Templates = {
             }
         },
 
-        async saveInlineEdit(silent = false) {
+        async saveInlineEdit() {
             const richEditor = document.getElementById('notebookRichEditor');
             const notebookView = document.querySelector('.nb-view');
             const editorArea = document.getElementById('notebookEditorArea');
 
             if (!richEditor || !notebookView) {
-                if (!silent) showNotification('Erro ao guardar', 'error');
+                showNotification('Erro ao guardar', 'error');
                 return;
             }
 
             const notebookId = notebookView.getAttribute('data-notebook-id');
             const newContent = richEditor.innerHTML;
-            
-            // Verifica título inline mobile
-            const titleInput = document.getElementById('nbMobileTitleInput');
-            const newTitle = titleInput ? titleInput.innerText.trim() : null;
 
             const saveBtn = editorArea.querySelector('.btn-success');
-            let origText = '';
-            if (saveBtn) {
-                origText = saveBtn.innerHTML;
-                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…';
-                saveBtn.disabled = true;
-            }
+            const origText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…';
+            saveBtn.disabled = true;
 
             try {
                 // Unregister autosave before manual save
@@ -4457,18 +4016,15 @@ window.Templates = {
                 if (this._slashMenuOpen) this._closeSlashMenu();
                 this._unmountMobileToolbar();
 
-                const payload = {
-                    item_id: Number(notebookId),
-                    content: newContent,
-                    saved_by: silent ? 'autosave' : 'manual',
-                };
-                if (newTitle) payload.title = newTitle;
-
-                // Save directly via save_note.php (versioning + content + title)
+                // Save directly via save_note.php (versioning + content)
                 const response = await fetch(`${API_URL}/save_note.php`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
+                    body: JSON.stringify({
+                        item_id: Number(notebookId),
+                        content: newContent,
+                        saved_by: 'manual',
+                    }),
                 });
                 const data = await response.json();
                 if (!data.success) throw new Error(data.error || 'Erro ao guardar');
@@ -4476,20 +4032,14 @@ window.Templates = {
                 // Clear local draft
                 if (window.Autosave) Autosave.clearDraft(notebookId);
 
-                if (!silent) showNotification('Caderno guardado!', 'success');
+                showNotification('Caderno guardado!', 'success');
 
-                if (!silent) {
-                    // Re-render notebook view (exits edit mode)
-                    await this.showNotebook(notebookId);
-                }
+                // Re-render notebook view (exits edit mode)
+                await this.showNotebook(notebookId);
 
-                // Update sidebar preview + date + title
+                // Update sidebar preview + date
                 const sidebarItem = document.querySelector(`.nb-list-item[data-notebook-id="${notebookId}"]`);
                 if (sidebarItem) {
-                    if (newTitle) {
-                        const titleEl = sidebarItem.querySelector('.nb-item-title');
-                        if (titleEl) titleEl.textContent = newTitle;
-                    }
                     const preview = newContent.replace(/<[^>]+>/g, '').slice(0, 60) || 'Caderno vazio…';
                     const previewEl = sidebarItem.querySelector('.nb-item-preview');
                     if (previewEl) previewEl.textContent = preview;
@@ -4497,14 +4047,12 @@ window.Templates = {
                     if (dateEl) dateEl.innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleDateString('pt-PT')}`;
                 }
 
-                if (!silent) fetchCategories();
+                fetchCategories();
             } catch (err) {
                 console.error('Save error:', err);
-                if (!silent) showNotification('Erro ao guardar: ' + err.message, 'error');
-                if (saveBtn) {
-                    saveBtn.innerHTML = origText;
-                    saveBtn.disabled = false;
-                }
+                showNotification('Erro ao guardar: ' + err.message, 'error');
+                saveBtn.innerHTML = origText;
+                saveBtn.disabled = false;
             }
         },
 
@@ -4680,44 +4228,49 @@ window.Templates = {
             try {
                 const items = await fetchItems(AppState.currentCategory.id);
                 const notebook = items.find(i => i.id == notebookId);
-                if (notebook) {
-                    const mainEl = document.getElementById('nbContent');
-                    if (mainEl) mainEl.innerHTML = this.renderNotebookView(notebook);
+                if (!notebook) { this._suppressMobileDetail = false; return; }
+
+                // Mobile (≤768px): editor em ecrã cheio estilo Notion
+                if (window.innerWidth <= 768) {
+                    this._suppressMobileDetail = false;
+                    await this._showMobileEditor(notebook);
+                    return;
                 }
+
+                // Desktop: render na área #nbContent (comportamento existente)
+                const mainEl = document.getElementById('nbContent');
+                if (mainEl) mainEl.innerHTML = this.renderNotebookView(notebook);
             } catch (err) {
                 console.error(err);
                 showNotification('Erro ao carregar caderno', 'error');
-            }
-
-            // Mobile: ao abrir um caderno passamos para a "camada detalhe"
-            // (esconde lista, mostra conteúdo a ecrã cheio).
-            // O botão voltar e a topbar já estão dentro do HTML renderizado.
-            if (window.innerWidth <= 768 && !this._suppressMobileDetail) {
-                const shell = document.querySelector('.nb-shell');
-                if (shell) {
-                    if (!shell.classList.contains('nb-mobile')) this._initMobileNav();
-                    shell.classList.add('nb-mobile--detail');
-                    const main = shell.querySelector('.nb-main');
-                    if (main) main.scrollTop = 0;
-                    
-                    // Notion UX: Mobile entra imediatamente em modo de edição
-                    this.enableEditMode();
-                }
             }
             this._suppressMobileDetail = false;
         },
 
         // Inicializa a navegação em duas camadas em mobile:
         // - shell ganha .nb-mobile (lista a ecrã cheio, sem o painel direito)
+        // - injecta o botão "← Cadernos" no topo de .nb-main
         // - clicar num caderno → adiciona .nb-mobile--detail (esconde lista,
-        //   mostra conteúdo + topbar)
+        //   mostra conteúdo + botão voltar)
+        // - botão voltar → remove .nb-mobile--detail
         _initMobileNav() {
             const shell = document.querySelector('.nb-shell');
             if (!shell) return;
             shell.classList.add('nb-mobile');
             shell.classList.remove('nb-mobile--detail');
 
-            // Listener único para limpar/recolocar o estado quando o utilizador muda a largura do ecrã
+            const main = shell.querySelector('.nb-main');
+            if (main && !main.querySelector('#nbBackBtn')) {
+                const back = document.createElement('button');
+                back.id = 'nbBackBtn';
+                back.type = 'button';
+                back.innerHTML = '<i class="fas fa-arrow-left"></i> <span>Cadernos</span>';
+                back.onclick = () => Templates.notebooks._mobileNavBack();
+                main.insertBefore(back, main.firstChild);
+            }
+
+            // Listener único para limpar/recolocar o estado quando o utilizador
+            // muda a largura do ecrã (rotate, redimensionar janela em DevTools).
             if (!this._mobileResizeHandler) {
                 this._mobileResizeHandler = () => {
                     const sh = document.querySelector('.nb-shell');
@@ -4725,7 +4278,7 @@ window.Templates = {
                     if (window.innerWidth > 768) {
                         sh.classList.remove('nb-mobile', 'nb-mobile--detail');
                     } else {
-                        // Garante o setup mobile
+                        // Garante o setup mobile (incluindo botão "Voltar")
                         Templates.notebooks._initMobileNav();
                     }
                 };
@@ -4734,13 +4287,824 @@ window.Templates = {
         },
 
         _mobileNavBack() {
-            // Guarda silenciosamente se o título ou conteúdo mudaram
-            this.saveInlineEdit(true); 
-            
-            this.cancelEditMode();
-            
+            // Se o utilizador está em modo de edição, sai primeiro (autosave já guardou).
+            // Marcamos para que o showNotebook subsequente não reabra a camada detalhe.
+            const editorArea = document.getElementById('notebookEditorArea');
+            if (editorArea && editorArea.style.display !== 'none') {
+                this._suppressMobileDetail = true;
+                this.cancelEditMode();
+            }
             const shell = document.querySelector('.nb-shell');
             if (shell) shell.classList.remove('nb-mobile--detail');
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // HELPER — editor ativo: nbeBody (mobile overlay) ou notebookRichEditor
+        // ═══════════════════════════════════════════════════════════════════
+        _mobileEditorActive: false,
+        _mobileEditorId:     null,
+        _mobileKeyboardH:    0,
+        _mobileVpHandler:    null,
+        _nbeAutoSaveTrigger: null,
+        _mbeResizeForDesktop: null,
+        _nbeOriginalTitle:   null,
+
+        _getEditor() {
+            if (this._mobileEditorActive) return document.getElementById('nbeBody');
+            return document.getElementById('notebookRichEditor');
+        },
+
+        // ═══════════════════════════════════════════════════════════════════
+        // MOBILE EDITOR — Notion-like, ecrã cheio, ≤768px
+        // ═══════════════════════════════════════════════════════════════════
+
+        _injectMobileEditorCSS() {
+            if (document.getElementById('nbe-css')) return;
+            const s = document.createElement('style');
+            s.id = 'nbe-css';
+            s.textContent = `
+            .nbe-overlay{position:fixed;inset:0;z-index:3000;background:#0d0d0d;color:#fff;display:flex;flex-direction:column;font-family:var(--font,-apple-system,system-ui,sans-serif);overflow:hidden;}
+            .nbe-topbar{display:flex;align-items:center;height:48px;padding:0 8px;background:#0d0d0d;border-bottom:1px solid #1f1f1f;flex-shrink:0;gap:4px;padding-top:env(safe-area-inset-top);}
+            .nbe-back-btn{display:flex;align-items:center;gap:6px;background:none;border:none;color:var(--primary,#3b82f6);font-size:15px;font-weight:500;cursor:pointer;padding:8px 4px;min-height:44px;white-space:nowrap;font-family:inherit;}
+            .nbe-topbar-title{flex:1;text-align:center;font-size:14px;font-weight:600;color:#888;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px;}
+            .nbe-topbar-actions{display:flex;}
+            .nbe-topbar-btn{display:flex;align-items:center;justify-content:center;width:40px;height:44px;background:none;border:none;color:#888;font-size:18px;cursor:pointer;border-radius:8px;}
+            .nbe-topbar-btn:active{background:#1a1a1a;}
+            .nbe-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:60px;}
+            .nbe-title-input{outline:none;padding:20px 16px 8px;font-size:26px;font-weight:700;color:#fff;line-height:1.3;min-height:52px;word-break:break-word;display:block;}
+            .nbe-title-input:empty::before{content:attr(data-placeholder);color:#555;pointer-events:none;}
+            #nbeBody{outline:none;padding:4px 16px 20px;min-height:200px;font-size:16px;line-height:1.7;color:#e0e0e0;word-break:break-word;overflow-wrap:anywhere;display:block;}
+            #nbeBody:empty::before{content:attr(data-placeholder);color:#555;pointer-events:none;}
+            #nbeBody h1{font-size:24px;font-weight:700;color:#fff;margin:20px 0 6px;}
+            #nbeBody h2{font-size:20px;font-weight:700;color:#fff;margin:16px 0 5px;}
+            #nbeBody h3{font-size:17px;font-weight:600;color:#ddd;margin:13px 0 4px;}
+            #nbeBody h4{font-size:15px;font-weight:600;color:#ccc;margin:11px 0 3px;}
+            #nbeBody p{margin:5px 0;color:#e0e0e0;}
+            #nbeBody ul,#nbeBody ol{padding-left:22px;margin:5px 0;color:#e0e0e0;}
+            #nbeBody li{margin:2px 0;}
+            #nbeBody blockquote{border-left:3px solid #444;padding:8px 14px;margin:10px 0;color:#aaa;}
+            #nbeBody pre{background:#141414;border-radius:8px;padding:12px 16px;font-family:var(--font-mono,monospace);font-size:14px;overflow-x:auto;color:#e0e0e0;margin:10px 0;}
+            #nbeBody code{background:#1d1d1d;border-radius:4px;padding:1px 6px;font-family:var(--font-mono,monospace);font-size:13px;color:#f87171;}
+            #nbeBody hr{border:none;border-top:1px solid #2a2a2a;margin:16px 0;}
+            #nbeBody mark{background:#3d3100;color:#ffd700;padding:0 2px;border-radius:2px;}
+            #nbeBody a{color:#60a5fa;text-decoration:underline;}
+            #nbeBody strong{color:#fff;}
+            #nbeBody em{color:#ccc;}
+            #nbeBody s{color:#666;text-decoration:line-through;}
+            #nbeBody u{text-decoration:underline;text-decoration-color:#60a5fa;}
+            .nbe-overlay .nb-callout--info{background:rgba(52,152,219,.15);border-left-color:#3498db;}
+            .nbe-overlay .nb-callout--warning{background:rgba(243,156,18,.15);border-left-color:#f39c12;}
+            .nbe-overlay .nb-callout--error{background:rgba(231,76,60,.15);border-left-color:#e74c3c;}
+            .nbe-overlay .nb-callout--success{background:rgba(46,204,113,.15);border-left-color:#2ecc71;}
+            .nbe-overlay .nb-callout-text{color:#e0e0e0;}
+            .nbe-overlay .nb-table th{background:#1a1a1a;color:#fff;border-color:#2a2a2a;}
+            .nbe-overlay .nb-table td{color:#e0e0e0;border-color:#2a2a2a;}
+            /* Keyboard toolbar */
+            #nbeKbToolbar{position:fixed;left:0;right:0;height:44px;background:#1a1a1a;border-top:1px solid #2a2a2a;display:none;align-items:center;padding:0 4px;z-index:3100;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:0;scrollbar-width:none;}
+            #nbeKbToolbar::-webkit-scrollbar{display:none;}
+            .nbe-kbtn{display:flex;align-items:center;justify-content:center;min-width:40px;height:44px;background:none;border:none;color:#999;font-size:16px;cursor:pointer;border-radius:6px;flex-shrink:0;padding:0;font-family:inherit;transition:background .1s,color .1s;-webkit-tap-highlight-color:transparent;}
+            .nbe-kbtn:active,.nbe-kbtn.nbe-active{background:#2a2a2a;color:#fff;}
+            .nbe-kbtn-accent{color:var(--primary,#3b82f6);}
+            .nbe-kbtn-sep{width:1px;height:22px;background:#2a2a2a;flex-shrink:0;margin:0 2px;}
+            /* Format bar */
+            #nbeFormatBar{position:fixed;left:0;right:0;height:44px;background:#1a1a1a;border-top:1px solid #2a2a2a;display:none;align-items:center;padding:0 4px;z-index:3101;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;gap:0;}
+            #nbeFormatBar::-webkit-scrollbar{display:none;}
+            .nbe-fbtn{display:flex;align-items:center;justify-content:center;min-width:40px;height:44px;background:none;border:none;color:#999;font-size:15px;font-weight:600;cursor:pointer;border-radius:6px;flex-shrink:0;font-family:inherit;transition:background .1s,color .1s;-webkit-tap-highlight-color:transparent;}
+            .nbe-fbtn:active,.nbe-fbtn.nbe-active{background:#2a2a2a;color:#fff;}
+            /* Bottom sheet backdrop */
+            .nbe-sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:3200;}
+            /* Bottom sheet */
+            .nbe-sheet{position:fixed;left:0;right:0;bottom:0;background:#1a1a1a;border-radius:12px 12px 0 0;z-index:3201;max-height:82vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .22s cubic-bezier(.4,0,.2,1);}
+            .nbe-sheet.nbe-open{transform:translateY(0);}
+            .nbe-sheet-handle{width:40px;height:4px;background:#333;border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+            .nbe-sheet-title{padding:8px 16px 6px;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;}
+            .nbe-sheet-search{margin:0 12px 8px;padding:9px 13px;background:#262626;border:1px solid #333;border-radius:8px;color:#fff;font-size:15px;outline:none;flex-shrink:0;font-family:inherit;}
+            .nbe-sheet-search::placeholder{color:#555;}
+            .nbe-sheet-scroll{flex:1;overflow-y:auto;padding:0 12px 28px;-webkit-overflow-scrolling:touch;}
+            .nbe-sheet-section{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#555;padding:12px 4px 6px;}
+            .nbe-sheet-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px;}
+            .nbe-sheet-item{display:flex;flex-direction:column;align-items:flex-start;gap:6px;background:#262626;border-radius:8px;padding:12px;cursor:pointer;border:none;color:#fff;text-align:left;-webkit-tap-highlight-color:transparent;transition:background .1s;font-family:inherit;}
+            .nbe-sheet-item:active{background:#333;}
+            .nbe-sheet-item i{font-size:20px;color:#aaa;}
+            .nbe-sheet-label{font-size:14px;font-weight:600;color:#fff;line-height:1.2;}
+            .nbe-sheet-item.nbe-hidden{display:none;}
+            .nbe-sheet-actions{display:flex;flex-direction:column;padding-bottom:24px;}
+            .nbe-sheet-action{display:flex;align-items:center;gap:14px;padding:14px 16px;background:none;border:none;color:#fff;font-size:16px;font-weight:500;cursor:pointer;font-family:inherit;text-align:left;border-bottom:1px solid #252525;-webkit-tap-highlight-color:transparent;width:100%;}
+            .nbe-sheet-action:last-child{border-bottom:none;}
+            .nbe-sheet-action:active{background:#252525;}
+            .nbe-sheet-action i{font-size:18px;color:#888;width:22px;flex-shrink:0;}
+            .nbe-sheet-action .nbe-arrow{margin-left:auto;font-size:12px;color:#444;}
+            .nbe-sheet-action.nbe-danger{color:#f87171;}
+            .nbe-sheet-action.nbe-danger i{color:#f87171;}
+            .nbe-sheet-foot{padding:12px 16px;font-size:12px;color:#444;flex-shrink:0;border-top:1px solid #222;}
+            `;
+            document.head.appendChild(s);
+        },
+
+        async _showMobileEditor(notebook) {
+            this._injectMobileEditorCSS();
+            this._mobileEditorActive = true;
+            this._mobileEditorId = notebook.id;
+            this._nbeOriginalTitle  = notebook.title;
+
+            // Remove overlay anterior se existir (stale)
+            document.getElementById('nbMobileEditorOverlay')?.remove();
+            // Garante que não fica toolbar mobile anterior (da sessão anterior)
+            document.getElementById('nbMobileToolbar')?.remove();
+
+            let htmlContent = notebook.content || '';
+            if (htmlContent && !htmlContent.trim().startsWith('<')) {
+                htmlContent = htmlContent.split('\n')
+                    .map(l => l.trim() ? `<p>${escapeHtml(l)}</p>` : '<br>').join('');
+            }
+            // Strip contenteditable (re-aplicado por _normalizeCallouts)
+            htmlContent = htmlContent.replace(/\s+contenteditable\s*=\s*("[^"]*"|'[^']*'|\S+)/gi, '');
+
+            const md = `onmousedown="event.preventDefault()"`;
+            const overlay = document.createElement('div');
+            overlay.id = 'nbMobileEditorOverlay';
+            overlay.className = 'nbe-overlay';
+            overlay.innerHTML = `
+                <div class="nbe-topbar">
+                    <button class="nbe-back-btn" type="button" ${md}
+                        onclick="Templates.notebooks._closeMobileEditor()">
+                        <i class="fas fa-arrow-left"></i> Cadernos
+                    </button>
+                    <span class="nbe-topbar-title" id="nbeMiniTitle">${escapeHtml(notebook.title)}</span>
+                    <div class="nbe-topbar-actions">
+                        <button class="nbe-topbar-btn" type="button" title="Partilhar" ${md}
+                            onclick="Templates.notebooks._nbeShare()">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                        <button class="nbe-topbar-btn" type="button" title="Ações" ${md}
+                            onclick="Templates.notebooks._openMobileBlockActionsSheet()">
+                            <i class="fas fa-ellipsis-h"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="nbe-scroll" id="nbeScroll">
+                    <div id="nbeTitleInput" class="nbe-title-input"
+                         contenteditable="true"
+                         data-placeholder="Sem título"
+                         oninput="Templates.notebooks._onNbeTitleInput()"
+                         onkeydown="Templates.notebooks._onNbeTitleKeydown(event)">${escapeHtml(notebook.title)}</div>
+                    <div id="nbeBody"
+                         contenteditable="true"
+                         data-placeholder="Começa a escrever, ou escreve '/' para inserir um bloco…"
+                         onkeydown="Templates.notebooks._editorKeydown(event)"
+                         oninput="Templates.notebooks._onEditorInput()">${htmlContent}</div>
+                </div>
+                <div id="nbeKbToolbar">${this._getNbeKbToolbarHTML()}</div>
+                <div id="nbeFormatBar">${this._getNbeFormatBarHTML()}</div>
+            `;
+            document.body.appendChild(overlay);
+
+            // Re-normaliza callouts no conteúdo carregado
+            this._normalizeCallouts();
+
+            // Autosave
+            if (window.Autosave) {
+                this._nbeAutoSaveTrigger = Autosave.register(
+                    String(notebook.id),
+                    () => { const b = document.getElementById('nbeBody'); return b ? b.innerHTML : ''; },
+                    { onSaved: () => {}, onError: () => {} }
+                );
+            } else {
+                let _nbeTimer;
+                this._nbeAutoSaveTrigger = () => {
+                    clearTimeout(_nbeTimer);
+                    _nbeTimer = setTimeout(() => this._saveMobileEditorContent(), 5000);
+                };
+            }
+
+            // Detecção do teclado via visualViewport
+            this._setupMobileKeyboardDetection();
+
+            // Bloqueia scroll do body enquanto overlay está aberto
+            document.body.style.overflow = 'hidden';
+
+            // Foca o body e coloca o cursor no fim
+            requestAnimationFrame(() => {
+                const body = document.getElementById('nbeBody');
+                if (body) {
+                    body.focus();
+                    const r = document.createRange();
+                    r.selectNodeContents(body);
+                    r.collapse(false);
+                    const s = window.getSelection();
+                    s.removeAllRanges();
+                    s.addRange(r);
+                }
+            });
+
+            // Se a janela for redimensionada para desktop, fecha o overlay
+            if (!this._mbeResizeForDesktop) {
+                this._mbeResizeForDesktop = () => {
+                    if (window.innerWidth > 768 && this._mobileEditorActive) {
+                        this._closeMobileEditor(false);
+                    }
+                };
+                window.addEventListener('resize', this._mbeResizeForDesktop);
+            }
+        },
+
+        _closeMobileEditor(save = true) {
+            if (save) this._saveMobileEditorContent();
+            if (window.Autosave && this._mobileEditorId) {
+                Autosave.unregister(String(this._mobileEditorId));
+            }
+            this._nbeAutoSaveTrigger = null;
+            this._teardownMobileKeyboardDetection();
+            this._closeAllMobileSheets();
+            if (this._slashMenuOpen) this._closeSlashMenu();
+            document.getElementById('nbMobileEditorOverlay')?.remove();
+            this._mobileEditorActive = false;
+            this._mobileEditorId = null;
+            this._mobileKeyboardH = 0;
+            document.body.style.overflow = '';
+            // Refresh categories para actualizar sidebar
+            if (typeof fetchCategories === 'function') fetchCategories();
+        },
+
+        async _saveMobileEditorContent() {
+            const body = document.getElementById('nbeBody');
+            const titleEl = document.getElementById('nbeTitleInput');
+            if (!body || !this._mobileEditorId) return;
+            const newContent = body.innerHTML;
+            const newTitle = (titleEl ? titleEl.innerText.trim() : '') || 'Sem título';
+            try {
+                // 1) Guarda o conteúdo (rich-text + versão automática)
+                const resp = await fetch(`${API_URL}/save_note.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        item_id: Number(this._mobileEditorId),
+                        content: newContent,
+                        saved_by: 'mobile',
+                    }),
+                    credentials: 'same-origin',
+                });
+                const data = await resp.json();
+                if (!data.success && !data.unchanged) throw new Error(data.error || 'Erro');
+
+                // 2) Actualiza o título (PATCH só envia o campo alterado)
+                if (newTitle !== this._nbeOriginalTitle) {
+                    await fetch(`${API_URL}/items.php`, {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: Number(this._mobileEditorId), title: newTitle }),
+                        credentials: 'same-origin',
+                    });
+                    this._nbeOriginalTitle = newTitle;
+                }
+
+                // 3) Actualiza sidebar sem reload
+                const sidebarItem = document.querySelector(`.nb-list-item[data-notebook-id="${this._mobileEditorId}"]`);
+                if (sidebarItem) {
+                    const preview = newContent.replace(/<[^>]+>/g, '').slice(0, 60) || 'Caderno vazio…';
+                    const pEl = sidebarItem.querySelector('.nb-item-preview');
+                    if (pEl) pEl.textContent = preview;
+                    const tEl = sidebarItem.querySelector('.nb-item-title');
+                    if (tEl) tEl.textContent = newTitle;
+                    const dEl = sidebarItem.querySelector('.nb-item-date');
+                    if (dEl) dEl.innerHTML = `<i class="fas fa-clock"></i> ${new Date().toLocaleDateString('pt-PT')}`;
+                }
+                if (window.Autosave) Autosave.clearDraft(String(this._mobileEditorId));
+            } catch (err) {
+                console.error('Mobile save error:', err);
+            }
+        },
+
+        _onNbeTitleInput() {
+            const titleEl = document.getElementById('nbeTitleInput');
+            const mini = document.getElementById('nbeMiniTitle');
+            if (titleEl && mini) mini.textContent = titleEl.innerText.trim() || 'Sem título';
+            if (this._nbeAutoSaveTrigger) this._nbeAutoSaveTrigger();
+        },
+
+        _onNbeTitleKeydown(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const body = document.getElementById('nbeBody');
+                if (body) {
+                    body.focus();
+                    const r = document.createRange();
+                    r.selectNodeContents(body);
+                    r.collapse(true);
+                    const s = window.getSelection();
+                    s.removeAllRanges();
+                    s.addRange(r);
+                }
+            }
+        },
+
+        _setupMobileKeyboardDetection() {
+            if (!window.visualViewport) return;
+            const TOOLBAR_H = 44;
+            this._mobileVpHandler = () => {
+                const kbH = Math.max(0,
+                    window.innerHeight
+                    - window.visualViewport.height
+                    - (window.visualViewport.offsetTop || 0)
+                );
+                const kt = document.getElementById('nbeKbToolbar');
+                const fb = document.getElementById('nbeFormatBar');
+                const sc = document.getElementById('nbeScroll');
+                this._mobileKeyboardH = kbH;
+                if (kbH > 80) {
+                    const bottom = kbH + 'px';
+                    if (kt) { kt.style.bottom = bottom; kt.style.display = 'flex'; }
+                    if (fb && fb.style.display === 'flex') fb.style.bottom = bottom;
+                    if (sc) sc.style.paddingBottom = (kbH + TOOLBAR_H + 20) + 'px';
+                } else {
+                    if (kt) kt.style.display = 'none';
+                    if (fb) fb.style.display = 'none';
+                    if (sc) sc.style.paddingBottom = '60px';
+                }
+                this._nbeUpdateKbToolbarState();
+            };
+            window.visualViewport.addEventListener('resize', this._mobileVpHandler);
+            window.visualViewport.addEventListener('scroll', this._mobileVpHandler);
+        },
+
+        _teardownMobileKeyboardDetection() {
+            if (this._mobileVpHandler && window.visualViewport) {
+                window.visualViewport.removeEventListener('resize', this._mobileVpHandler);
+                window.visualViewport.removeEventListener('scroll', this._mobileVpHandler);
+                this._mobileVpHandler = null;
+            }
+        },
+
+        // ── Toolbar do teclado ────────────────────────────────────────────
+        _getNbeKbToolbarHTML() {
+            const md = `onmousedown="event.preventDefault()"`;
+            return `
+                <button class="nbe-kbtn nbe-kbtn-accent" type="button" ${md}
+                    onclick="Templates.notebooks._openMobileBlockSheet()" title="Inserir bloco">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="Templates.notebooks._openMobileFormatBar()" title="Formatação">
+                    <span style="font-size:13px;font-weight:700;letter-spacing:-.5px">Aa</span>
+                </button>
+                <div class="nbe-kbtn-sep"></div>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('bold')" data-cmd="bold" title="Negrito">
+                    <b style="font-size:15px">B</b>
+                </button>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('italic')" data-cmd="italic" title="Itálico">
+                    <i style="font-size:15px">I</i>
+                </button>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="Templates.notebooks._inlineCode()" data-cmd="code" title="Código inline">
+                    <i class="fas fa-code" style="font-size:13px"></i>
+                </button>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('insertUnorderedList')" data-cmd="insertUnorderedList" title="Lista">
+                    <i class="fas fa-list-ul" style="font-size:13px"></i>
+                </button>
+                <button class="nbe-kbtn nbe-kbtn-accent" type="button" ${md}
+                    onclick="Templates.notebooks._openSlashFromButton()" title="Inserir bloco (/)"
+                    style="font-family:monospace;font-size:18px;font-weight:700">/</button>
+                <div class="nbe-kbtn-sep" style="margin-left:auto"></div>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('undo')" title="Desfazer">
+                    <i class="fas fa-undo" style="font-size:13px"></i>
+                </button>
+                <button class="nbe-kbtn" type="button" ${md}
+                    onclick="document.activeElement&&document.activeElement.blur()" title="Fechar teclado">
+                    <i class="fas fa-keyboard" style="font-size:13px"></i>
+                </button>
+            `;
+        },
+
+        _getNbeFormatBarHTML() {
+            const md = `onmousedown="event.preventDefault()"`;
+            return `
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._closeMobileFormatBar()" title="Voltar">
+                    <i class="fas fa-arrow-left" style="font-size:14px"></i>
+                </button>
+                <div class="nbe-kbtn-sep"></div>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('bold')" data-cmd="bold"><b>B</b></button>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('italic')" data-cmd="italic"><i>I</i></button>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('underline')" data-cmd="underline"><u>U</u></button>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._exec('strikeThrough')" data-cmd="strikeThrough"><s>S</s></button>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._insertLink()" title="Link">
+                    <i class="fas fa-link" style="font-size:13px"></i>
+                </button>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._inlineCode()" data-cmd="code">
+                    <i class="fas fa-code" style="font-size:12px"></i>
+                </button>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._highlight()" data-cmd="hilite">
+                    <i class="fas fa-highlighter" style="font-size:12px"></i>
+                </button>
+                <div class="nbe-kbtn-sep"></div>
+                <button class="nbe-fbtn" type="button" ${md}
+                    onclick="Templates.notebooks._openMobileTransformSheet()" title="Transformar em">
+                    <i class="fas fa-exchange-alt" style="font-size:13px"></i>
+                </button>
+            `;
+        },
+
+        _openMobileFormatBar() {
+            const kt = document.getElementById('nbeKbToolbar');
+            const fb = document.getElementById('nbeFormatBar');
+            if (!kt || !fb) return;
+            kt.style.display = 'none';
+            fb.style.display = 'flex';
+            fb.style.bottom = (this._mobileKeyboardH > 80 ? this._mobileKeyboardH : 0) + 'px';
+        },
+
+        _closeMobileFormatBar() {
+            const kt = document.getElementById('nbeKbToolbar');
+            const fb = document.getElementById('nbeFormatBar');
+            if (fb) fb.style.display = 'none';
+            if (kt && this._mobileKeyboardH > 80) kt.style.display = 'flex';
+        },
+
+        _nbeUpdateKbToolbarState() {
+            if (!this._mobileEditorActive) return;
+            const body = document.getElementById('nbeBody');
+            if (!body) return;
+            const sel = window.getSelection();
+            const inEditor = sel && sel.rangeCount && body.contains(sel.anchorNode);
+            if (!inEditor) return;
+            const toolbars = [
+                document.getElementById('nbeKbToolbar'),
+                document.getElementById('nbeFormatBar'),
+            ].filter(Boolean);
+            const cmds = ['bold','italic','underline','strikeThrough','insertUnorderedList'];
+            toolbars.forEach(tb => {
+                cmds.forEach(cmd => {
+                    const btn = tb.querySelector(`[data-cmd="${cmd}"]`);
+                    if (!btn) return;
+                    let active = false;
+                    try { active = document.queryCommandState(cmd); } catch (_) {}
+                    btn.classList.toggle('nbe-active', active);
+                });
+                const codeBtn = tb.querySelector('[data-cmd="code"]');
+                if (codeBtn && sel.anchorNode) {
+                    let n = sel.anchorNode;
+                    let inCode = false;
+                    while (n && n !== body) {
+                        if (n.nodeType === 1 && n.tagName === 'CODE') { inCode = true; break; }
+                        n = n.parentNode;
+                    }
+                    codeBtn.classList.toggle('nbe-active', inCode);
+                }
+                const hiliteBtn = tb.querySelector('[data-cmd="hilite"]');
+                if (hiliteBtn) {
+                    const c = document.queryCommandValue('hiliteColor') || document.queryCommandValue('backColor');
+                    const isH = !!c && c !== 'transparent' && !/^rgba?\(0,\s*0,\s*0,\s*0\)/.test(c);
+                    hiliteBtn.classList.toggle('nbe-active', isH);
+                }
+            });
+        },
+
+        // ── Bottom sheet de blocos ────────────────────────────────────────
+        _openMobileBlockSheet(fromSlash = false) {
+            this._closeAllMobileSheets();
+            const bg = document.createElement('div');
+            bg.className = 'nbe-sheet-bg'; bg.id = 'nbeSheetBg';
+            bg.onclick = () => this._closeAllMobileSheets();
+            document.body.appendChild(bg);
+
+            const sheet = document.createElement('div');
+            sheet.className = 'nbe-sheet'; sheet.id = 'nbeBlockSheet';
+            sheet.innerHTML = `
+                <div class="nbe-sheet-handle"></div>
+                <div class="nbe-sheet-title">Inserir bloco</div>
+                ${fromSlash ? `<input class="nbe-sheet-search" type="text" id="nbeBlockSearch"
+                    placeholder="Pesquisar blocos…"
+                    oninput="Templates.notebooks._filterNbeBlockSheet(this.value)">` : ''}
+                <div class="nbe-sheet-scroll">${this._getNbeBlockSections()}</div>
+            `;
+            document.body.appendChild(sheet);
+            requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('nbe-open')));
+            if (fromSlash) setTimeout(() => document.getElementById('nbeBlockSearch')?.focus(), 260);
+        },
+
+        _closeAllMobileSheets() {
+            ['nbeSheetBg','nbeBlockSheet','nbeTransformSheet','nbeBlockActionsSheet'].forEach(
+                id => document.getElementById(id)?.remove()
+            );
+            // Se o sheet foi aberto por slash command, resetamos o estado
+            if (this._slashMenuOpen) this._closeSlashMenu();
+        },
+
+        _getNbeBlockSections() {
+            const sections = {
+                'Blocos básicos': [
+                    { action:'p',             icon:'fa-paragraph',          label:'Texto' },
+                    { action:'h1',            icon:'fa-heading',            label:'Título 1' },
+                    { action:'h2',            icon:'fa-heading',            label:'Título 2' },
+                    { action:'h3',            icon:'fa-heading',            label:'Título 3' },
+                    { action:'h4',            icon:'fa-heading',            label:'Título 4' },
+                    { action:'ul',            icon:'fa-list-ul',            label:'Lista com marcadores' },
+                    { action:'ol',            icon:'fa-list-ol',            label:'Lista numerada' },
+                    { action:'blockquote',    icon:'fa-quote-right',        label:'Citação' },
+                    { action:'pre',           icon:'fa-code',               label:'Código' },
+                    { action:'hr',            icon:'fa-minus',              label:'Separador' },
+                ],
+                'Callouts': [
+                    { action:'callout-info',    icon:'fa-info-circle',          label:'Info' },
+                    { action:'callout-warning', icon:'fa-exclamation-triangle', label:'Aviso' },
+                    { action:'callout-error',   icon:'fa-times-circle',         label:'Erro' },
+                    { action:'callout-success', icon:'fa-check-circle',         label:'Sucesso' },
+                ],
+                'Tabela': [
+                    { action:'table', icon:'fa-table', label:'Tabela 2×3' },
+                ],
+                'Templates': [
+                    { action:'template-aula',    icon:'fa-graduation-cap', label:'Aula' },
+                    { action:'template-resumo',  icon:'fa-book',           label:'Resumo' },
+                    { action:'template-reuniao', icon:'fa-users',          label:'Reunião' },
+                    { action:'template-bug',     icon:'fa-bug',            label:'Bug Report' },
+                ],
+            };
+            return Object.entries(sections).map(([sec, items]) => `
+                <div class="nbe-sheet-section">${sec}</div>
+                <div class="nbe-sheet-grid">
+                    ${items.map(it => `
+                        <button class="nbe-sheet-item" type="button"
+                            data-label="${it.label.toLowerCase()}"
+                            onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._executeNbeBlock('${it.action}')">
+                            <i class="fas ${it.icon}"></i>
+                            <span class="nbe-sheet-label">${it.label}</span>
+                        </button>
+                    `).join('')}
+                </div>
+            `).join('');
+        },
+
+        _filterNbeBlockSheet(q) {
+            const sheet = document.getElementById('nbeBlockSheet');
+            if (!sheet) return;
+            const lower = (q || '').trim().toLowerCase();
+            sheet.querySelectorAll('.nbe-sheet-item').forEach(el => {
+                const label = el.getAttribute('data-label') || '';
+                el.classList.toggle('nbe-hidden', !!lower && !label.includes(lower));
+            });
+            sheet.querySelectorAll('.nbe-sheet-section').forEach(sec => {
+                const grid = sec.nextElementSibling;
+                if (!grid) return;
+                const allHide = [...grid.querySelectorAll('.nbe-sheet-item')]
+                    .every(el => el.classList.contains('nbe-hidden'));
+                sec.style.display = allHide ? 'none' : '';
+                grid.style.display = allHide ? 'none' : '';
+            });
+        },
+
+        _executeNbeBlock(action) {
+            // Guarda estado do slash ANTES de fechar sheets (closeAllMobileSheets reseta slash)
+            const wasSlash = this._slashMenuOpen;
+            const savedSlashRange = this._slashRange ? {
+                node: this._slashRange.startContainer,
+                off: this._slashRange.startOffset,
+            } : null;
+
+            this._closeAllMobileSheets(); // também fecha slash menu se aberto
+
+            const body = document.getElementById('nbeBody');
+            if (body) body.focus();
+
+            // Apaga o texto "/query" se foi activado por slash
+            if (wasSlash && savedSlashRange) {
+                const sel = window.getSelection();
+                if (sel && sel.rangeCount) {
+                    const cur = sel.getRangeAt(0);
+                    const { node, off } = savedSlashRange;
+                    if (cur.endContainer === node && cur.endOffset >= off) {
+                        const del = document.createRange();
+                        del.setStart(node, off);
+                        del.setEnd(cur.endContainer, cur.endOffset);
+                        del.deleteContents();
+                        const c = document.createRange();
+                        c.setStart(node, off);
+                        c.collapse(true);
+                        sel.removeAllRanges();
+                        sel.addRange(c);
+                    }
+                }
+            }
+
+            // Executa a acção do bloco
+            if (['h1','h2','h3','h4','blockquote','pre','p'].includes(action)) {
+                this._formatBlock(action);
+            } else if (action === 'ul') {
+                this._exec('insertUnorderedList');
+            } else if (action === 'ol') {
+                this._exec('insertOrderedList');
+            } else if (action === 'hr') {
+                this._exec('insertHorizontalRule');
+                this._exec('formatBlock', 'p');
+            } else if (action.startsWith('callout-')) {
+                this._insertCallout(action.slice('callout-'.length));
+            } else if (action === 'table') {
+                this._insertTable();
+            } else if (action.startsWith('template-')) {
+                this._insertTemplate(action.slice('template-'.length));
+            }
+            setTimeout(() => body && body.focus(), 60);
+        },
+
+        // ── Sheet "Transformar em" ────────────────────────────────────────
+        _openMobileTransformSheet() {
+            this._closeAllMobileSheets();
+            const bg = document.createElement('div');
+            bg.className = 'nbe-sheet-bg'; bg.id = 'nbeSheetBg';
+            bg.onclick = () => this._closeAllMobileSheets();
+            document.body.appendChild(bg);
+
+            const transforms = [
+                { action:'p',          icon:'fa-paragraph',   label:'Texto' },
+                { action:'h1',         icon:'fa-heading',     label:'Título 1' },
+                { action:'h2',         icon:'fa-heading',     label:'Título 2' },
+                { action:'h3',         icon:'fa-heading',     label:'Título 3' },
+                { action:'h4',         icon:'fa-heading',     label:'Título 4' },
+                { action:'ul',         icon:'fa-list-ul',     label:'Lista com marcadores' },
+                { action:'ol',         icon:'fa-list-ol',     label:'Lista numerada' },
+                { action:'blockquote', icon:'fa-quote-right', label:'Citação' },
+                { action:'pre',        icon:'fa-code',        label:'Código' },
+            ];
+
+            const sheet = document.createElement('div');
+            sheet.className = 'nbe-sheet'; sheet.id = 'nbeTransformSheet';
+            sheet.innerHTML = `
+                <div class="nbe-sheet-handle"></div>
+                <div class="nbe-sheet-title">Transformar em</div>
+                <div class="nbe-sheet-scroll">
+                    <div class="nbe-sheet-grid">
+                        ${transforms.map(t => `
+                            <button class="nbe-sheet-item" type="button"
+                                onmousedown="event.preventDefault()"
+                                onclick="Templates.notebooks._executeNbeTransform('${t.action}')">
+                                <i class="fas ${t.icon}"></i>
+                                <span class="nbe-sheet-label">${t.label}</span>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(sheet);
+            requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('nbe-open')));
+        },
+
+        _executeNbeTransform(action) {
+            this._closeAllMobileSheets();
+            const body = document.getElementById('nbeBody');
+            if (body) body.focus();
+            if (['h1','h2','h3','h4','blockquote','pre','p'].includes(action)) {
+                this._formatBlock(action);
+            } else if (action === 'ul') {
+                this._exec('insertUnorderedList');
+            } else if (action === 'ol') {
+                this._exec('insertOrderedList');
+            }
+        },
+
+        // ── Sheet de acções do bloco (···) ───────────────────────────────
+        _openMobileBlockActionsSheet() {
+            this._closeAllMobileSheets();
+            const bg = document.createElement('div');
+            bg.className = 'nbe-sheet-bg'; bg.id = 'nbeSheetBg';
+            bg.onclick = () => this._closeAllMobileSheets();
+            document.body.appendChild(bg);
+
+            const titleEl = document.getElementById('nbeTitleInput');
+            const title = titleEl ? titleEl.innerText.trim() : '';
+            const date = new Date().toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+            const sheet = document.createElement('div');
+            sheet.className = 'nbe-sheet'; sheet.id = 'nbeBlockActionsSheet';
+            sheet.innerHTML = `
+                <div class="nbe-sheet-handle"></div>
+                <div class="nbe-sheet-title">${escapeHtml(title) || 'Ações'}</div>
+                <div class="nbe-sheet-scroll">
+                    <div class="nbe-sheet-actions">
+                        <button class="nbe-sheet-action" type="button" onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._openMobileTransformSheet()">
+                            <i class="fas fa-exchange-alt"></i>
+                            Transformar em
+                            <i class="fas fa-chevron-right nbe-arrow"></i>
+                        </button>
+                        <button class="nbe-sheet-action" type="button" onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._nbeInsertBelow()">
+                            <i class="fas fa-level-down-alt"></i> Inserir abaixo
+                        </button>
+                        <button class="nbe-sheet-action" type="button" onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._nbeDuplicateBlock()">
+                            <i class="fas fa-copy"></i> Duplicar
+                        </button>
+                        <button class="nbe-sheet-action" type="button" onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._nbeMoveBlockUp()">
+                            <i class="fas fa-arrow-up"></i> Mover para cima
+                        </button>
+                        <button class="nbe-sheet-action" type="button" onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._nbeMoveBlockDown()">
+                            <i class="fas fa-arrow-down"></i> Mover para baixo
+                        </button>
+                        <button class="nbe-sheet-action nbe-danger" type="button" onmousedown="event.preventDefault()"
+                            onclick="Templates.notebooks._nbeDeleteBlock()">
+                            <i class="fas fa-trash-alt"></i> Eliminar bloco
+                        </button>
+                    </div>
+                </div>
+                <div class="nbe-sheet-foot">Editado em ${date}</div>
+            `;
+            document.body.appendChild(sheet);
+            requestAnimationFrame(() => requestAnimationFrame(() => sheet.classList.add('nbe-open')));
+        },
+
+        // ── Manipulação de blocos ─────────────────────────────────────────
+        _nbeGetCurrentBlock() {
+            const body = document.getElementById('nbeBody');
+            if (!body) return null;
+            const sel = window.getSelection();
+            if (!sel || !sel.rangeCount) return null;
+            const BLOCK = new Set(['P','H1','H2','H3','H4','H5','H6','UL','OL','LI','BLOCKQUOTE','PRE','DIV','TABLE']);
+            let n = sel.anchorNode;
+            while (n && n !== body) {
+                if (n.nodeType === Node.ELEMENT_NODE && n.parentNode === body) return n;
+                n = n.parentNode;
+            }
+            return null;
+        },
+
+        _nbeInsertBelow() {
+            this._closeAllMobileSheets();
+            const p = document.createElement('p');
+            p.appendChild(document.createElement('br'));
+            const block = this._nbeGetCurrentBlock();
+            const body = document.getElementById('nbeBody');
+            if (block && body) {
+                body.insertBefore(p, block.nextSibling);
+            } else if (body) {
+                body.appendChild(p);
+            }
+            const r = document.createRange();
+            r.setStart(p, 0); r.collapse(true);
+            const s = window.getSelection();
+            s.removeAllRanges(); s.addRange(r);
+            body?.focus();
+        },
+
+        _nbeDuplicateBlock() {
+            this._closeAllMobileSheets();
+            const block = this._nbeGetCurrentBlock();
+            const body = document.getElementById('nbeBody');
+            if (!block || !body) return;
+            const clone = block.cloneNode(true);
+            body.insertBefore(clone, block.nextSibling);
+            showNotification('Bloco duplicado', 'success');
+        },
+
+        _nbeMoveBlockUp() {
+            this._closeAllMobileSheets();
+            const block = this._nbeGetCurrentBlock();
+            if (!block || !block.previousElementSibling) return;
+            block.parentNode.insertBefore(block, block.previousElementSibling);
+        },
+
+        _nbeMoveBlockDown() {
+            this._closeAllMobileSheets();
+            const block = this._nbeGetCurrentBlock();
+            if (!block || !block.nextElementSibling) return;
+            block.parentNode.insertBefore(block.nextElementSibling, block);
+        },
+
+        _nbeDeleteBlock() {
+            this._closeAllMobileSheets();
+            const block = this._nbeGetCurrentBlock();
+            if (!block) return;
+            const body = document.getElementById('nbeBody');
+            block.remove();
+            if (body && !body.firstChild) {
+                const p = document.createElement('p');
+                p.appendChild(document.createElement('br'));
+                body.appendChild(p);
+            }
+            showNotification('Bloco eliminado', 'success');
+        },
+
+        _nbeShare() {
+            const titleEl = document.getElementById('nbeTitleInput');
+            const title = titleEl ? titleEl.innerText.trim() : 'NeatPad';
+            if (navigator.share) {
+                navigator.share({ title, text: title, url: window.location.href }).catch(() => {});
+            } else {
+                showNotification('Partilha não suportada neste browser', 'error');
+            }
         },
 
         renderEditor(container, item) {

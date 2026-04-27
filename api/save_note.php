@@ -105,15 +105,6 @@ try {
     $stmt = $db->prepare("UPDATE items SET content = :content WHERE id = :id");
     $stmt->execute(['content' => $content, 'id' => $itemId]);
 
-    // Opcional: atualizar título se fornecido (para a nova edição inline mobile)
-    if (isset($input['title']) && is_string($input['title'])) {
-        $cleanTitle = trim(strip_tags($input['title']));
-        if ($cleanTitle !== '') {
-            $stmt = $db->prepare("UPDATE items SET title = :title WHERE id = :id");
-            $stmt->execute(['title' => $cleanTitle, 'id' => $itemId]);
-        }
-    }
-
     $db->commit();
     jsonResponse(true, ['item_id' => $itemId, 'saved_at' => date('c'), 'saved_by' => $savedBy, 'message' => 'Conteúdo guardado com sucesso']);
 

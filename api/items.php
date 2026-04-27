@@ -161,6 +161,36 @@ try {
             jsonResponse(true, $stmt->fetch());
             break;
 
+        case 'PATCH':
+            // Actualização parcial: apenas os campos enviados são alterados.
+            // Usado pelo editor mobile para guardar título sem re-enviar todos os campos.
+            if (empty($input['id'])) {
+                jsonResponse(false, null, 'ID do item é obrigatório', 400);
+            }
+            if (!ownedItemExists($db, (int)$input['id'], $uid)) {
+                jsonResponse(false, null, 'Item não encontrado', 404);
+            }
+            $setParts = [];
+            $params   = [];
+            if (isset($input['title'])) {
+                $setParts[] = 'title = :title';
+                $params['title'] = $input['title'];
+            }
+            if (isset($input['priority'])) {
+                $setParts[] = 'priority = :priority';
+                $params['priority'] = $input['priority'];
+            }
+            if (empty($setParts)) {
+                jsonResponse(false, null, 'Nenhum campo para actualizar', 400);
+            }
+            $params['id'] = $input['id'];
+            $stmt = $db->prepare('UPDATE items SET ' . implode(', ', $setParts) . ' WHERE id = :id');
+            $stmt->execute($params);
+            $stmt = $db->prepare('SELECT * FROM items WHERE id = ?');
+            $stmt->execute([$input['id']]);
+            jsonResponse(true, $stmt->fetch());
+            break;
+
         case 'DELETE':
             $id = $_GET['id'] ?? null;
             if (empty($id)) {
