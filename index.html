@@ -101,63 +101,62 @@
                      Slides 1-2 = patch notes dos últimos commits GitHub.
                      Desktop only para os slides extra (>768px).        -->
                 <div class="hero hero-carousel" id="heroCarousel">
+                    <!-- Track: overflow oculto aqui, não no wrapper do hero -->
+                    <div class="hc-track-wrap">
+                        <div class="hc-track" id="hcTrack">
 
-                    <!-- Track (slides side-by-side, animado com translateX) -->
-                    <div class="hc-track" id="hcTrack">
-
-                        <!-- Slide 0: conteúdo principal -->
-                        <div class="hc-slide">
-                            <div class="hero-content">
-                                <p class="hero-eyebrow" id="heroGreeting">Olá 👋</p>
-                                <h2 class="hero-title">O teu <span>espaço organizado</span>.</h2>
-                                <p class="hero-lead">
-                                    Categorias, notas, tarefas, cursos e cadernos digitais —
-                                    tudo num só sítio, limpo e sem distrações.
-                                </p>
-                                <div class="hero-ctas">
-                                    <button class="btn btn-primary btn-lg" id="ctaSeeCategories" type="button">
-                                        <i class="fas fa-layer-group"></i>
-                                        Ver categorias
-                                    </button>
-                                    <button class="btn btn-secondary btn-lg" id="ctaNewCategory" type="button">
-                                        <i class="fas fa-plus"></i>
-                                        Nova categoria
-                                    </button>
+                            <!-- Slide 0: conteúdo principal (grelha 2 colunas internamente em desktop) -->
+                            <div class="hc-slide hc-slide--main">
+                                <div class="hero-content">
+                                    <p class="hero-eyebrow" id="heroGreeting">Olá 👋</p>
+                                    <h2 class="hero-title">O teu <span>espaço organizado</span>.</h2>
+                                    <p class="hero-lead">
+                                        Categorias, notas, tarefas, cursos e cadernos digitais —
+                                        tudo num só sítio, limpo e sem distrações.
+                                    </p>
+                                    <div class="hero-ctas">
+                                        <button class="btn btn-primary btn-lg" id="ctaSeeCategories" type="button">
+                                            <i class="fas fa-layer-group"></i>
+                                            Ver categorias
+                                        </button>
+                                        <button class="btn btn-secondary btn-lg" id="ctaNewCategory" type="button">
+                                            <i class="fas fa-plus"></i>
+                                            Nova categoria
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Cards de resumo rápido (stats) — preenchidos via JS -->
+                                <div class="hero-stats" id="heroStats">
+                                    <div class="stat-card">
+                                        <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                                        <div class="stat-body">
+                                            <strong id="statCategories">—</strong>
+                                            <span>Categorias</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                                        <div class="stat-body">
+                                            <strong id="statItems">—</strong>
+                                            <span>Itens totais</span>
+                                        </div>
+                                    </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                                        <div class="stat-body">
+                                            <strong id="statRecent">—</strong>
+                                            <span>Atualizado recentemente</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- Cards de resumo rápido (stats) — preenchidos via JS -->
-                            <div class="hero-stats" id="heroStats">
-                                <div class="stat-card">
-                                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
-                                    <div class="stat-body">
-                                        <strong id="statCategories">—</strong>
-                                        <span>Categorias</span>
-                                    </div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-                                    <div class="stat-body">
-                                        <strong id="statItems">—</strong>
-                                        <span>Itens totais</span>
-                                    </div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                                    <div class="stat-body">
-                                        <strong id="statRecent">—</strong>
-                                        <span>Atualizado recentemente</span>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- Slides 1-2: gerados dinamicamente pelo JS -->
                         </div>
-                        <!-- Slides 1-2: gerados dinamicamente pelo JS -->
-                    </div>
-
-                    <!-- Dots de navegação (só aparece quando há slides extra) -->
-                    <div class="hc-dots" id="hcDots" style="display:none;">
-                        <!-- Preenchidos via JS -->
                     </div>
                 </div>
+
+                <!-- Dots de navegação: fora do hero, centrados abaixo -->
+                <div class="hc-dots" id="hcDots" style="display:none;"></div>
 
                 <!-- Quick access (shortcut para últimas categorias) -->
                 <div class="quick-section" id="quickAccessWrap">

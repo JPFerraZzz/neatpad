@@ -562,12 +562,16 @@ const HeroCarousel = (() => {
             _renderDots();
             _startAuto();
 
-            // Pausa ao passar o rato sobre o carrossel
-            const carousel = document.getElementById('heroCarousel');
-            if (carousel) {
-                carousel.addEventListener('mouseenter', _stopAuto);
-                carousel.addEventListener('mouseleave', _startAuto);
-            }
+            // Pausa ao passar o rato sobre o hero ou sobre os dots
+            const pauseTargets = [
+                document.getElementById('heroCarousel'),
+                dotsEl,
+            ];
+            pauseTargets.forEach(el => {
+                if (!el) return;
+                el.addEventListener('mouseenter', _stopAuto);
+                el.addEventListener('mouseleave', _startAuto);
+            });
         } catch (err) {
             console.warn('Hero carousel GitHub fetch:', err);
         }

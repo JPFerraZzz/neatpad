@@ -444,50 +444,70 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
 }
 
 /* ── Hero carrossel ─────────────────────────────────────────────── */
+
+/* O wrapper .hero-carousel não usa o grid do .hero em desktop —
+   os slides têm a sua própria grelha interna. */
 .hero-carousel {
     padding: 0;
-    overflow: hidden;
+    /* overflow NÃO está aqui — fica no .hc-track-wrap para não cortar os dots */
 }
+
+/* Camada intermédia que faz overflow hidden no scroll horizontal */
+.hc-track-wrap {
+    overflow: hidden;
+    border-radius: var(--radius-xl);
+}
+
+/* Rail horizontal de slides */
 .hc-track {
     display: flex;
-    transition: transform 0.45s cubic-bezier(.4,0,.2,1);
+    transition: transform 0.42s cubic-bezier(.4, 0, .2, 1);
     will-change: transform;
 }
+
+/* Cada slide ocupa 100% da largura do track */
 .hc-slide {
     flex: 0 0 100%;
     min-width: 0;
-    padding: 28px 22px;
     box-sizing: border-box;
 }
-/* Slide de patch notes */
+
+/* ─ Slide 0: layout principal (mobile = 1 col, desktop = 2 col) ── */
+.hc-slide--main {
+    padding: 28px 22px;
+}
+
+/* ─ Slides de patch notes ─────────────────────────────────────── */
 .hc-patch {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-height: 180px;
-    gap: 18px;
+    gap: 20px;
+    padding: 36px 32px;
+    background: var(--bg-subtle);
+    min-height: 200px;
 }
 .hc-patch-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     font-size: 11px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .06em;
+    letter-spacing: .07em;
     color: var(--primary);
     background: var(--primary-weak);
     border-radius: 20px;
-    padding: 4px 10px;
+    padding: 4px 12px;
     width: fit-content;
 }
 .hc-patch-title {
-    font-size: 22px;
+    font-size: 26px;
     font-weight: 800;
     line-height: 1.2;
-    letter-spacing: -.02em;
+    letter-spacing: -.025em;
     color: var(--text);
-    max-width: 520px;
+    max-width: 640px;
 }
 .hc-patch-meta {
     display: flex;
@@ -495,14 +515,17 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     gap: 10px;
     font-size: 13px;
     color: var(--text-muted);
+    flex-wrap: wrap;
 }
 .hc-patch-sha {
     font-family: var(--font-mono, monospace);
     font-size: 11px;
     background: var(--bg-muted);
-    padding: 2px 7px;
-    border-radius: 5px;
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 6px;
     color: var(--text-subtle);
+    letter-spacing: .04em;
 }
 .hc-patch-link {
     display: inline-flex;
@@ -512,35 +535,74 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     font-weight: 600;
     color: var(--primary);
     text-decoration: none;
-    margin-top: auto;
+    padding: 7px 14px;
+    border: 1px solid var(--primary);
+    border-radius: var(--radius);
+    width: fit-content;
+    transition: background .14s ease;
 }
-.hc-patch-link:hover { text-decoration: underline; }
-/* Dots de navegação */
+.hc-patch-link:hover {
+    background: var(--primary-weak);
+}
+
+/* ─ Dots de navegação: fora do hero, centrados abaixo ─────────── */
 .hc-dots {
     display: flex;
     justify-content: center;
-    gap: 7px;
-    padding: 12px 0 16px;
-    background: var(--bg-surface);
+    gap: 8px;
+    padding: 10px 0 2px;
 }
 .hc-dot {
-    width: 7px;
-    height: 7px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     background: var(--border-strong);
     border: none;
     cursor: pointer;
     padding: 0;
-    transition: background .2s, transform .2s;
+    transition: background .18s ease, transform .18s ease;
     flex-shrink: 0;
 }
 .hc-dot.active {
     background: var(--primary);
-    transform: scale(1.35);
+    transform: scale(1.4);
 }
-/* Só mostra carrossel extra em desktop */
+.hc-dot:hover:not(.active) {
+    background: var(--text-muted);
+}
+
+/* ─ Desktop (≥1024px) ─────────────────────────────────────────── */
+@media (min-width: 1024px) {
+    /* Override da grelha 2 colunas do .hero — cada slide gere o seu layout */
+    .hero.hero-carousel {
+        display: block;
+        padding: 0;
+    }
+    /* Slide 0: replica o layout original (1.4fr + 1fr) internamente */
+    .hc-slide--main {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 40px;
+        align-items: center;
+        padding: 48px 40px;
+    }
+    .hc-slide--main .hero-stats {
+        margin-top: 0;
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    /* Slides de patch notes: mais espaço em desktop */
+    .hc-patch {
+        padding: 52px 56px;
+        min-height: 260px;
+        gap: 24px;
+    }
+    .hc-patch-title { font-size: 32px; }
+}
+
+/* ─ Mobile: oculta slides extra e dots ────────────────────────── */
 @media (max-width: 768px) {
-    .hc-slide:not(:first-child) { display: none; }
+    .hc-slide:not(.hc-slide--main) { display: none; }
     .hc-dots { display: none !important; }
 }
 .hero-content { position: relative; z-index: 1; }
