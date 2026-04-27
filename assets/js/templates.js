@@ -2333,12 +2333,31 @@ window.Templates = {
                 .nb-empty-hint p { font-size: 14px; }
 
                 /* ── Rich-text toolbar ──────────────────── */
-                #notebookToolbarSlot {
+
+                /* Wrapper único sticky que agrupa barra de acções + toolbar de
+                   formatação em edit mode. Evita a sobreposição entre as duas
+                   barras que tinham cada uma o seu próprio sticky/z-index. */
+                #nbEditStickyShell {
                     position: sticky;
                     top: 0;
-                    z-index: 100;
+                    z-index: 200;
                     background: var(--bg-surface);
+                    border-bottom: 2px solid var(--border);
+                    display: none; /* mostrado apenas em edit mode via JS */
+                }
+                /* Linha 1: botões de acção */
+                .nb-action-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px 16px;
                     border-bottom: 1px solid var(--border);
+                    flex-wrap: wrap;
+                }
+                /* Linha 2: toolbar de formatação */
+                #notebookToolbarSlot {
+                    background: transparent;
+                    border-bottom: none;
                 }
                 .nb-toolbar {
                     display: flex; flex-wrap: wrap; align-items: center; gap: 2px;
@@ -2805,20 +2824,7 @@ window.Templates = {
                         text-overflow: ellipsis;
                         white-space: nowrap;
                     }
-                    /* Em edit mode, os botões de acção ficam sticky sem precisar
-                       de scroll — a área de edição ocupa o espaço restante. */
-                    .nb-editor-actions-sticky {
-                        position: sticky;
-                        top: 0;
-                        z-index: 200;
-                        background: var(--bg-surface);
-                        border-bottom: 1px solid var(--border);
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        padding: 8px 16px;
-                        flex-wrap: wrap;
-                    }
+                    /* .nb-editor-actions-sticky absorvida por #nbEditStickyShell */
                 }
                 </style>
             `;
@@ -2887,8 +2893,27 @@ window.Templates = {
                         </button>
                     </div>
 
-                    <div id="notebookToolbarSlot" style="display:none;">
-                        ${this._buildToolbar()}
+                    <!-- Wrapper sticky unificado para edit mode:
+                         linha 1 = botões de acção | linha 2 = toolbar de formatação.
+                         Nunca se sobrepõem: vivem no mesmo sticky container. -->
+                    <div id="nbEditStickyShell">
+                        <div class="nb-action-row" id="nbEditActionBar">
+                            <button class="btn btn-success" onclick="Templates.notebooks.saveInlineEdit()">
+                                <i class="fas fa-save"></i> Guardar
+                            </button>
+                            <button class="btn btn-success" onclick="Templates.notebooks.saveVersionFromEditor(${notebook.id})" title="Guardar como versão sem sair da edição">
+                                <i class="fas fa-download"></i> Guardar Versão
+                            </button>
+                            <button class="btn btn-secondary" onclick="Templates.notebooks.cancelEditMode()">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                            <span class="nb-word-count" id="nbWordCount">
+                                <i class="fas fa-font"></i> 0 palavras
+                            </span>
+                        </div>
+                        <div id="notebookToolbarSlot">
+                            ${this._buildToolbar()}
+                        </div>
                     </div>
 
                     <div class="nb-content-inner">
@@ -2944,21 +2969,6 @@ window.Templates = {
                         </div>
 
                         <div id="notebookEditorArea" style="display:none;">
-                            <!-- Barra de acções sticky — sempre visível durante a edição (desktop) -->
-                            <div class="nb-editor-actions-sticky" id="nbEditActionBar">
-                                <button class="btn btn-success" onclick="Templates.notebooks.saveInlineEdit()">
-                                    <i class="fas fa-save"></i> Guardar
-                                </button>
-                                <button class="btn btn-success" onclick="Templates.notebooks.saveVersionFromEditor(${notebook.id})" title="Guardar como versão sem sair da edição">
-                                    <i class="fas fa-download"></i> Guardar Versão
-                                </button>
-                                <button class="btn btn-secondary" onclick="Templates.notebooks.cancelEditMode()">
-                                    <i class="fas fa-times"></i> Cancelar
-                                </button>
-                                <span class="nb-word-count" id="nbWordCount">
-                                    <i class="fas fa-font"></i> 0 palavras
-                                </span>
-                            </div>
                             <div id="notebookRichEditor" class="nb-rich-editor"
                                  contenteditable="true"
                                  data-placeholder="Começa a escrever aqui…"
@@ -3967,19 +3977,18 @@ window.Templates = {
             `;
             document.body.appendChild(wrap.firstElementChild);
 
-            // Em mobile escondemos o toolbar desktop (sticky) — slash menu chega
-            const slot = document.getElementById('notebookToolbarSlot');
-            if (slot) slot.dataset.prevDisplay = slot.style.display || '';
-            if (slot) slot.style.display = 'none';
+            // Em mobile escondemos o shell sticky desktop (acções + toolbar)
+            const shell = document.getElementById('nbEditStickyShell');
+            if (shell) { shell.dataset.prevDisplay = shell.style.display || ''; shell.style.display = 'none'; }
         },
 
         _unmountMobileToolbar() {
             const tb = document.getElementById('nbMobileToolbar');
             if (tb) tb.remove();
-            const slot = document.getElementById('notebookToolbarSlot');
-            if (slot && 'prevDisplay' in slot.dataset) {
-                slot.style.display = slot.dataset.prevDisplay;
-                delete slot.dataset.prevDisplay;
+            const shell = document.getElementById('nbEditStickyShell');
+            if (shell && 'prevDisplay' in shell.dataset) {
+                shell.style.display = shell.dataset.prevDisplay;
+                delete shell.dataset.prevDisplay;
             }
         },
 
@@ -4001,7 +4010,6 @@ window.Templates = {
             const editorArea   = document.getElementById('notebookEditorArea');
             const editBtn      = document.getElementById('editNotebookBtn');
             const richEditor   = document.getElementById('notebookRichEditor');
-            const toolbarSlot  = document.getElementById('notebookToolbarSlot');
             const itemId       = richEditor.getAttribute('data-item-id');
 
             const originalHtml = decodeURIComponent(richEditor.getAttribute('data-original-html') || '');
@@ -4053,7 +4061,9 @@ window.Templates = {
             const versionPanel = document.getElementById('nbVersionPanel');
             if (versionPanel) versionPanel.style.display = 'none';
 
-            if (toolbarSlot) toolbarSlot.style.display = 'block';
+            // Mostra o shell unificado (acções + toolbar de formatação)
+            const editShell = document.getElementById('nbEditStickyShell');
+            if (editShell) editShell.style.display = 'block';
 
             // Em mobile, montamos a toolbar fixa acima do teclado e escondemos
             // a desktop (#notebookToolbarSlot). O slash menu cobre tudo o resto.
@@ -4118,10 +4128,10 @@ window.Templates = {
             const notebookId = notebookView.getAttribute('data-notebook-id');
             const newContent = richEditor.innerHTML;
 
-            const saveBtn = editorArea.querySelector('.btn-success');
-            const origText = saveBtn.innerHTML;
-            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…';
-            saveBtn.disabled = true;
+            const actionBar = document.getElementById('nbEditActionBar') || editorArea;
+            const saveBtn = actionBar.querySelector('.btn-success');
+            const origText = saveBtn ? saveBtn.innerHTML : '';
+            if (saveBtn) { saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…'; saveBtn.disabled = true; }
 
             try {
                 // Unregister autosave before manual save
@@ -4173,8 +4183,7 @@ window.Templates = {
             } catch (err) {
                 console.error('Save error:', err);
                 showNotification('Erro ao guardar: ' + err.message, 'error');
-                saveBtn.innerHTML = origText;
-                saveBtn.disabled = false;
+                if (saveBtn) { saveBtn.innerHTML = origText; saveBtn.disabled = false; }
             }
         },
 

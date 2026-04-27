@@ -436,95 +436,158 @@ function renderQuickAccess() {
 }
 
 // ============================================================================
-// Últimas Atualizações — GitHub commits + Unsplash decorativo (desktop only)
+// Hero carrossel — GitHub patch-notes (desktop only, >768px)
 // ============================================================================
-(function initGitHubUpdates() {
-    // Só carrega em desktop (>768px) e uma vez por sessão
-    if (window.innerWidth <= 768) return;
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadGitHubUpdates);
-    } else {
-        loadGitHubUpdates();
+const HeroCarousel = (() => {
+    let _current = 0;
+    let _total   = 1; // começa com só o slide base
+    let _timer   = null;
+    const INTERVAL = 5000;
+
+    function _track()   { return document.getElementById('hcTrack'); }
+    function _dotsEl()  { return document.getElementById('hcDots'); }
+
+    function goTo(idx) {
+        const track = _track();
+        if (!track) return;
+        _current = ((idx % _total) + _total) % _total;
+        track.style.transform = `translateX(-${_current * 100}%)`;
+        _renderDots();
     }
-})();
 
-async function loadGitHubUpdates() {
-    if (window.innerWidth <= 768) return;
-    const wrap = document.getElementById('updatesSection');
-    const scroll = document.getElementById('updatesScroll');
-    if (!wrap || !scroll) return;
+    function _renderDots() {
+        const dots = _dotsEl();
+        if (!dots) return;
+        dots.innerHTML = Array.from({ length: _total }, (_, i) =>
+            `<button class="hc-dot${i === _current ? ' active' : ''}" aria-label="Slide ${i + 1}" onclick="HeroCarousel.goTo(${i})"></button>`
+        ).join('');
+    }
 
-    // Esqueleto de loading
-    scroll.innerHTML = Array(5).fill(0).map(() => `
-        <div class="upd-card upd-skeleton">
-            <div class="upd-img-wrap"></div>
-            <div class="upd-body">
-                <div class="upd-skel-line" style="width:80%"></div>
-                <div class="upd-skel-line" style="width:50%;margin-top:8px"></div>
-            </div>
-        </div>
-    `).join('');
-    wrap.style.display = 'block';
+    function _startAuto() {
+        _stopAuto();
+        if (_total <= 1) return;
+        _timer = setInterval(() => goTo(_current + 1), INTERVAL);
+    }
 
-    try {
-        const resp = await fetch(
-            'https://api.github.com/repos/JPFerraZzz/neatpad/commits?per_page=5',
-            { headers: { 'Accept': 'application/vnd.github.v3+json' } }
-        );
-        if (!resp.ok) throw new Error(`GitHub API: ${resp.status}`);
-        const commits = await resp.json();
-        if (!Array.isArray(commits) || commits.length === 0) {
-            wrap.style.display = 'none';
-            return;
+    function _stopAuto() {
+        if (_timer) { clearInterval(_timer); _timer = null; }
+    }
+
+    function _humanizeCommit(msg) {
+        // Remove prefixos convencionais e transforma em texto legível
+        const prefixMap = {
+            fix:      'Correção',
+            feat:     'Nova funcionalidade',
+            feature:  'Nova funcionalidade',
+            chore:    'Manutenção',
+            docs:     'Documentação',
+            style:    'Ajuste de estilo',
+            refactor: 'Refactorização',
+            perf:     'Melhoria de desempenho',
+            test:     'Testes',
+            ci:       'CI/CD',
+            build:    'Build',
+            update:   'Atualização',
+            add:      'Adição',
+            remove:   'Remoção',
+        };
+        const match = msg.match(/^([\w-]+)(?:\([^)]*\))?:\s*(.*)/);
+        if (match) {
+            const key = match[1].toLowerCase();
+            const rest = match[2].trim();
+            const prefix = prefixMap[key] || _capitalize(key);
+            // Traduz as palavras mais comuns da mensagem
+            const body = rest
+                .replace(/sticky bar/gi, 'barra sticky')
+                .replace(/homepage/gi, 'página inicial')
+                .replace(/toolbar/gi, 'barra de ferramentas')
+                .replace(/editor/gi, 'editor')
+                .replace(/mobile/gi, 'mobile')
+                .replace(/dark mode/gi, 'modo escuro')
+                .replace(/font color/gi, 'cor da fonte')
+                .replace(/carousel/gi, 'carrossel')
+                .replace(/carousel/gi, 'carrossel')
+                .replace(/version/gi, 'versão');
+            return `${prefix}: ${body}`;
         }
-        scroll.innerHTML = commits.map(c => {
-            const msg = (c.commit.message || '').split('\n')[0].slice(0, 80);
-            const author = c.commit.author.name || c.author?.login || 'autor';
-            const avatar = c.author?.avatar_url || '';
-            const date = _relativeDate(new Date(c.commit.author.date));
-            const sha = (c.sha || '').slice(0, 7);
-            const url = c.html_url || '#';
-            // Keyword para a imagem decorativa (1ª palavra relevante da mensagem)
-            const kw = _extractCommitKeyword(msg);
-            // Unsplash source — não requer API key, devolve imagem redirectada
-            const imgSrc = `https://source.unsplash.com/featured/320x160/?${encodeURIComponent(kw)},technology`;
-            return `
-                <a class="upd-card" href="${url}" target="_blank" rel="noopener noreferrer">
-                    <div class="upd-img-wrap">
-                        <img src="${imgSrc}" alt="${escapeHtml(kw)}" loading="lazy"
-                             onerror="this.parentElement.style.background='var(--bg-muted)'">
-                    </div>
-                    <div class="upd-body">
-                        <div class="upd-msg">${escapeHtml(msg)}</div>
-                        <div class="upd-meta">
-                            ${avatar ? `<img class="upd-avatar" src="${avatar}" alt="${escapeHtml(author)}" loading="lazy">` : `<span class="upd-avatar-fallback"><i class="fas fa-user"></i></span>`}
-                            <span class="upd-author">${escapeHtml(author)}</span>
-                            <span class="upd-dot">·</span>
-                            <span class="upd-date">${escapeHtml(date)}</span>
-                            <span class="upd-sha">${escapeHtml(sha)}</span>
-                        </div>
-                    </div>
-                </a>
-            `;
-        }).join('');
-    } catch (err) {
-        console.warn('GitHub updates:', err);
-        wrap.style.display = 'none';
+        return _capitalize(msg);
     }
-}
 
-function _extractCommitKeyword(msg) {
-    // Remove prefixos convencionais (feat:, fix:, chore:, etc.)
-    const cleaned = msg.replace(/^(feat|fix|chore|docs|style|refactor|test|perf|ci|build)(\([^)]*\))?:\s*/i, '');
-    // Pega a primeira palavra não trivial
-    const words = cleaned.split(/\s+/).filter(w => w.length > 3);
-    return (words[0] || 'software').replace(/[^a-zA-Z]/g, '').toLowerCase() || 'code';
-}
+    function _capitalize(s) {
+        return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+    }
+
+    async function init() {
+        if (window.innerWidth <= 768) return;
+        const track = _track();
+        const dotsEl = _dotsEl();
+        if (!track || !dotsEl) return;
+
+        try {
+            const resp = await fetch(
+                'https://api.github.com/repos/JPFerraZzz/neatpad/commits?per_page=2',
+                { headers: { 'Accept': 'application/vnd.github.v3+json' } }
+            );
+            if (!resp.ok) throw new Error(`GitHub ${resp.status}`);
+            const commits = await resp.json();
+            if (!Array.isArray(commits) || commits.length === 0) return;
+
+            commits.forEach(c => {
+                const rawMsg = (c.commit.message || '').split('\n')[0].slice(0, 120);
+                const title  = _humanizeCommit(rawMsg);
+                const date   = _relativeDate(new Date(c.commit.author.date));
+                const sha    = (c.sha || '').slice(0, 7);
+                const url    = c.html_url || 'https://github.com/JPFerraZzz/neatpad/commits/main';
+
+                const slide = document.createElement('div');
+                slide.className = 'hc-slide hc-patch';
+                slide.innerHTML = `
+                    <span class="hc-patch-badge">
+                        <i class="fab fa-github"></i> Última Atualização
+                    </span>
+                    <div class="hc-patch-title">${escapeHtml(title)}</div>
+                    <div class="hc-patch-meta">
+                        <span>${escapeHtml(date)}</span>
+                        <span class="hc-patch-sha">${escapeHtml(sha)}</span>
+                    </div>
+                    <a class="hc-patch-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
+                        Ver commit <i class="fas fa-arrow-right"></i>
+                    </a>
+                `;
+                track.appendChild(slide);
+            });
+
+            _total = 1 + commits.length;
+            dotsEl.style.display = 'flex';
+            _renderDots();
+            _startAuto();
+
+            // Pausa ao passar o rato sobre o carrossel
+            const carousel = document.getElementById('heroCarousel');
+            if (carousel) {
+                carousel.addEventListener('mouseenter', _stopAuto);
+                carousel.addEventListener('mouseleave', _startAuto);
+            }
+        } catch (err) {
+            console.warn('Hero carousel GitHub fetch:', err);
+        }
+    }
+
+    // Inicia após autenticação (quando as categorias ficam disponíveis)
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        setTimeout(init, 0);
+    }
+
+    return { goTo, init };
+})();
+window.HeroCarousel = HeroCarousel;
 
 function _relativeDate(date) {
     const now = Date.now();
     const diff = Math.floor((now - date.getTime()) / 1000);
-    if (diff < 60)  return 'agora';
+    if (diff < 60)   return 'agora';
     if (diff < 3600) return `${Math.floor(diff / 60)} min atrás`;
     if (diff < 86400) return `${Math.floor(diff / 3600)} h atrás`;
     if (diff < 2592000) return `${Math.floor(diff / 86400)} d atrás`;

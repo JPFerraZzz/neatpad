@@ -94,52 +94,68 @@
     <main class="main-content">
         <div class="container">
 
-            <!-- VIEW: Home (hero + resumo rápido) -->
+            <!-- VIEW: Home (hero carrossel + resumo rápido) -->
             <section class="view view-home" id="viewHome">
-                <div class="hero">
-                    <div class="hero-content">
-                        <p class="hero-eyebrow" id="heroGreeting">Olá 👋</p>
-                        <h2 class="hero-title">O teu <span>espaço organizado</span>.</h2>
-                        <p class="hero-lead">
-                            Categorias, notas, tarefas, cursos e cadernos digitais —
-                            tudo num só sítio, limpo e sem distrações.
-                        </p>
 
-                        <div class="hero-ctas">
-                            <button class="btn btn-primary btn-lg" id="ctaSeeCategories" type="button">
-                                <i class="fas fa-layer-group"></i>
-                                Ver categorias
-                            </button>
-                            <button class="btn btn-secondary btn-lg" id="ctaNewCategory" type="button">
-                                <i class="fas fa-plus"></i>
-                                Nova categoria
-                            </button>
+                <!-- Hero com carrossel: Slide 0 = conteúdo principal,
+                     Slides 1-2 = patch notes dos últimos commits GitHub.
+                     Desktop only para os slides extra (>768px).        -->
+                <div class="hero hero-carousel" id="heroCarousel">
+
+                    <!-- Track (slides side-by-side, animado com translateX) -->
+                    <div class="hc-track" id="hcTrack">
+
+                        <!-- Slide 0: conteúdo principal -->
+                        <div class="hc-slide">
+                            <div class="hero-content">
+                                <p class="hero-eyebrow" id="heroGreeting">Olá 👋</p>
+                                <h2 class="hero-title">O teu <span>espaço organizado</span>.</h2>
+                                <p class="hero-lead">
+                                    Categorias, notas, tarefas, cursos e cadernos digitais —
+                                    tudo num só sítio, limpo e sem distrações.
+                                </p>
+                                <div class="hero-ctas">
+                                    <button class="btn btn-primary btn-lg" id="ctaSeeCategories" type="button">
+                                        <i class="fas fa-layer-group"></i>
+                                        Ver categorias
+                                    </button>
+                                    <button class="btn btn-secondary btn-lg" id="ctaNewCategory" type="button">
+                                        <i class="fas fa-plus"></i>
+                                        Nova categoria
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- Cards de resumo rápido (stats) — preenchidos via JS -->
+                            <div class="hero-stats" id="heroStats">
+                                <div class="stat-card">
+                                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+                                    <div class="stat-body">
+                                        <strong id="statCategories">—</strong>
+                                        <span>Categorias</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                                    <div class="stat-body">
+                                        <strong id="statItems">—</strong>
+                                        <span>Itens totais</span>
+                                    </div>
+                                </div>
+                                <div class="stat-card">
+                                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                                    <div class="stat-body">
+                                        <strong id="statRecent">—</strong>
+                                        <span>Atualizado recentemente</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        <!-- Slides 1-2: gerados dinamicamente pelo JS -->
                     </div>
 
-                    <!-- Cards de resumo rápido (stats) — preenchidos via JS -->
-                    <div class="hero-stats" id="heroStats">
-                        <div class="stat-card">
-                            <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
-                            <div class="stat-body">
-                                <strong id="statCategories">—</strong>
-                                <span>Categorias</span>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
-                            <div class="stat-body">
-                                <strong id="statItems">—</strong>
-                                <span>Itens totais</span>
-                            </div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-icon"><i class="fas fa-clock"></i></div>
-                            <div class="stat-body">
-                                <strong id="statRecent">—</strong>
-                                <span>Atualizado recentemente</span>
-                            </div>
-                        </div>
+                    <!-- Dots de navegação (só aparece quando há slides extra) -->
+                    <div class="hc-dots" id="hcDots" style="display:none;">
+                        <!-- Preenchidos via JS -->
                     </div>
                 </div>
 
@@ -152,24 +168,6 @@
                         </button>
                     </div>
                     <div class="quick-grid" id="quickGrid"></div>
-                </div>
-
-                <!-- Últimas Atualizações — GitHub commits (desktop only, > 768px) -->
-                <div class="updates-section" id="updatesSection" style="display:none;">
-                    <div class="quick-header">
-                        <h3 class="section-title no-margin">
-                            <i class="fab fa-github" style="margin-right:6px;opacity:.7"></i>
-                            Últimas Atualizações
-                        </h3>
-                        <a href="https://github.com/JPFerraZzz/neatpad/commits/main"
-                           target="_blank" rel="noopener noreferrer"
-                           class="btn btn-ghost btn-sm">
-                            Ver tudo <i class="fas fa-arrow-right"></i>
-                        </a>
-                    </div>
-                    <div class="updates-scroll" id="updatesScroll">
-                        <!-- Preenchido via JS -->
-                    </div>
                 </div>
             </section>
 
