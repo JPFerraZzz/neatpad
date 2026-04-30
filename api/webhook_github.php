@@ -140,12 +140,17 @@ if (function_exists('curl_init')) {
         $rawText = preg_replace('/\s*```\s*$/', '', $rawText);
         $rawText = trim($rawText);
 
-        // Tenta extrair bloco JSON mesmo que haja texto à volta
-        if (preg_match('/(\{[\s\S]*\})/u', $rawText, $m)) {
-            $rawText = $m[1];
+        $parsed = json_decode(trim($rawText), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            if (preg_match('/\{[\s\S]*\}/', $rawText, $m)) {
+                $rawText = trim($m[0]);
+                $parsed  = json_decode($rawText, true);
+            }
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                error_log('[NeatPad webhook] JSON decode Ollama falhou: ' . json_last_error_msg() . ' | texto: ' . mb_substr(trim($ollamaResp['response'] ?? ''), 0, 500));
+                $parsed = null;
+            }
         }
-
-        $parsed = json_decode($rawText, true);
 
         if (
             is_array($parsed) &&
