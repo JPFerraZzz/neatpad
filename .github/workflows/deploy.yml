@@ -57,3 +57,11 @@ jobs:
               -d "$WEBHOOK_PAYLOAD" \
               && echo "── Patch note gerada ──" \
               || echo "── Webhook falhou (não crítico) ──"
+      
+      - name: Trigger patch notes generation
+        run: |
+          curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Webhook-Secret: ${{ secrets.WEBHOOK_SECRET }}" \
+            -d "{\"commit_hash\": \"${{ github.sha }}\", \"commit_message\": \"${{ github.event.head_commit.message }}\"}" \
+            https://neatpad.duckdns.org/api/webhook_github.php
