@@ -61,24 +61,48 @@ $type = 'other';
 if (preg_match('/^feat(\([^)]*\))?:/i', $message))   $type = 'feat';
 elseif (preg_match('/^fix(\([^)]*\))?:/i', $message)) $type = 'fix';
 
-// ── Geração do texto via Ollama ───────────────────────────────────
+// ── Geração do texto estruturado via Ollama ───────────────────────
+//
+// O modelo deve responder APENAS com JSON válido com os campos:
+//   title     — título em português (≤ 80 chars)
+//   summary   — parágrafo explicativo (1-3 frases)
+//   changes   — array de strings com mudanças específicas (2-4 items)
+//   impact    — frase sobre o impacto no utilizador
+
 $prompt = <<<PROMPT
-És um assistente de release notes para o NeatPad, uma aplicação web de notas técnicas para programadores.
-Com base na seguinte mensagem de commit Git, gera um patch note profissional, conciso e em português europeu.
+You are a release notes assistant for NeatPad, a web app for technical notes.
+Your task: given a Git commit message, produce a structured patch note in European Portuguese.
 
-Mensagem do commit: "{$message}"
+Commit message: "{$message}"
 
-Regras obrigatórias:
-- Responde APENAS com o texto do patch note, sem prefixos, sem listas, sem markdown
-- Máximo 3 frases curtas
-- Tom profissional mas acessível ao utilizador final (não técnico)
-- Começa com um verbo no passado (ex: "Adicionámos", "Corrigimos", "Melhorámos", "Actualizámos")
-- Não repitas a mensagem literal do commit
-- Não menciones o hash do commit
-- Não uses asteriscos, hífens ou outros marcadores
+IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, no backticks, no text before or after the JSON.
+
+JSON schema (all fields required, all values in European Portuguese):
+{
+  "title": "Short descriptive title (max 80 chars, starts with an action verb like 'Corrigimos', 'Adicionámos', 'Melhorámos')",
+  "summary": "One or two sentences explaining what was done and why, in plain language for end users",
+  "changes": ["Specific change 1", "Specific change 2", "Specific change 3"],
+  "impact": "One sentence about the benefit to the user"
+}
+
+Rules:
+- Do NOT copy the commit message literally
+- Do NOT mention the commit hash
+- The title must NOT start with a prefix like 'feat:' or 'fix:'
+- The changes array must have 2 to 4 items
+- Write as if communicating to end users, not developers
+- Use European Portuguese (Portugal), not Brazilian Portuguese
 PROMPT;
 
-$generatedNotes = $message; // fallback: se Ollama falhar, usa a mensagem original
+// Valores estruturados — preenchidos pelo Ollama ou pelo fallback
+$pnTitle   = null;
+$pnSummary = null;
+$pnChanges = null; // JSON string de array
+$pnImpact  = null;
+// generated_notes mantém compatibilidade com registos antigos e
+// serve de representação textual completa para RSS/API simples
+$generatedNotes = $message;
+$ollamaOk = false;
 
 $ollamaUrl     = 'http://' . OLLAMA_HOST . ':' . OLLAMA_PORT . '/api/generate';
 $ollamaPayload = json_encode([
@@ -86,9 +110,9 @@ $ollamaPayload = json_encode([
     'prompt'  => $prompt,
     'stream'  => false,
     'options' => [
-        'temperature' => 0.65,
-        'num_predict' => 220,
-        'top_p'       => 0.9,
+        'temperature' => 0.4,   // mais baixo = mais determinístico e fiel ao JSON
+        'num_predict' => 400,
+        'top_p'       => 0.85,
     ],
 ]);
 
@@ -99,30 +123,67 @@ if (function_exists('curl_init')) {
         CURLOPT_POSTFIELDS     => $ollamaPayload,
         CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
         CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_TIMEOUT        => 90,
+        CURLOPT_TIMEOUT        => 120,
         CURLOPT_CONNECTTIMEOUT => 5,
     ]);
-    $raw     = curl_exec($ch);
-    $curlErr = curl_error($ch);
+    $raw      = curl_exec($ch);
+    $curlErr  = curl_error($ch);
     $curlCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
 
     if ($raw && empty($curlErr) && $curlCode === 200) {
-        $resp = json_decode($raw, true);
-        if (!empty($resp['response'])) {
-            $generated = trim($resp['response']);
-            // Remove markdown residual que o modelo possa ter gerado
-            $generated = preg_replace('/[*_`#~>]+/', '', $generated);
-            $generated = preg_replace('/\n{3,}/', "\n\n", trim($generated));
-            if (strlen($generated) > 10) {
-                $generatedNotes = $generated;
+        $ollamaResp = json_decode($raw, true);
+        $rawText    = trim($ollamaResp['response'] ?? '');
+
+        // Remove eventuais code fences que o modelo gere (```json ... ```)
+        $rawText = preg_replace('/^```(?:json)?\s*/i', '', $rawText);
+        $rawText = preg_replace('/\s*```\s*$/', '', $rawText);
+        $rawText = trim($rawText);
+
+        // Tenta extrair bloco JSON mesmo que haja texto à volta
+        if (preg_match('/(\{[\s\S]*\})/u', $rawText, $m)) {
+            $rawText = $m[1];
+        }
+
+        $parsed = json_decode($rawText, true);
+
+        if (
+            is_array($parsed) &&
+            !empty($parsed['title']) &&
+            !empty($parsed['summary']) &&
+            !empty($parsed['impact'])
+        ) {
+            $pnTitle   = mb_substr(trim(strip_tags($parsed['title'])), 0, 500);
+            $pnSummary = mb_substr(trim(strip_tags($parsed['summary'])), 0, 2000);
+            $pnImpact  = mb_substr(trim(strip_tags($parsed['impact'])), 0, 1000);
+
+            // Normaliza o array de changes
+            $rawChanges = $parsed['changes'] ?? [];
+            if (is_array($rawChanges) && count($rawChanges) > 0) {
+                $cleanChanges = array_values(array_filter(
+                    array_map(fn($c) => mb_substr(trim(strip_tags((string)$c)), 0, 300), $rawChanges),
+                    fn($c) => strlen($c) > 3
+                ));
+                $pnChanges = json_encode($cleanChanges, JSON_UNESCAPED_UNICODE);
             }
+
+            // generated_notes = texto completo para compatibilidade/RSS
+            $generatedNotes = $pnTitle . "\n\n" . $pnSummary;
+            if ($pnChanges) {
+                $list = json_decode($pnChanges, true);
+                $generatedNotes .= "\n\n" . implode("\n", array_map(fn($c) => "• {$c}", $list));
+            }
+            $generatedNotes .= "\n\n" . $pnImpact;
+
+            $ollamaOk = true;
+        } else {
+            error_log('[NeatPad webhook] JSON parse falhou. Resposta: ' . mb_substr($rawText, 0, 300));
         }
     } else {
         error_log('[NeatPad webhook] Ollama error: ' . $curlErr . ' | code: ' . $curlCode);
     }
 } else {
-    error_log('[NeatPad webhook] cURL não disponível — a usar mensagem original como fallback');
+    error_log('[NeatPad webhook] cURL não disponível');
 }
 
 // ── Persiste na base de dados ─────────────────────────────────────
@@ -134,23 +195,63 @@ try {
     $chk->execute([$hash]);
     $existingId = $chk->fetchColumn();
 
+    // Colunas novas podem não existir em instâncias antigas — usamos um bloco
+    // de INSERT/UPDATE dinâmico que só inclui as colunas que existem.
+    $colCheck = $db->query("SHOW COLUMNS FROM patch_notes")->fetchAll(PDO::FETCH_COLUMN);
+    $hasTitle   = in_array('title',        $colCheck, true);
+    $hasSummary = in_array('summary',      $colCheck, true);
+    $hasChanges = in_array('changes_list', $colCheck, true);
+    $hasImpact  = in_array('impact',       $colCheck, true);
+
     if ($existingId) {
-        $db->prepare(
-            'UPDATE patch_notes SET commit_message = ?, generated_notes = ?, type = ? WHERE id = ?'
-        )->execute([$message, $generatedNotes, $type, $existingId]);
+        $setParts = [
+            'commit_message = :msg',
+            'generated_notes = :notes',
+            'type = :type',
+        ];
+        $params = [
+            ':msg'   => $message,
+            ':notes' => $generatedNotes,
+            ':type'  => $type,
+            ':id'    => $existingId,
+        ];
+        if ($hasTitle)   { $setParts[] = 'title = :title';              $params[':title']   = $pnTitle;   }
+        if ($hasSummary) { $setParts[] = 'summary = :summary';          $params[':summary'] = $pnSummary; }
+        if ($hasChanges) { $setParts[] = 'changes_list = :changes';     $params[':changes'] = $pnChanges; }
+        if ($hasImpact)  { $setParts[] = 'impact = :impact';            $params[':impact']  = $pnImpact;  }
+
+        $db->prepare('UPDATE patch_notes SET ' . implode(', ', $setParts) . ' WHERE id = :id')
+           ->execute($params);
         $id = (int)$existingId;
     } else {
+        $cols   = ['commit_hash', 'commit_message', 'generated_notes', 'type'];
+        $phold  = [':hash', ':msg', ':notes', ':type'];
+        $params = [
+            ':hash'  => $hash,
+            ':msg'   => $message,
+            ':notes' => $generatedNotes,
+            ':type'  => $type,
+        ];
+        if ($hasTitle)   { $cols[] = 'title';        $phold[] = ':title';   $params[':title']   = $pnTitle;   }
+        if ($hasSummary) { $cols[] = 'summary';      $phold[] = ':summary'; $params[':summary'] = $pnSummary; }
+        if ($hasChanges) { $cols[] = 'changes_list'; $phold[] = ':changes'; $params[':changes'] = $pnChanges; }
+        if ($hasImpact)  { $cols[] = 'impact';       $phold[] = ':impact';  $params[':impact']  = $pnImpact;  }
+
         $db->prepare(
-            'INSERT INTO patch_notes (commit_hash, commit_message, generated_notes, type) VALUES (?, ?, ?, ?)'
-        )->execute([$hash, $message, $generatedNotes, $type]);
+            'INSERT INTO patch_notes (' . implode(', ', $cols) . ') VALUES (' . implode(', ', $phold) . ')'
+        )->execute($params);
         $id = (int)$db->lastInsertId();
     }
 
     jsonResponse(true, [
         'id'        => $id,
         'type'      => $type,
+        'title'     => $pnTitle,
+        'summary'   => $pnSummary,
+        'changes'   => $pnChanges ? json_decode($pnChanges, true) : null,
+        'impact'    => $pnImpact,
         'generated' => $generatedNotes,
-        'ollama_ok' => ($generatedNotes !== $message),
+        'ollama_ok' => $ollamaOk,
     ]);
 
 } catch (PDOException $e) {

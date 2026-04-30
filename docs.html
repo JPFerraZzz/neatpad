@@ -275,8 +275,69 @@
             font-size: 15px;
             line-height: 1.75;
             color: var(--text);
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             white-space: pre-line;
+        }
+        /* Bloco "O que mudou" — lista de alterações */
+        .pn-detail-changes {
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px 22px;
+            margin-bottom: 16px;
+        }
+        .pn-detail-section-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            color: var(--text-subtle);
+            margin-bottom: 10px;
+        }
+        .pn-changes-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .pn-changes-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            font-size: 14px;
+            line-height: 1.5;
+            color: var(--text);
+        }
+        .pn-changes-list li::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary);
+            flex-shrink: 0;
+            margin-top: 6px;
+        }
+        /* Bloco "Impacto" */
+        .pn-detail-impact {
+            background: var(--primary-weak);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .pn-detail-impact i {
+            color: var(--primary);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .pn-detail-impact-text {
+            font-size: 14px;
+            line-height: 1.55;
+            color: var(--text);
+            font-weight: 500;
         }
         .pn-detail-commit {
             background: var(--bg-subtle);
@@ -416,6 +477,19 @@
         return d.innerHTML;
     }
 
+    // Extrai a primeira frase de um texto (para fallback de título)
+    function _firstSentence(text) {
+        if (!text) return '';
+        const m = text.match(/^[^.\n]+/);
+        return m ? m[0].trim() : text.trim();
+    }
+    // Extrai o texto após a primeira frase (para fallback de preview)
+    function _afterFirstSentence(text) {
+        if (!text) return '';
+        const first = _firstSentence(text);
+        return text.slice(first.length).trim().replace(/^[.,:]\s*/, '');
+    }
+
     function badgeHtml(type) {
         const map = {
             feat:  { cls: 'pn-badge--feat',  icon: 'fa-star',         label: 'Nova Funcionalidade' },
@@ -471,11 +545,11 @@
             }
 
             list.innerHTML = json.data.map(pn => {
-                const short  = pn.commit_hash.slice(0, 7);
-                // Primeira frase do texto gerado como título de lista
-                const lines  = (pn.generated_notes || '').split(/[.\n]/);
-                const title  = lines[0].trim() || pn.commit_message;
-                const rest   = (pn.generated_notes || '').slice(title.length).trim().replace(/^[.,:]\s*/, '');
+                const short = pn.commit_hash.slice(0, 7);
+
+                // Campos estruturados (novos) ou fallback para gerado/mensagem
+                const title   = pn.title   || _firstSentence(pn.generated_notes) || pn.commit_message;
+                const preview = pn.summary || _afterFirstSentence(pn.generated_notes) || '';
 
                 return `
                     <div class="pn-card" onclick="window.location.href='docs.html?id=${pn.id}'">
@@ -484,7 +558,7 @@
                             <span class="pn-date"><i class="fas fa-calendar-alt"></i> ${esc(pn.date_formatted)}</span>
                         </div>
                         <div class="pn-title">${esc(title)}</div>
-                        ${rest ? `<div class="pn-preview">${esc(rest)}</div>` : ''}
+                        ${preview ? `<div class="pn-preview">${esc(preview)}</div>` : ''}
                         <div class="pn-card-footer">
                             <a class="pn-sha" href="${esc(pn.commit_url)}" target="_blank" rel="noopener noreferrer"
                                onclick="event.stopPropagation()">
@@ -535,10 +609,32 @@
 
             const pn    = json.data;
             const short = pn.commit_hash.slice(0, 7);
-            const lines = (pn.generated_notes || '').split(/[.\n]/);
-            const title = lines[0].trim() || pn.commit_message;
+
+            // Campos estruturados com fallback gracioso
+            const title   = pn.title   || _firstSentence(pn.generated_notes) || pn.commit_message;
+            const summary = pn.summary || _afterFirstSentence(pn.generated_notes) || pn.generated_notes || pn.commit_message;
+            const changes = Array.isArray(pn.changes) && pn.changes.length ? pn.changes : null;
+            const impact  = pn.impact  || null;
 
             document.title = `${title} — NeatPad Patch Notes`;
+
+            // Bloco de lista de alterações (só quando disponível)
+            const changesBlock = changes ? `
+                <div class="pn-detail-changes">
+                    <div class="pn-detail-section-label">O que mudou</div>
+                    <ul class="pn-changes-list">
+                        ${changes.map(c => `<li>${esc(c)}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : '';
+
+            // Bloco de impacto (só quando disponível)
+            const impactBlock = impact ? `
+                <div class="pn-detail-impact">
+                    <i class="fas fa-circle-check"></i>
+                    <span class="pn-detail-impact-text">${esc(impact)}</span>
+                </div>
+            ` : '';
 
             main.innerHTML = `
                 <a href="docs.html" class="docs-back-btn" style="display:inline-flex;margin-bottom:24px">
@@ -555,7 +651,10 @@
                     <h1 class="pn-detail-title">${esc(title)}</h1>
                 </div>
 
-                <div class="pn-detail-body">${esc(pn.generated_notes || pn.commit_message)}</div>
+                <div class="pn-detail-body">${esc(summary)}</div>
+
+                ${changesBlock}
+                ${impactBlock}
 
                 <div class="pn-detail-commit">
                     <div style="flex:1;min-width:0;">

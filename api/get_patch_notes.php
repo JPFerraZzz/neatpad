@@ -59,6 +59,21 @@ try {
 // ── Helper: formata uma linha para a resposta ─────────────────────
 function _formatRow(array $row): array {
     $row['commit_url'] = 'https://github.com/JPFerraZzz/neatpad/commit/' . $row['commit_hash'];
+
+    // Deserializa changes_list (JSON array) → campo `changes` como array PHP
+    if (!empty($row['changes_list'])) {
+        $decoded = json_decode($row['changes_list'], true);
+        $row['changes'] = is_array($decoded) ? $decoded : [];
+    } else {
+        $row['changes'] = [];
+    }
+    unset($row['changes_list']); // mantém a resposta JSON limpa
+
+    // Garante que campos podem ser null (compatibilidade com linhas antigas)
+    $row['title']   = $row['title']   ?? null;
+    $row['summary'] = $row['summary'] ?? null;
+    $row['impact']  = $row['impact']  ?? null;
+
     // Data formatada em pt-PT para conveniência do frontend
     try {
         $dt = new DateTimeImmutable($row['created_at']);

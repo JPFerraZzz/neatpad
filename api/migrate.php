@@ -68,7 +68,23 @@ try {
     ");
     $report['orphan_items_deleted'] = (int)$stmt;
 
-    // ── 5. Verificar CASCADE nas FKs (informativo) ────────────────────────
+    // ── 5. Adicionar colunas estruturadas à tabela patch_notes ───────────
+    foreach ([
+        'title'        => "ALTER TABLE patch_notes ADD COLUMN title        VARCHAR(500) DEFAULT NULL AFTER type",
+        'summary'      => "ALTER TABLE patch_notes ADD COLUMN summary      TEXT         DEFAULT NULL AFTER title",
+        'changes_list' => "ALTER TABLE patch_notes ADD COLUMN changes_list JSON         DEFAULT NULL AFTER summary",
+        'impact'       => "ALTER TABLE patch_notes ADD COLUMN impact       TEXT         DEFAULT NULL AFTER changes_list",
+    ] as $col => $sql) {
+        $exists = $db->query("SHOW COLUMNS FROM patch_notes LIKE '{$col}'")->fetchAll();
+        if (empty($exists)) {
+            $db->exec($sql);
+            $report["patch_notes.{$col}"] = 'coluna adicionada';
+        } else {
+            $report["patch_notes.{$col}"] = 'já existe';
+        }
+    }
+
+    // ── 6. Verificar CASCADE nas FKs (informativo) ────────────────────────
     $fkCheck = $db->query("
         SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, DELETE_RULE
         FROM information_schema.REFERENTIAL_CONSTRAINTS rc
