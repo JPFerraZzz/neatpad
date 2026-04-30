@@ -23,12 +23,13 @@ jobs:
         uses: appleboy/ssh-action@v1.0.3
         env:
           SSH_PATH: ${{ secrets.SSH_PATH }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
         with:
           host: 100.97.91.86
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
-          envs: SSH_PATH
+          envs: SSH_PATH,WEBHOOK_SECRET
           script_stop: true
           script: |
             set -euo pipefail
@@ -42,3 +43,17 @@ jobs:
               --exclude='.env'
             echo "── Deploy concluído ──"
             git log -1 --pretty=format:"%h %s (%an, %ar)"
+
+            # Gera patch notes via Ollama para este commit
+            COMMIT_HASH=$(git rev-parse HEAD)
+            COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+            WEBHOOK_PAYLOAD=$(printf '{"commit_hash":"%s","commit_message":"%s"}' \
+              "$COMMIT_HASH" \
+              "$(echo "$COMMIT_MSG" | sed 's/"/\\"/g')")
+            curl -s --max-time 120 \
+              -X POST "http://localhost/api/webhook_github.php" \
+              -H "Content-Type: application/json" \
+              -H "X-Webhook-Secret: ${WEBHOOK_SECRET}" \
+              -d "$WEBHOOK_PAYLOAD" \
+              && echo "── Patch note gerada ──" \
+              || echo "── Webhook falhou (não crítico) ──"
