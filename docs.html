@@ -478,7 +478,7 @@
                 const rest   = (pn.generated_notes || '').slice(title.length).trim().replace(/^[.,:]\s*/, '');
 
                 return `
-                    <a class="pn-card" href="docs.html?id=${pn.id}">
+                    <div class="pn-card" onclick="window.location.href='docs.html?id=${pn.id}'">
                         <div class="pn-card-top">
                             ${badgeHtml(pn.type)}
                             <span class="pn-date"><i class="fas fa-calendar-alt"></i> ${esc(pn.date_formatted)}</span>
@@ -494,7 +494,7 @@
                                 Ver detalhes <i class="fas fa-arrow-right"></i>
                             </span>
                         </div>
-                    </a>
+                    </div>
                 `;
             }).join('');
 

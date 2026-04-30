@@ -44,6 +44,19 @@ if (strlen($hash) < 7) {
 }
 
 // ── Detecção do tipo (conventional commits) ───────────────────────
+$skipPrefixes = ['ci:', 'chore:', 'docs:', 'test:', 'build:', 'refactor:', 'style:', 'wip:'];
+foreach ($skipPrefixes as $prefix) {
+    if (stripos($message, $prefix) === 0) {
+        jsonResponse(true, [
+            'id'        => null,
+            'type'      => 'skipped',
+            'generated' => null,
+            'ollama_ok' => false,
+            'reason'    => 'Commit interno — ignorado',
+        ]);
+    }
+}
+
 $type = 'other';
 if (preg_match('/^feat(\([^)]*\))?:/i', $message))   $type = 'feat';
 elseif (preg_match('/^fix(\([^)]*\))?:/i', $message)) $type = 'fix';
