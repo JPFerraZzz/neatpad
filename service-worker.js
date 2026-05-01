@@ -1,21 +1,28 @@
 /* ============================================================================
  * NeatPad Service Worker
  * ----------------------------------------------------------------------------
+ * Invalide caches em cada deploy: actualiza BUILD_DATE (timestamp único).
+ * CACHE_NAME = 'neatpad-v' + BUILD_DATE → activate remove todos os outros.
+ *
  * Estratégias:
- *  - Cache-first   para assets estáticos (CSS, JS, ícones, fonts, HTML shell)
- *  - Network-first para endpoints da API (/api/*) com fallback offline JSON
- *  - Nunca cacheia dados dinâmicos do utilizador nem credenciais
+ *  - Network-first para HTML (index, login, docs) e API
+ *  - Stale-while-revalidate para CSS/JS/imagens (cache rápido + validação em rede)
+ *  - Nunca cacheia credenciais ou configs sensíveis
  * ==========================================================================*/
 
-const VERSION      = 'neatpad-v2.5.0';
-const STATIC_CACHE = `static-${VERSION}`;
-const RUNTIME_CACHE = `runtime-${VERSION}`;
+// Bump em cada deploy para forçar novo cache (YYYYMMDDHHmm ou sequencial).
+const BUILD_DATE = '20260430200000';
+const CACHE_NAME   = 'neatpad-v' + BUILD_DATE;
+const STATIC_CACHE = `${CACHE_NAME}-static`;
+const RUNTIME_CACHE = `${CACHE_NAME}-runtime`;
+const ALLOWED_CACHE_KEYS = new Set([STATIC_CACHE, RUNTIME_CACHE]);
 
 // Assets críticos para funcionamento offline mínimo (shell da app)
 const PRECACHE_URLS = [
     '/',
     '/index.html',
     '/login.html',
+    '/docs.html',
     '/manifest.json',
     '/assets/css/style.css',
     '/assets/js/app.js',
@@ -29,27 +36,27 @@ const PRECACHE_URLS = [
     '/assets/icons/apple-touch-icon.png'
 ];
 
-// ── Install: precache do shell ────────────────────────────────────────────
+// ── Install: novo SW assume controlo de imediato ───────────────────────────
 self.addEventListener('install', (event) => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(STATIC_CACHE)
             .then((cache) => cache.addAll(PRECACHE_URLS).catch(() => {
-                // Se algum asset falhar (ex.: login.html bloqueado), continua
                 return Promise.all(PRECACHE_URLS.map(url =>
                     cache.add(url).catch(() => null)
                 ));
             }))
-            .then(() => self.skipWaiting())
     );
 });
 
-// ── Activate: limpar caches antigas ───────────────────────────────────────
+// ── Activate: apagar todos os caches que não sejam os actuais + claim ──────
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys()
             .then((keys) => Promise.all(
-                keys.filter(k => k !== STATIC_CACHE && k !== RUNTIME_CACHE)
-                    .map(k => caches.delete(k))
+                keys
+                    .filter((k) => !ALLOWED_CACHE_KEYS.has(k))
+                    .map((k) => caches.delete(k))
             ))
             .then(() => self.clients.claim())
     );
@@ -65,80 +72,107 @@ function isStaticAsset(url) {
         .test(url.pathname);
 }
 
+/** HTML da app: rede primeiro (sempre conteúdo fresco após deploy). */
+function isAppHtmlUrl(url) {
+    const p = url.pathname;
+    return p === '/' || p === '/index.html' || p.endsWith('/index.html')
+        || p === '/login.html' || p.endsWith('/login.html')
+        || p === '/docs.html' || p.endsWith('/docs.html');
+}
+
 function isHtmlDocument(request, url) {
     return request.mode === 'navigate'
         || (request.headers.get('accept') || '').includes('text/html')
         || url.pathname.endsWith('.html');
 }
 
-// Nunca cachear credenciais ou configs sensíveis
 function isSensitive(url) {
     return url.pathname.includes('firebase-config')
         || url.pathname.includes('config.php');
 }
 
-// ── Fetch: routing por tipo de recurso ────────────────────────────────────
+// ── Fetch ───────────────────────────────────────────────────────────────────
 self.addEventListener('fetch', (event) => {
     const request = event.request;
 
-    // Só tratamos GET (POST/PUT/DELETE passam direto à rede)
     if (request.method !== 'GET') return;
 
     const url = new URL(request.url);
 
-    // Origem diferente → deixar o browser tratar (CDNs, Google Fonts, Firebase)
     if (url.origin !== self.location.origin) return;
 
-    // Dados sensíveis → bypass total do SW
     if (isSensitive(url)) return;
 
-    // 1) API / PHP → network-first (não cachear dados dinâmicos)
     if (isApiRequest(url)) {
         event.respondWith(networkFirst(request));
         return;
     }
 
-    // 2) Documento HTML → network-first com fallback ao cache (shell offline)
-    if (isHtmlDocument(request, url)) {
+    // HTML da app (e navegação HTML) → network-first, fallback cache
+    if (isAppHtmlUrl(url) || isHtmlDocument(request, url)) {
         event.respondWith(networkFirstHtml(request));
         return;
     }
 
-    // 3) Assets estáticos → cache-first
     if (isStaticAsset(url)) {
-        event.respondWith(cacheFirst(request));
+        event.respondWith(cacheFirstWithRevalidate(request));
         return;
     }
 
-    // 4) Restante → network, cai para cache se offline
     event.respondWith(
         fetch(request).catch(() => caches.match(request))
     );
 });
 
-// Cache-first: tenta cache, cai para network e popula cache com a resposta
-async function cacheFirst(request) {
-    const cached = await caches.match(request);
-    if (cached) return cached;
+/**
+ * Cache-first com validação em rede (stale-while-revalidate):
+ * devolve cache de imediato se existir; em paralelo pede à rede com
+ * cache: 'no-cache' para revalidar / actualizar o SW cache.
+ */
+async function cacheFirstWithRevalidate(request) {
+    const cache = await caches.open(STATIC_CACHE);
+    const cached = await cache.match(request);
+
+    const networkPromise = fetch(request, { cache: 'no-cache' })
+        .then((response) => {
+            if (response && response.status === 200 && response.type === 'basic') {
+                cache.put(request, response.clone());
+            }
+            return response;
+        })
+        .catch(() => null);
+
+    if (cached) {
+        void networkPromise;
+        return cached;
+    }
+
     try {
-        const response = await fetch(request);
-        if (response && response.status === 200 && response.type === 'basic') {
+        const response = await networkPromise;
+        if (response) return response;
+    } catch (_) { /* empty */ }
+    return Response.error();
+}
+
+async function networkFirstHtml(request) {
+    try {
+        const response = await fetch(request, { cache: 'no-cache' });
+        if (response && response.status === 200) {
             const cache = await caches.open(STATIC_CACHE);
             cache.put(request, response.clone());
         }
         return response;
     } catch (err) {
-        // Fallback para ícone/asset se disponível; caso contrário, falha silenciosa
-        return cached || Response.error();
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        return caches.match('/index.html');
     }
 }
 
-// Network-first para API: nunca cacheia (evita servir dados stale ao utilizador)
 async function networkFirst(request) {
     try {
         return await fetch(request);
     } catch (err) {
-        // Offline: resposta JSON padronizada para o frontend tratar elegantemente
         return new Response(
             JSON.stringify({
                 success: false,
@@ -154,24 +188,6 @@ async function networkFirst(request) {
     }
 }
 
-// Network-first para HTML: atualiza cache do shell quando online
-async function networkFirstHtml(request) {
-    try {
-        const response = await fetch(request);
-        if (response && response.status === 200) {
-            const cache = await caches.open(STATIC_CACHE);
-            cache.put(request, response.clone());
-        }
-        return response;
-    } catch (err) {
-        const cached = await caches.match(request);
-        if (cached) return cached;
-        // Último recurso: index.html em cache
-        return caches.match('/index.html');
-    }
-}
-
-// ── Mensagens (permite forçar update a partir do cliente) ─────────────────
 self.addEventListener('message', (event) => {
     if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
