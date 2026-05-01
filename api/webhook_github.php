@@ -74,20 +74,20 @@ elseif (preg_match('/^refactor(\([^)]*\))?:/i', $message)) $type = 'refactor';
 // ── Geração do texto estruturado via Ollama ───────────────────────
 //
 // O modelo deve responder APENAS com JSON válido com os campos:
-//   title     — título em português (≤ 80 chars)
+//   title     — título em European Portuguese (Portugal) (≤ 80 chars)
 //   summary   — parágrafo explicativo (1-3 frases)
 //   changes   — array de strings com mudanças específicas (2-4 items)
 //   impact    — frase sobre o impacto no utilizador
 
 $prompt = <<<PROMPT
 You are a release notes assistant for NeatPad, a web app for technical notes.
-Your task: given a Git commit message, produce a structured patch note in European Portuguese.
+Your task: given a Git commit message, produce a structured patch note in European Portuguese (Portugal).
 
 Commit message: "{$message}"
 
 IMPORTANT: Respond with ONLY a valid JSON object. No markdown, no code blocks, no backticks, no text before or after the JSON.
 
-JSON schema (all fields required, all values in European Portuguese):
+JSON schema (all fields required, all values in European Portuguese (Portugal)):
 {
   "title": "Short descriptive title (max 80 chars, starts with an action verb like 'Corrigimos', 'Adicionámos', 'Melhorámos')",
   "summary": "One or two sentences explaining what was done and why, in plain language for end users",
@@ -101,7 +101,7 @@ Rules:
 - The title must NOT start with a prefix like 'feat:' or 'fix:'
 - The changes array must have 2 to 4 items
 - Write as if communicating to end users, not developers
-- Use European Portuguese (Portugal), not Brazilian Portuguese
+- Use European Portuguese from Portugal (PT-PT), NOT Brazilian Portuguese (PT-BR). Examples of correct usage: 'adicionámos' not 'adicionamos', 'utilizador' not 'usuário', 'ecrã' not 'tela', 'ficheiro' not 'arquivo'.
 PROMPT;
 
 // Valores estruturados — preenchidos pelo Ollama ou pelo fallback
