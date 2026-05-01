@@ -1,522 +1,768 @@
 <!DOCTYPE html>
-<html lang="pt-PT" data-theme="light">
+<html lang="pt-PT" data-theme="light" class="docs-html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NeatPad — Patch Notes. Registo completo das actualizações e melhorias da aplicação.">
-    <title>NeatPad — Patch Notes</title>
+    <meta name="description" content="NeatPad — Documentação e patch notes. Registo de actualizações da aplicação.">
+    <title>NeatPad Docs — Patch Notes</title>
 
     <link rel="icon" type="image/svg+xml" href="assets/icons/icon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Design system NeatPad (tokens + componentes base) -->
     <link rel="stylesheet" href="assets/css/style.css">
 
     <style>
-        /* ── Reset de overrides específicos da app principal ─── */
-        body {
-            padding-bottom: 0;           /* sem bottom-bar nesta página */
-            min-height: 100vh;
-        }
-        @media (max-width: 767px) {
-            body { padding-bottom: 0; }
-        }
-
-        /* ── Layout docs ──────────────────────────────────────── */
-        .docs-wrap {
-            max-width: 740px;
-            margin: 0 auto;
-            padding: 24px 20px 64px;
+        .docs-html { scroll-behavior: smooth; }
+        .docs-page {
+            margin: 0;
+            min-height: 100dvh;
+            background: var(--bg);
+            color: var(--text);
         }
 
-        /* ── Header ───────────────────────────────────────────── */
-        .docs-header {
+        /* ── Layout em colunas ─────────────────────────────────── */
+        .docs-layout {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            padding: 18px 0 28px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 36px;
-            flex-wrap: wrap;
+            min-height: 100dvh;
         }
-        .docs-brand {
+
+        .docs-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 240px;
+            height: 100dvh;
+            z-index: 200;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(0);
+            transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+        .docs-sidebar-inner {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            padding: 20px 16px 16px;
+        }
+        .docs-sidebar-brand {
             display: flex;
             align-items: center;
             gap: 10px;
             text-decoration: none;
             color: var(--text);
-        }
-        .docs-brand-icon {
-            width: 36px;
-            height: 36px;
-            background: var(--primary);
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 16px;
+            margin-bottom: 8px;
             flex-shrink: 0;
         }
-        .docs-brand-name {
-            font-size: 17px;
-            font-weight: 800;
-            letter-spacing: -.02em;
-        }
-        .docs-brand-sep {
-            color: var(--border-strong);
-            font-size: 20px;
-            font-weight: 200;
-            margin: 0 2px;
-        }
-        .docs-brand-sub {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-        .docs-header-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .docs-theme-btn {
+        .docs-sidebar-brand-icon {
             width: 36px;
             height: 36px;
             border-radius: var(--radius);
-            border: 1px solid var(--border);
-            background: var(--bg-surface);
-            color: var(--text-muted);
-            cursor: pointer;
+            background: var(--primary);
+            color: #fff;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 16px;
+        }
+        .docs-sidebar-brand-text {
+            font-weight: 800;
             font-size: 15px;
-            transition: border-color .15s ease, color .15s ease, background .15s ease;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
         }
-        .docs-theme-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        .docs-back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 13px;
+        .docs-sidebar-brand-sub {
+            display: block;
+            font-size: 11px;
             font-weight: 600;
             color: var(--text-muted);
-            text-decoration: none;
-            padding: 7px 12px;
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            background: var(--bg-surface);
-            transition: border-color .15s, color .15s;
-        }
-        .docs-back-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
-        /* ── Intro (lista) ────────────────────────────────────── */
-        .docs-intro {
-            margin-bottom: 36px;
+        .docs-sidebar-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-subtle);
+            margin: 20px 0 8px;
         }
-        .docs-intro h1 {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -.025em;
-            line-height: 1.15;
-            color: var(--text);
-            margin-bottom: 8px;
-        }
-        .docs-intro p {
-            font-size: 15px;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-        .docs-filter-wrap {
+        .docs-sidebar-label:first-of-type { margin-top: 4px; }
+
+        .docs-filter-stack {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 20px;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
         }
         .docs-filter-btn {
-            font-size: 12px;
-            font-weight: 600;
-            padding: 7px 14px;
-            border-radius: var(--radius-pill);
-            border: 1px solid var(--border);
-            background: var(--bg-surface);
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 44px;
+            padding: 0 12px;
+            border-radius: var(--radius);
+            border: 1px solid transparent;
+            background: transparent;
             color: var(--text-muted);
-            cursor: pointer;
             font-family: var(--font);
-            transition: border-color .15s ease, color .15s ease, background .15s ease;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: left;
+            transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
         }
         .docs-filter-btn:hover {
-            border-color: var(--primary);
-            color: var(--primary);
+            background: var(--bg-subtle);
+            color: var(--text);
         }
         .docs-filter-btn.active {
             background: var(--primary-weak);
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .docs-toc {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            margin: 0 -6px;
+            padding: 4px 6px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .docs-toc-link {
+            display: block;
+            padding: 10px 10px;
+            border-radius: var(--radius);
+            font-size: 12px;
+            line-height: 1.35;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+        }
+        .docs-toc-link:hover {
+            background: var(--bg-subtle);
+            color: var(--text);
+        }
+        .docs-toc-link-date {
+            display: block;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-subtle);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 2px;
+        }
+        .docs-toc-link-title {
+            color: inherit;
+            font-weight: 600;
+        }
+
+        .docs-sidebar-footer {
+            flex-shrink: 0;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+            margin-top: 8px;
+        }
+        .docs-link-neatpad {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 48px;
+            padding: 0 10px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            transition: background 0.12s ease;
+        }
+        .docs-link-neatpad:hover {
+            background: var(--primary-weak);
+        }
+        .docs-sidebar-theme {
+            margin-top: 4px;
+            width: 100%;
+            min-height: 48px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: border-color 0.12s ease, color 0.12s ease;
+        }
+        .docs-sidebar-theme:hover {
             border-color: var(--primary);
             color: var(--primary);
         }
 
-        /* ── Badge de tipo ────────────────────────────────────── */
+        .docs-scrim {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 150;
+            background: rgba(0, 0, 0, 0.4);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .docs-scrim.visible {
+            display: block;
+            opacity: 1;
+        }
+
+        .docs-main-col {
+            flex: 1;
+            margin-left: 240px;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100dvh;
+        }
+
+        .docs-topbar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            min-height: 56px;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 120;
+            flex-shrink: 0;
+        }
+        .docs-topbar-hamburger {
+            display: none;
+            width: 48px;
+            height: 48px;
+            border: none;
+            border-radius: var(--radius);
+            background: var(--bg-subtle);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .docs-topbar-title {
+            flex: 1;
+            min-width: 0;
+        }
+        .docs-topbar-title h1 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        .docs-topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .docs-topbar-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 48px;
+            min-height: 48px;
+            padding: 0 14px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .docs-topbar-back:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .docs-topbar-theme {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .docs-topbar-theme:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .docs-filters-mobile {
+            display: none;
+            gap: 8px;
+            padding: 10px 14px 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-surface);
+            flex-shrink: 0;
+        }
+        .docs-filters-mobile::-webkit-scrollbar { display: none; }
+        .docs-filters-mobile .docs-filter-btn {
+            flex-shrink: 0;
+            min-height: 48px;
+            padding: 0 18px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            background: var(--bg);
+        }
+        .docs-filters-mobile .docs-filter-btn.active {
+            border-color: var(--primary);
+        }
+
+        .docs-feed {
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 40px 80px;
+            max-width: 820px;
+        }
+        .docs-feed-intro {
+            margin-bottom: 40px;
+        }
+        .docs-feed-intro h2 {
+            margin: 0 0 10px;
+            font-size: clamp(28px, 4vw, 36px);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.15;
+            color: var(--text);
+        }
+        .docs-feed-intro p {
+            margin: 0;
+            font-size: 16px;
+            line-height: 1.65;
+            color: var(--text-muted);
+            max-width: 52ch;
+        }
+
+        /* ── Badges ─────────────────────────────────────────────── */
         .pn-badge {
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
             font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .07em;
-            padding: 3px 10px;
+            letter-spacing: 0.06em;
+            padding: 5px 12px;
             border-radius: var(--radius-pill);
-            flex-shrink: 0;
         }
         .pn-badge--feat     { background: #EDE9FE; color: #6D28D9; }
         .pn-badge--refactor { background: #DBEAFE; color: #1D4ED8; }
         .pn-badge--fix      { background: var(--danger-weak); color: var(--danger); }
         .pn-badge--other    { background: var(--bg-muted); color: var(--text-muted); }
         [data-theme="dark"] .pn-badge--feat     { background: #2D1F5E; color: #C4B5FD; }
-        [data-theme="dark"] .pn-badge--refactor { background: rgba(37,99,235,0.22); color: #93C5FD; }
+        [data-theme="dark"] .pn-badge--refactor { background: rgba(37, 99, 235, 0.22); color: #93C5FD; }
         [data-theme="dark"] .pn-badge--fix     { background: var(--danger-weak); color: var(--danger); }
         [data-theme="dark"] .pn-badge--other   { background: var(--bg-muted); color: var(--text-muted); }
 
-        /* ── Card de patch note (lista) ───────────────────────── */
-        .pn-list {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
+        .docs-entry {
+            scroll-margin-top: 100px;
+            padding-bottom: 48px;
+            margin-bottom: 48px;
+            border-bottom: 1px solid var(--border);
         }
-        .pn-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
+        .docs-entry:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .docs-entry--focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 8px;
             border-radius: var(--radius-lg);
-            padding: 20px 22px;
-            transition: border-color .15s ease, box-shadow .15s ease;
-            cursor: pointer;
-            text-decoration: none;
-            color: var(--text);
-            display: block;
         }
-        .pn-card:hover {
-            border-color: var(--primary);
-            box-shadow: var(--elev-1);
-        }
-        .pn-card-top {
+        .docs-entry-head {
             display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 14px;
+            margin-bottom: 16px;
+        }
+        .docs-entry-meta {
+            display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
+            width: 100%;
+            margin-top: 4px;
         }
-        .pn-date {
-            font-size: 12px;
-            color: var(--text-subtle);
-            margin-left: auto;
-            white-space: nowrap;
-        }
-        .pn-title {
-            font-size: 15px;
-            font-weight: 700;
-            line-height: 1.4;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-        .pn-preview {
-            font-size: 13px;
+        .docs-entry-date {
+            font-size: 14px;
             color: var(--text-muted);
-            line-height: 1.55;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
+            font-weight: 500;
         }
-        .pn-card-footer {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-        }
-        .pn-sha {
+        .docs-entry-sha {
             display: inline-flex;
             align-items: center;
-            gap: 4px;
-            font-size: 11px;
-            font-family: var(--font-mono);
-            color: var(--text-subtle);
-            background: var(--bg-muted);
-            padding: 2px 8px;
-            border-radius: var(--radius-sm);
-            text-decoration: none;
-            transition: color .12s, background .12s;
-            letter-spacing: .04em;
-        }
-        .pn-sha:hover {
-            color: var(--primary);
-            background: var(--primary-weak);
-        }
-        .pn-read-more {
-            margin-left: auto;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: var(--radius-pill);
             font-size: 12px;
             font-weight: 600;
+            font-family: var(--font-mono);
+            background: var(--bg-muted);
+            color: var(--text);
+            text-decoration: none;
+            border: 1px solid var(--border);
+            transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+        }
+        .docs-entry-sha:hover {
+            border-color: var(--primary);
+            background: var(--primary-weak);
             color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 4px;
         }
-
-        /* ── Vista de detalhe ─────────────────────────────────── */
-        .pn-detail-header {
-            margin-bottom: 28px;
-        }
-        .pn-detail-top {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 14px;
-            flex-wrap: wrap;
-        }
-        .pn-detail-date {
-            font-size: 13px;
-            color: var(--text-muted);
-        }
-        .pn-detail-title {
-            font-size: 26px;
+        .docs-entry-title {
+            margin: 0 0 20px;
+            font-size: clamp(22px, 3vw, 28px);
             font-weight: 800;
-            letter-spacing: -.025em;
+            letter-spacing: -0.025em;
             line-height: 1.2;
             color: var(--text);
-            margin-bottom: 20px;
         }
-        .pn-detail-body {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 24px 26px;
-            font-size: 15px;
+        .docs-entry-summary {
+            font-size: 16px;
             line-height: 1.75;
             color: var(--text);
-            margin-bottom: 16px;
-            white-space: pre-line;
+            margin-bottom: 24px;
         }
-        /* Bloco "O que mudou" — lista de alterações */
-        .pn-detail-changes {
+        .docs-entry-section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-subtle);
+            margin: 0 0 12px;
+        }
+        .docs-entry-changes {
             background: var(--bg-subtle);
             border: 1px solid var(--border);
             border-radius: var(--radius-lg);
-            padding: 18px 22px;
-            margin-bottom: 16px;
+            padding: 20px 22px;
+            margin-bottom: 20px;
         }
-        .pn-detail-section-label {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .07em;
-            color: var(--text-subtle);
-            margin-bottom: 10px;
-        }
-        .pn-changes-list {
+        .docs-entry-changes ul {
+            margin: 0;
+            padding: 0;
             list-style: none;
             display: flex;
             flex-direction: column;
-            gap: 7px;
+            gap: 10px;
         }
-        .pn-changes-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 9px;
-            font-size: 14px;
-            line-height: 1.5;
+        .docs-entry-changes li {
+            position: relative;
+            padding-left: 18px;
+            font-size: 15px;
+            line-height: 1.55;
             color: var(--text);
         }
-        .pn-changes-list li::before {
+        .docs-entry-changes li::before {
             content: '';
+            position: absolute;
+            left: 0;
+            top: 0.55em;
             width: 6px;
             height: 6px;
             border-radius: 50%;
             background: var(--primary);
-            flex-shrink: 0;
-            margin-top: 6px;
         }
-        /* Bloco "Impacto" */
-        .pn-detail-impact {
+        .docs-entry-impact {
             background: var(--primary-weak);
             border: 1px solid var(--primary);
             border-radius: var(--radius-lg);
-            padding: 14px 18px;
-            margin-bottom: 16px;
+            padding: 18px 20px;
             display: flex;
+            gap: 14px;
             align-items: flex-start;
-            gap: 10px;
         }
-        .pn-detail-impact i {
+        .docs-entry-impact i {
             color: var(--primary);
+            font-size: 18px;
             margin-top: 2px;
             flex-shrink: 0;
         }
-        .pn-detail-impact-text {
-            font-size: 14px;
+        .docs-entry-impact p {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 600;
             line-height: 1.55;
             color: var(--text);
-            font-weight: 500;
         }
-        .pn-detail-commit {
-            background: var(--bg-subtle);
+        .docs-entry-commit {
+            margin-top: 24px;
+            padding: 16px 18px;
+            background: var(--bg-surface);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 14px 16px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
         }
-        .pn-detail-commit-label {
-            font-size: 11px;
-            font-weight: 600;
+        .docs-entry-commit-label {
+            font-size: 10px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .06em;
+            letter-spacing: 0.07em;
             color: var(--text-subtle);
-            margin-bottom: 4px;
+            margin-bottom: 8px;
         }
-        .pn-detail-commit-msg {
+        .docs-entry-commit-msg {
             font-size: 13px;
             font-family: var(--font-mono);
             color: var(--text-muted);
-            word-break: break-all;
+            word-break: break-word;
+            line-height: 1.5;
         }
-        .pn-detail-commit-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--primary);
-            text-decoration: none;
-            margin-top: 6px;
-        }
-        .pn-detail-commit-link:hover { text-decoration: underline; }
 
-        /* ── Estado de loading / erro / vazio ─────────────────── */
+        .docs-entry-toggle {
+            display: none;
+            width: 100%;
+            min-height: 48px;
+            margin-top: 12px;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--primary);
+            font-family: var(--font);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .docs-entry-body {
+            overflow: hidden;
+            transition: max-height 0.28s ease;
+        }
+
         .docs-state {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 12px;
-            padding: 64px 24px;
-            color: var(--text-muted);
+            gap: 16px;
+            padding: 80px 24px;
             text-align: center;
+            color: var(--text-muted);
         }
-        .docs-state i { font-size: 36px; opacity: .5; }
-        .docs-state p { font-size: 14px; }
+        .docs-state i { font-size: 40px; opacity: 0.45; }
+        .docs-state p { margin: 0; font-size: 15px; max-width: 360px; line-height: 1.55; }
+        .docs-state--error i { color: var(--danger); opacity: 0.8; }
 
-        /* Skeleton de loading */
-        .pn-skel {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 20px 22px;
+        .docs-skel-block {
+            padding: 28px 0;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--border);
         }
-        .pn-skel-line {
-            height: 12px;
-            border-radius: 6px;
+        .docs-skel-line {
+            height: 14px;
+            border-radius: 7px;
             background: linear-gradient(90deg, var(--bg-muted) 25%, var(--bg-subtle) 50%, var(--bg-muted) 75%);
             background-size: 200% 100%;
-            animation: skelPulse 1.4s ease infinite;
-            margin-bottom: 10px;
+            animation: docsSkel 1.4s ease infinite;
+            margin-bottom: 14px;
         }
-        @keyframes skelPulse {
-            0%   { background-position: 200% 0; }
+        @keyframes docsSkel {
+            0% { background-position: 200% 0; }
             100% { background-position: -200% 0; }
         }
 
-        @media (max-width: 640px) {
-            .docs-intro h1 { font-size: 22px; }
-            .pn-detail-title { font-size: 20px; }
-            .pn-card { padding: 16px; }
-            .pn-date { margin-left: 0; width: 100%; order: 3; }
+        /* ── Tablet: sidebar colapsável ────────────────────────── */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .docs-topbar { display: flex; }
+            .docs-topbar-hamburger { display: inline-flex; align-items: center; justify-content: center; }
+            .docs-main-col { margin-left: 0; }
+            .docs-sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+            .docs-layout.docs-sidebar-open .docs-sidebar {
+                transform: translateX(0);
+                box-shadow: var(--elev-3);
+            }
+            .docs-layout.docs-sidebar-open .docs-scrim.visible {
+                display: block;
+                opacity: 1;
+            }
+            .docs-feed { padding: 24px 28px 64px; max-width: none; }
+            .docs-sidebar-theme { display: none; }
+        }
+
+        /* ── Mobile ─────────────────────────────────────────────── */
+        @media (max-width: 767px) {
+            .docs-topbar { display: flex; }
+            .docs-topbar-hamburger { display: inline-flex; align-items: center; justify-content: center; }
+            .docs-main-col { margin-left: 0; }
+            .docs-sidebar {
+                transform: translateX(-100%);
+            }
+            .docs-layout.docs-sidebar-open .docs-sidebar {
+                transform: translateX(0);
+                box-shadow: var(--elev-3);
+            }
+            .docs-layout.docs-sidebar-open .docs-scrim.visible {
+                display: block;
+                opacity: 1;
+            }
+            .docs-filters-mobile { display: flex; }
+            .docs-feed { padding: 20px 16px 72px; max-width: none; }
+            .docs-feed-intro { margin-bottom: 28px; }
+            .docs-feed-intro h2 { font-size: 24px; }
+            .docs-entry { scroll-margin-top: 140px; padding-bottom: 28px; margin-bottom: 28px; }
+            .docs-entry-title { font-size: 19px; margin-bottom: 14px; }
+            .docs-entry-toggle { display: block; }
+            .docs-entry--collapsed .docs-entry-body {
+                max-height: 0 !important;
+                opacity: 0;
+                margin: 0 !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                overflow: hidden;
+                pointer-events: none;
+            }
+            .docs-entry:not(.docs-entry--collapsed) .docs-entry-body {
+                max-height: none;
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .docs-entry--collapsed .docs-entry-toggle .docs-entry-toggle-text::after {
+                content: ' — Ver mais';
+            }
+            .docs-entry:not(.docs-entry--collapsed) .docs-entry-toggle .docs-entry-toggle-text::after {
+                content: ' — Ver menos';
+            }
+            .docs-sidebar-theme { display: none; }
+        }
+
+        /* ── Desktop: sidebar sempre visível ───────────────────── */
+        @media (min-width: 1025px) {
+            .docs-topbar { display: none; }
+            .docs-filters-mobile { display: none; }
+            .docs-main-col { margin-left: 240px; }
+            .docs-sidebar { transform: translateX(0) !important; }
+            .docs-scrim { display: none !important; }
         }
     </style>
 </head>
-<body>
-    <div class="docs-wrap">
-
-        <!-- Header -->
-        <header class="docs-header">
-            <a href="/" class="docs-brand" title="Voltar à aplicação">
-                <div class="docs-brand-icon"><i class="fas fa-book-open"></i></div>
-                <span class="docs-brand-name">NeatPad</span>
-                <span class="docs-brand-sep">/</span>
-                <span class="docs-brand-sub">Patch Notes</span>
-            </a>
-            <div class="docs-header-actions">
-                <a href="/" class="docs-back-btn">
-                    <i class="fas fa-arrow-left"></i> App
+<body class="docs-page">
+    <div class="docs-layout" id="docsLayout">
+        <aside class="docs-sidebar" id="docsSidebar" aria-label="Navegação documentação">
+            <div class="docs-sidebar-inner">
+                <a href="docs.html" class="docs-sidebar-brand">
+                    <span class="docs-sidebar-brand-icon"><i class="fas fa-book-open"></i></span>
+                    <span>
+                        <span class="docs-sidebar-brand-text">NeatPad Docs</span>
+                        <span class="docs-sidebar-brand-sub">Patch notes</span>
+                    </span>
                 </a>
-                <button class="docs-theme-btn" id="themeToggle" title="Alternar tema" aria-label="Alternar tema claro/escuro">
-                    <i class="fas fa-moon" id="themeIcon"></i>
+
+                <span class="docs-sidebar-label">Filtrar</span>
+                <div class="docs-filter-stack" id="docsFilterSidebar" role="group" aria-label="Filtrar por tipo">
+                    <button type="button" class="docs-filter-btn active" data-f="all">Todos</button>
+                    <button type="button" class="docs-filter-btn" data-f="feat">Funcionalidades</button>
+                    <button type="button" class="docs-filter-btn" data-f="fix">Correcções</button>
+                    <button type="button" class="docs-filter-btn" data-f="other">Outros</button>
+                </div>
+
+                <span class="docs-sidebar-label">Nesta página</span>
+                <nav class="docs-toc" id="docsToc" aria-label="Índice de versões"></nav>
+
+                <div class="docs-sidebar-footer">
+                    <a href="/" class="docs-link-neatpad"><i class="fas fa-arrow-left"></i> Voltar ao NeatPad</a>
+                    <button type="button" class="docs-sidebar-theme" id="themeToggleSide" title="Tema" aria-label="Alternar tema">
+                        <i class="fas fa-moon" id="themeIconSide"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <div class="docs-scrim" id="docsScrim" aria-hidden="true"></div>
+
+        <div class="docs-main-col">
+            <header class="docs-topbar">
+                <button type="button" class="docs-topbar-hamburger" id="docsMenuBtn" aria-label="Abrir menu" aria-expanded="false">
+                    <i class="fas fa-bars"></i>
                 </button>
-            </div>
-        </header>
+                <a href="/" class="docs-topbar-back"><i class="fas fa-arrow-left"></i> NeatPad</a>
+                <div class="docs-topbar-title">
+                    <h1>Docs</h1>
+                </div>
+                <div class="docs-topbar-actions">
+                    <button type="button" class="docs-topbar-theme" id="themeToggleTop" title="Tema" aria-label="Alternar tema">
+                        <i class="fas fa-moon" id="themeIconTop"></i>
+                    </button>
+                </div>
+            </header>
 
-        <!-- Conteúdo (preenchido via JS) -->
-        <main id="docsMain">
-            <!-- Skeleton de carregamento -->
-            <div class="docs-state">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>A carregar patch notes…</p>
+            <div class="docs-filters-mobile" id="docsFilterMobile" role="group" aria-label="Filtrar por tipo">
+                <button type="button" class="docs-filter-btn active" data-f="all">Todos</button>
+                <button type="button" class="docs-filter-btn" data-f="feat">Funcionalidades</button>
+                <button type="button" class="docs-filter-btn" data-f="fix">Correcções</button>
+                <button type="button" class="docs-filter-btn" data-f="other">Outros</button>
             </div>
-        </main>
 
+            <main class="docs-feed" id="docsFeed"></main>
+        </div>
     </div>
 
     <script>
-    // ── Tema ──────────────────────────────────────────────────────
     (function () {
         const saved = localStorage.getItem('neatpad-theme') || 'light';
         document.documentElement.setAttribute('data-theme', saved);
-        updateThemeIcon(saved);
+        syncThemeIcons(saved);
     })();
 
-    document.getElementById('themeToggle').addEventListener('click', function () {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next    = current === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('neatpad-theme', next);
-        updateThemeIcon(next);
-    });
-
-    function updateThemeIcon(theme) {
-        const icon = document.getElementById('themeIcon');
-        if (!icon) return;
-        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    function syncThemeIcons(theme) {
+        const moon = 'fas fa-moon';
+        const sun = 'fas fa-sun';
+        const icon = theme === 'dark' ? sun : moon;
+        ['themeIconSide', 'themeIconTop'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.className = icon;
+        });
     }
 
-    // ── Utilitários ───────────────────────────────────────────────
+    function bindTheme(btnId) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            const cur = document.documentElement.getAttribute('data-theme');
+            const next = cur === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('neatpad-theme', next);
+            syncThemeIcons(next);
+        });
+    }
+    bindTheme('themeToggleSide');
+    bindTheme('themeToggleTop');
+
     function esc(str) {
         const d = document.createElement('div');
-        d.textContent = str;
+        d.textContent = str == null ? '' : String(str);
         return d.innerHTML;
     }
 
-    // Extrai a primeira frase de um texto (para fallback de título)
     function _firstSentence(text) {
         if (!text) return '';
-        const m = text.match(/^[^.\n]+/);
-        return m ? m[0].trim() : text.trim();
+        const m = String(text).match(/^[^.\n]+/);
+        return m ? m[0].trim() : String(text).trim();
     }
-    // Extrai o texto após a primeira frase (para fallback de preview)
     function _afterFirstSentence(text) {
         if (!text) return '';
         const first = _firstSentence(text);
-        return text.slice(first.length).trim().replace(/^[.,:]\s*/, '');
+        return String(text).slice(first.length).trim().replace(/^[.,:]\s*/, '');
     }
 
     function badgeHtml(type) {
@@ -533,6 +779,11 @@
 
     let docsPatchNotes = [];
     let docsListFilter = 'all';
+    const docsLayout = document.getElementById('docsLayout');
+    const docsSidebar = document.getElementById('docsSidebar');
+    const docsScrim = document.getElementById('docsScrim');
+    const docsFeed = document.getElementById('docsFeed');
+    const docsToc = document.getElementById('docsToc');
 
     function matchesDocsFilter(pn, filter) {
         const t = String(pn.type || 'other').toLowerCase();
@@ -543,221 +794,270 @@
         return true;
     }
 
-    function paintPatchListCards() {
-        const list = document.getElementById('pnList');
-        if (!list) return;
-        const rows = docsPatchNotes.filter(pn => matchesDocsFilter(pn, docsListFilter));
-        if (rows.length === 0) {
-            list.innerHTML = `
-                <div class="docs-state">
-                    <i class="fas fa-filter"></i>
-                    <p>Nenhuma patch note neste filtro.</p>
-                </div>`;
+    function setFilter(f) {
+        docsListFilter = f;
+        document.querySelectorAll('.docs-filter-btn').forEach(b => {
+            b.classList.toggle('active', (b.getAttribute('data-f') || '') === f);
+        });
+        renderFeedAndToc();
+    }
+
+    document.getElementById('docsFilterSidebar').addEventListener('click', e => {
+        const btn = e.target.closest('[data-f]');
+        if (!btn) return;
+        setFilter(btn.getAttribute('data-f') || 'all');
+    });
+    document.getElementById('docsFilterMobile').addEventListener('click', e => {
+        const btn = e.target.closest('[data-f]');
+        if (!btn) return;
+        setFilter(btn.getAttribute('data-f') || 'all');
+    });
+
+    function closeSidebar() {
+        docsLayout.classList.remove('docs-sidebar-open');
+        docsScrim.classList.remove('visible');
+        docsScrim.setAttribute('aria-hidden', 'true');
+        const m = document.getElementById('docsMenuBtn');
+        if (m) { m.setAttribute('aria-expanded', 'false'); }
+    }
+    function openSidebar() {
+        docsLayout.classList.add('docs-sidebar-open');
+        docsScrim.classList.add('visible');
+        docsScrim.setAttribute('aria-hidden', 'false');
+        const m = document.getElementById('docsMenuBtn');
+        if (m) { m.setAttribute('aria-expanded', 'true'); }
+    }
+
+    document.getElementById('docsMenuBtn').addEventListener('click', () => {
+        if (docsLayout.classList.contains('docs-sidebar-open')) closeSidebar();
+        else openSidebar();
+    });
+    docsScrim.addEventListener('click', closeSidebar);
+    window.addEventListener('resize', () => {
+        if (window.innerWidth >= 1025) closeSidebar();
+    });
+
+    function tocTitle(pn) {
+        return pn.title || _firstSentence(pn.generated_notes) || pn.commit_message || 'Actualização';
+    }
+
+    function renderToc(rows) {
+        if (!rows.length) {
+            docsToc.innerHTML = '<p style="font-size:12px;color:var(--text-subtle);padding:8px;">Sem entradas visíveis.</p>';
             return;
         }
-        list.innerHTML = rows.map(pn => {
-            const short = pn.commit_hash.slice(0, 7);
-            const title   = pn.title   || _firstSentence(pn.generated_notes) || pn.commit_message;
-            const preview = pn.summary || _afterFirstSentence(pn.generated_notes) || '';
-            return `
-                <div class="pn-card" onclick="window.location.href='docs.html?id=${pn.id}'">
-                    <div class="pn-card-top">
-                        ${badgeHtml(pn.type)}
-                        <span class="pn-date"><i class="fas fa-calendar-alt"></i> ${esc(pn.date_formatted)}</span>
-                    </div>
-                    <div class="pn-title">${esc(title)}</div>
-                    ${preview ? `<div class="pn-preview">${esc(preview)}</div>` : ''}
-                    <div class="pn-card-footer">
-                        <a class="pn-sha" href="${esc(pn.commit_url)}" target="_blank" rel="noopener noreferrer"
-                           onclick="event.stopPropagation()">
-                            <i class="fab fa-github"></i>${esc(short)}
-                        </a>
-                        <span class="pn-read-more">
-                            Ver detalhes <i class="fas fa-arrow-right"></i>
-                        </span>
-                    </div>
-                </div>`;
+        docsToc.innerHTML = rows.map(pn => {
+            const title = tocTitle(pn);
+            const shortTitle = title.length > 48 ? title.slice(0, 46) + '…' : title;
+            return `<a class="docs-toc-link" href="#pn-${pn.id}">
+                <span class="docs-toc-link-date">${esc(pn.date_formatted)}</span>
+                <span class="docs-toc-link-title">${esc(shortTitle)}</span>
+            </a>`;
         }).join('');
+
+        docsToc.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', ev => {
+                ev.preventDefault();
+                const id = a.getAttribute('href').slice(1);
+                const target = document.getElementById(id);
+                closeSidebar();
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    target.classList.add('docs-entry--focus');
+                    setTimeout(() => target.classList.remove('docs-entry--focus'), 2400);
+                }
+            });
+        });
     }
 
-    // ── Roteamento: lista vs detalhe ──────────────────────────────
-    const params  = new URLSearchParams(window.location.search);
-    const detailId = params.get('id') ? parseInt(params.get('id'), 10) : null;
+    function entryHtml(pn) {
+        const short = (pn.commit_hash || '').slice(0, 7);
+        const title = pn.title || _firstSentence(pn.generated_notes) || pn.commit_message;
+        const summary = pn.summary || _afterFirstSentence(pn.generated_notes) || pn.generated_notes || pn.commit_message;
+        const changes = Array.isArray(pn.changes) && pn.changes.length ? pn.changes : null;
+        const impact = pn.impact || null;
+        const changesBlock = changes ? `
+            <div class="docs-entry-changes">
+                <h3 class="docs-entry-section-title">Alterações</h3>
+                <ul>${changes.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+            </div>` : '';
+        const impactBlock = impact ? `
+            <div class="docs-entry-impact">
+                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                <div>
+                    <h3 class="docs-entry-section-title" style="margin-bottom:6px">Impacto</h3>
+                    <p>${esc(impact)}</p>
+                </div>
+            </div>` : '';
 
-    const main = document.getElementById('docsMain');
-
-    if (detailId && detailId > 0) {
-        renderDetail(detailId);
-    } else {
-        renderList();
-    }
-
-    // ── Vista de lista ────────────────────────────────────────────
-    async function renderList() {
-        main.innerHTML = `
-            <div class="docs-intro">
-                <h1>Patch Notes</h1>
-                <p>Registo completo de todas as actualizações. Filtra por tipo; ordem: mais recente primeiro.</p>
-            </div>
-            <div class="docs-filter-wrap" id="pnFilters" role="group" aria-label="Filtrar por tipo">
-                <button type="button" class="docs-filter-btn active" data-f="all">Todas</button>
-                <button type="button" class="docs-filter-btn" data-f="feat">Funcionalidades</button>
-                <button type="button" class="docs-filter-btn" data-f="fix">Correcções</button>
-                <button type="button" class="docs-filter-btn" data-f="other">Outras</button>
-            </div>
-            <div id="pnList" class="pn-list">
-                ${Array(4).fill(0).map(() => `
-                    <div class="pn-skel">
-                        <div class="pn-skel-line" style="width:30%;margin-bottom:14px"></div>
-                        <div class="pn-skel-line" style="width:70%"></div>
-                        <div class="pn-skel-line" style="width:90%"></div>
+        return `
+            <article class="docs-entry docs-entry--collapsed" id="pn-${pn.id}" data-entry-id="${pn.id}">
+                <header class="docs-entry-head">
+                    ${badgeHtml(pn.type)}
+                    <div class="docs-entry-meta">
+                        <span class="docs-entry-date"><i class="fas fa-calendar-alt" aria-hidden="true"></i> ${esc(pn.date_formatted)}</span>
+                        <a class="docs-entry-sha" href="${esc(pn.commit_url)}" target="_blank" rel="noopener noreferrer"><i class="fab fa-github" aria-hidden="true"></i>${esc(short)}</a>
                     </div>
-                `).join('')}
-            </div>
-        `;
+                </header>
+                <h2 class="docs-entry-title">${esc(title)}</h2>
+                <div class="docs-entry-body">
+                    <p class="docs-entry-summary">${esc(summary)}</p>
+                    ${changesBlock}
+                    ${impactBlock}
+                    <div class="docs-entry-commit">
+                        <div class="docs-entry-commit-label">Commit original</div>
+                        <div class="docs-entry-commit-msg">${esc(pn.commit_message || '')}</div>
+                    </div>
+                </div>
+                <button type="button" class="docs-entry-toggle" aria-expanded="false">
+                    <span class="docs-entry-toggle-text">Detalhes</span>
+                </button>
+            </article>`;
+    }
 
+    function setupMobileToggles() {
+        const isMobile = () => window.matchMedia('(max-width: 767px)').matches;
+        docsFeed.querySelectorAll('.docs-entry').forEach(article => {
+            const btn = article.querySelector('.docs-entry-toggle');
+            const body = article.querySelector('.docs-entry-body');
+            if (!btn || !body) return;
+
+            if (isMobile()) {
+                article.classList.add('docs-entry--collapsed');
+                btn.setAttribute('aria-expanded', 'false');
+                body.style.maxHeight = '';
+            } else {
+                article.classList.remove('docs-entry--collapsed');
+                btn.setAttribute('aria-expanded', 'true');
+                body.style.maxHeight = '';
+            }
+
+            btn.onclick = () => {
+                if (!isMobile()) return;
+                const collapsed = article.classList.toggle('docs-entry--collapsed');
+                btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+            };
+        });
+    }
+
+    let docsResizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(docsResizeTimer);
+        docsResizeTimer = setTimeout(() => {
+            if (!docsFeed.querySelector('.docs-entry')) return;
+            setupMobileToggles();
+        }, 120);
+    });
+
+    function renderFeedAndToc() {
+        const rows = docsPatchNotes.filter(pn => matchesDocsFilter(pn, docsListFilter));
+        if (!rows.length) {
+            docsFeed.innerHTML = `
+                <div class="docs-feed-intro">
+                    <h2>Patch notes</h2>
+                    <p>Nenhuma entrada corresponde a este filtro.</p>
+                </div>
+                <div class="docs-state"><i class="fas fa-filter"></i><p>Tenta outro tipo de alteração.</p></div>`;
+            renderToc([]);
+            return;
+        }
+
+        docsFeed.innerHTML = `
+            <div class="docs-feed-intro">
+                <h2>Patch notes</h2>
+                <p>Registo cronológico das actualizações ao NeatPad. Usa o índice à esquerda para saltar entre versões.</p>
+            </div>
+            ${rows.map(entryHtml).join('')}
+        `;
+        renderToc(rows);
+        setupMobileToggles();
+    }
+
+    function showLoadingSkeleton() {
+        docsFeed.innerHTML = `
+            <div class="docs-feed-intro">
+                <div class="docs-skel-line" style="width:40%;height:28px;margin-bottom:16px"></div>
+                <div class="docs-skel-line" style="width:85%"></div>
+            </div>
+            ${[1, 2, 3].map(() => `
+                <div class="docs-skel-block">
+                    <div class="docs-skel-line" style="width:22%"></div>
+                    <div class="docs-skel-line" style="width:70%;height:22px"></div>
+                    <div class="docs-skel-line" style="width:100%"></div>
+                    <div class="docs-skel-line" style="width:92%"></div>
+                </div>`).join('')}
+        `;
+        docsToc.innerHTML = '<p style="font-size:12px;color:var(--text-subtle);padding:8px;">A carregar…</p>';
+    }
+
+    function highlightEntry(id) {
+        requestAnimationFrame(() => {
+            const el = document.getElementById('pn-' + id);
+            if (!el) return;
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.classList.remove('docs-entry--collapsed');
+            const body = el.querySelector('.docs-entry-body');
+            const btn = el.querySelector('.docs-entry-toggle');
+            if (body) body.style.maxHeight = 'none';
+            if (btn) btn.setAttribute('aria-expanded', 'true');
+            el.classList.add('docs-entry--focus');
+            setTimeout(() => el.classList.remove('docs-entry--focus'), 2600);
+        });
+    }
+
+    async function loadNotesAndRender(focusId) {
+        showLoadingSkeleton();
         try {
             const resp = await fetch('api/get_patch_notes.php?limit=100');
             const json = await resp.json();
 
-            const list = document.getElementById('pnList');
             if (!json.success || !Array.isArray(json.data) || json.data.length === 0) {
-                list.innerHTML = `
-                    <div class="docs-state">
-                        <i class="fas fa-inbox"></i>
-                        <p>Ainda não há patch notes publicadas.</p>
-                    </div>`;
-                document.getElementById('pnFilters').style.display = 'none';
+                docsFeed.innerHTML = `
+                    <div class="docs-feed-intro"><h2>Patch notes</h2><p>Ainda não há publicações.</p></div>
+                    <div class="docs-state"><i class="fas fa-inbox"></i><p>Quando houver deploys com notas, aparecem aqui.</p></div>`;
+                docsToc.innerHTML = '';
                 return;
             }
 
             docsPatchNotes = json.data.slice().sort((a, b) =>
                 String(b.created_at || '').localeCompare(String(a.created_at || ''))
             );
+
+            if (focusId) {
+                const has = docsPatchNotes.some(p => Number(p.id) === focusId);
+                if (!has) {
+                    const dr = await fetch('api/get_patch_notes.php?id=' + focusId);
+                    const dj = await dr.json();
+                    if (dj.success && dj.data) docsPatchNotes.unshift(dj.data);
+                }
+            }
+
             docsListFilter = 'all';
-
-            const filt = document.getElementById('pnFilters');
-            filt.addEventListener('click', (ev) => {
-                const btn = ev.target.closest('[data-f]');
-                if (!btn) return;
-                docsListFilter = btn.getAttribute('data-f') || 'all';
-                filt.querySelectorAll('.docs-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
-                paintPatchListCards();
+            document.querySelectorAll('.docs-filter-btn').forEach(b => {
+                b.classList.toggle('active', b.getAttribute('data-f') === 'all');
             });
+            renderFeedAndToc();
 
-            paintPatchListCards();
-
-        } catch (err) {
-            const list = document.getElementById('pnList');
-            const filt = document.getElementById('pnFilters');
-            if (filt) filt.style.display = 'none';
-            if (list) {
-                list.innerHTML = `
-                <div class="docs-state">
-                    <i class="fas fa-triangle-exclamation"></i>
-                    <p>Não foi possível carregar as patch notes.<br>
-                       <small>${esc(err.message)}</small></p>
-                </div>`;
+            if (focusId) {
+                highlightEntry(focusId);
+                const pnF = docsPatchNotes.find(p => Number(p.id) === focusId);
+                if (pnF) document.title = `${tocTitle(pnF)} — NeatPad Docs`;
             }
+        } catch (err) {
+            docsFeed.innerHTML = `
+                <div class="docs-state docs-state--error">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <p>Não foi possível carregar as patch notes.<br><small>${esc(err.message)}</small></p>
+                </div>`;
+            docsToc.innerHTML = '';
         }
     }
 
-    // ── Vista de detalhe ──────────────────────────────────────────
-    async function renderDetail(id) {
-        main.innerHTML = `
-            <a href="docs.html" class="docs-back-btn" style="display:inline-flex;margin-bottom:24px">
-                <i class="fas fa-arrow-left"></i> Todas as Patch Notes
-            </a>
-            <div class="docs-state">
-                <i class="fas fa-spinner fa-spin"></i>
-                <p>A carregar…</p>
-            </div>
-        `;
+    const params = new URLSearchParams(window.location.search);
+    const focusId = params.get('id') ? parseInt(params.get('id'), 10) : null;
+    const validFocus = focusId && focusId > 0 ? focusId : null;
 
-        try {
-            const resp = await fetch(`api/get_patch_notes.php?id=${id}`);
-            const json = await resp.json();
-
-            if (!json.success || !json.data) {
-                main.innerHTML += `
-                    <div class="docs-state">
-                        <i class="fas fa-triangle-exclamation"></i>
-                        <p>Patch note não encontrada.</p>
-                    </div>`;
-                return;
-            }
-
-            const pn    = json.data;
-            const short = pn.commit_hash.slice(0, 7);
-
-            // Campos estruturados com fallback gracioso
-            const title   = pn.title   || _firstSentence(pn.generated_notes) || pn.commit_message;
-            const summary = pn.summary || _afterFirstSentence(pn.generated_notes) || pn.generated_notes || pn.commit_message;
-            const changes = Array.isArray(pn.changes) && pn.changes.length ? pn.changes : null;
-            const impact  = pn.impact  || null;
-
-            document.title = `${title} — NeatPad Patch Notes`;
-
-            // Bloco de lista de alterações (só quando disponível)
-            const changesBlock = changes ? `
-                <div class="pn-detail-changes">
-                    <div class="pn-detail-section-label">O que mudou</div>
-                    <ul class="pn-changes-list">
-                        ${changes.map(c => `<li>${esc(c)}</li>`).join('')}
-                    </ul>
-                </div>
-            ` : '';
-
-            // Bloco de impacto (só quando disponível)
-            const impactBlock = impact ? `
-                <div class="pn-detail-impact">
-                    <i class="fas fa-circle-check"></i>
-                    <span class="pn-detail-impact-text">${esc(impact)}</span>
-                </div>
-            ` : '';
-
-            main.innerHTML = `
-                <a href="docs.html" class="docs-back-btn" style="display:inline-flex;margin-bottom:24px">
-                    <i class="fas fa-arrow-left"></i> Todas as Patch Notes
-                </a>
-
-                <div class="pn-detail-header">
-                    <div class="pn-detail-top">
-                        ${badgeHtml(pn.type)}
-                        <span class="pn-detail-date">
-                            <i class="fas fa-calendar-alt"></i> ${esc(pn.date_formatted)}
-                        </span>
-                    </div>
-                    <h1 class="pn-detail-title">${esc(title)}</h1>
-                </div>
-
-                <div class="pn-detail-body">${esc(summary)}</div>
-
-                ${changesBlock}
-                ${impactBlock}
-
-                <div class="pn-detail-commit">
-                    <div style="flex:1;min-width:0;">
-                        <div class="pn-detail-commit-label">Commit original</div>
-                        <div class="pn-detail-commit-msg">${esc(pn.commit_message)}</div>
-                        <a class="pn-detail-commit-link" href="${esc(pn.commit_url)}"
-                           target="_blank" rel="noopener noreferrer">
-                            <i class="fab fa-github"></i>
-                            Ver ${esc(short)} no GitHub
-                            <i class="fas fa-arrow-up-right-from-square" style="font-size:10px"></i>
-                        </a>
-                    </div>
-                </div>
-            `;
-
-        } catch (err) {
-            main.innerHTML += `
-                <div class="docs-state">
-                    <i class="fas fa-triangle-exclamation"></i>
-                    <p>Erro ao carregar patch note.<br><small>${esc(err.message)}</small></p>
-                </div>`;
-        }
-    }
+    loadNotesAndRender(validFocus);
     </script>
 </body>
 </html>
