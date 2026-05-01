@@ -258,6 +258,8 @@ try {
         $id = (int)$db->lastInsertId();
     }
 
+    $db->exec('DELETE FROM patch_notes WHERE created_at < DATE_SUB(NOW(), INTERVAL 5 YEAR)');
+
     jsonResponse(true, [
         'id'        => $id,
         'type'      => $type,
