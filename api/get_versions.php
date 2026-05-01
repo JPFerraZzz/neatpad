@@ -86,5 +86,6 @@ try {
     }
 } catch (PDOException $e) {
     if (isset($db) && $db->inTransaction()) $db->rollBack();
-    jsonResponse(false, null, 'Erro: ' . $e->getMessage(), 500);
+    error_log('[NeatPad get_versions] ' . $e->getMessage());
+    jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Erro ao processar pedido' : ('Erro: ' . $e->getMessage()), 500);
 }

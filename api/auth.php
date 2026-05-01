@@ -72,7 +72,7 @@ if ($method === 'POST') {
             http_response_code(401);
             echo json_encode([
                 'success' => false,
-                'error'   => 'Token inválido ou expirado. Verifica FIREBASE_PROJECT_ID no Railway (deve ser: ' . FIREBASE_PROJECT_ID . ').',
+                'error'   => 'Token inválido ou expirado.',
             ]);
             exit;
         }
@@ -99,8 +99,12 @@ if ($method === 'POST') {
             ],
         ]);
     } catch (Throwable $e) {
+        error_log('[NeatPad auth] POST erro: ' . $e->getMessage());
         http_response_code(500);
-        echo json_encode(['success' => false, 'error' => 'Erro no servidor: ' . $e->getMessage()]);
+        echo json_encode([
+            'success' => false,
+            'error'   => NEATPAD_IS_PRODUCTION ? 'Erro no servidor' : ('Erro no servidor: ' . $e->getMessage()),
+        ]);
     }
     exit;
 }

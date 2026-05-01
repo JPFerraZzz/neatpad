@@ -96,5 +96,6 @@ try {
         jsonResponse(false, null, 'Método não suportado', 405);
     }
 } catch (PDOException $e) {
-    jsonResponse(false, null, 'Erro: ' . $e->getMessage(), 500);
+    error_log('[NeatPad manage_versions] ' . $e->getMessage());
+    jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Erro ao processar pedido' : ('Erro: ' . $e->getMessage()), 500);
 }

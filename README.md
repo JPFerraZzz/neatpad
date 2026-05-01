@@ -70,6 +70,46 @@ ativamente como produto pessoal e parte do ecossistema FerrazWeb.
 
 ---
 
+## Segurança
+
+- **Credenciais**: `config.php`, `assets/js/firebase-config.js`, `.env*` e dumps `*.sql` não devem ser commitados (ver `.gitignore`). Em produção define `NEATPAD_ENV=production` para respostas de erro genéricas nas APIs.
+- **Base de dados**: em produção define `DB_PASS` / variáveis Railway; não uses a palavra-passe por defeito do Docker local.
+- **Webhook GitHub**: define `WEBHOOK_SECRET` no ambiente; em produção o endpoint recusa-se a funcionar sem secret.
+- **Apache**: `.htaccess` bloqueia acesso HTTP directo a includes (`db.php`, `security.php`, `sanitize.php`, `session_db.php`, etc.), ficheiros `.env*`, `*.sql`, scripts de setup e `composer.json`.
+- **Eliminações**: hard delete na BD com `ON DELETE CASCADE` nas FKs (`items`, `subtasks`, `note_versions`); não há soft delete — não é necessário filtrar `deleted_at` nos SELECTs.
+
+### Firebase — Security Rules (Console)
+
+Configura no [Firebase Console](https://console.firebase.google.com/) as regras mínimas conforme o produto que uses:
+
+**Realtime Database** (regra mínima — só utilizadores autenticados):
+
+```json
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null"
+  }
+}
+```
+
+**Cloud Firestore** (regra mínima equivalente):
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
+
+> Ajusta estes exemplos por coleção/caminho antes de produção; o NeatPad usa sobretudo **Auth** + API PHP + MySQL — as rules acima são um piso mínimo se usares RTDB/Firestore para dados em tempo real.
+
+---
+
 ## Licença
 
 Código distribuído sob [Creative Commons BY-NC-ND 4.0](LICENSE)

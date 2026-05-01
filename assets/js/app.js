@@ -481,9 +481,10 @@ const HeroCarousel = (() => {
 
     function _hcPatchBadge(type) {
         const map = {
-            feat:  { cls: 'hc-patch-badge--feat',  icon: 'fa-star',         label: 'Nova Funcionalidade' },
-            fix:   { cls: 'hc-patch-badge--fix',   icon: 'fa-wrench',       label: 'Correção' },
-            other: { cls: 'hc-patch-badge--other', icon: 'fa-circle-nodes', label: 'Atualização' },
+            feat:     { cls: 'hc-patch-badge--feat',  icon: 'fa-star',         label: 'Nova Funcionalidade' },
+            refactor: { cls: 'hc-patch-badge--feat',  icon: 'fa-wand-magic-sparkles', label: 'Melhoria' },
+            fix:      { cls: 'hc-patch-badge--fix',   icon: 'fa-wrench',       label: 'Correção' },
+            other:    { cls: 'hc-patch-badge--other', icon: 'fa-circle-nodes', label: 'Atualização' },
         };
         const t = map[type] || map.other;
         return `<span class="hc-patch-badge ${t.cls}"><i class="fas ${t.icon}"></i>${t.label}</span>`;
@@ -496,7 +497,7 @@ const HeroCarousel = (() => {
         if (!track || !dotsEl) return;
 
         try {
-            const resp = await fetch('api/get_patch_notes.php?limit=2', { credentials: 'same-origin' });
+            const resp = await fetch('api/get_patch_notes.php?carousel=1&limit=8', { credentials: 'same-origin' });
             const json = await resp.json();
             if (!json.success || !Array.isArray(json.data) || json.data.length === 0) return;
 

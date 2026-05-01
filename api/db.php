@@ -3,13 +3,6 @@
  * NeatPad — Conexão à base de dados
  */
 
-// Suporta variáveis do Railway (MYSQLHOST ou MYSQL_HOST, etc.) e variáveis próprias
-define('DB_HOST', getenv('DB_HOST') ?: getenv('MYSQLHOST') ?: getenv('MYSQL_HOST')     ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: getenv('MYSQLPORT') ?: getenv('MYSQL_PORT')     ?: '3306');
-define('DB_USER', getenv('DB_USER') ?: getenv('MYSQLUSER') ?: getenv('MYSQL_USER')     ?: 'organizer');
-define('DB_PASS', getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: getenv('MYSQL_PASSWORD') ?: 'organizer123');
-define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: 'neatpad');
-
 date_default_timezone_set('Europe/Lisbon');
 
 // IS_PRODUCTION — quando true, mensagens de erro genéricas (sem stack traces).
@@ -17,6 +10,18 @@ date_default_timezone_set('Europe/Lisbon');
 if (!defined('NEATPAD_IS_PRODUCTION')) {
     define('NEATPAD_IS_PRODUCTION', getenv('NEATPAD_ENV') === 'production');
 }
+
+// Suporta variáveis do Railway (MYSQLHOST ou MYSQL_HOST, etc.) e variáveis próprias
+define('DB_HOST', getenv('DB_HOST') ?: getenv('MYSQLHOST') ?: getenv('MYSQL_HOST')     ?: 'localhost');
+define('DB_PORT', getenv('DB_PORT') ?: getenv('MYSQLPORT') ?: getenv('MYSQL_PORT')     ?: '3306');
+define('DB_USER', getenv('DB_USER') ?: getenv('MYSQLUSER') ?: getenv('MYSQL_USER')     ?: 'organizer');
+// Em produção não há palavra-passe por defeito — obriga variáveis de ambiente.
+define(
+    'DB_PASS',
+    getenv('DB_PASS') ?: getenv('MYSQLPASSWORD') ?: getenv('MYSQL_PASSWORD')
+        ?: (NEATPAD_IS_PRODUCTION ? '' : 'organizer123')
+);
+define('DB_NAME', getenv('DB_NAME') ?: getenv('MYSQLDATABASE') ?: getenv('MYSQL_DATABASE') ?: 'neatpad');
 
 header('Content-Type: application/json; charset=utf-8');
 

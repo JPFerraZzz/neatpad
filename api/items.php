@@ -9,6 +9,10 @@ $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = getInput();
 
+if ($method === 'POST') {
+    rateLimit('items_create:' . $uid, 80, 3600);
+}
+
 // Sanitiza conteúdo rich-text quando o pedido vem com `content` HTML
 if (is_array($input) && isset($input['content']) && is_string($input['content'])) {
     if (strlen($input['content']) > 1048576) {
@@ -213,5 +217,6 @@ try {
             jsonResponse(false, null, 'Método não suportado', 405);
     }
 } catch (Exception $e) {
-    jsonResponse(false, null, $e->getMessage(), 500);
+    error_log('[NeatPad items] ' . $e->getMessage());
+    jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Erro ao processar pedido' : $e->getMessage(), 500);
 }

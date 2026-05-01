@@ -1,6 +1,9 @@
 -- ================================================
 -- NeatPad — Base de Dados
 -- ================================================
+-- Eliminações: a app usa hard delete (DELETE). FKs com ON DELETE CASCADE onde
+-- aplicável; endpoints apagam dependências explicitamente quando necessário.
+-- Não existe soft delete (deleted_at) neste schema.
 
 DROP DATABASE IF EXISTS neatpad;
 CREATE DATABASE neatpad CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

@@ -9,6 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(false, null, 'Método não suportado', 405);
 }
 
+rateLimit('save_note:' . $uid, 200, 3600);
+
 $input = getInput();
 
 if (empty($input['item_id'])) {
@@ -110,5 +112,6 @@ try {
 
 } catch (PDOException $e) {
     if (isset($db) && $db->inTransaction()) $db->rollBack();
-    jsonResponse(false, null, 'Erro ao guardar: ' . $e->getMessage(), 500);
+    error_log('[NeatPad save_note] ' . $e->getMessage());
+    jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Erro ao guardar' : ('Erro ao guardar: ' . $e->getMessage()), 500);
 }

@@ -6,15 +6,24 @@
  * Valida X-Webhook-Secret, chama Ollama para gerar texto legível,
  * e guarda na tabela patch_notes.
  *
- * Secret: definir WEBHOOK_SECRET no ambiente Docker ou alterar a constante abaixo.
+ * Secret: definir WEBHOOK_SECRET no ambiente (obrigatório em produção).
  */
 
-define('WEBHOOK_SECRET', getenv('WEBHOOK_SECRET') ?: 'neatpad-webhook-secret-change-me');
-define('OLLAMA_HOST',    getenv('OLLAMA_HOST')    ?: '172.17.0.1');
-define('OLLAMA_PORT',    getenv('OLLAMA_PORT')    ?: '11434');
-define('OLLAMA_MODEL',   getenv('OLLAMA_MODEL')   ?: 'qwen2.5:3b');
-
 require_once __DIR__ . '/db.php';
+
+// Secret obrigatório em produção; em desenvolvimento permite fallback local inseguro.
+$webhookSecret = getenv('WEBHOOK_SECRET');
+if ($webhookSecret === false || $webhookSecret === '') {
+    if (NEATPAD_IS_PRODUCTION) {
+        error_log('[NeatPad webhook] WEBHOOK_SECRET em falta em produção');
+        jsonResponse(false, null, 'Serviço indisponível', 503);
+    }
+    $webhookSecret = 'neatpad-dev-webhook-insecure';
+}
+define('WEBHOOK_SECRET', $webhookSecret);
+define('OLLAMA_HOST',  getenv('OLLAMA_HOST')  ?: '172.17.0.1');
+define('OLLAMA_PORT',  getenv('OLLAMA_PORT')  ?: '11434');
+define('OLLAMA_MODEL', getenv('OLLAMA_MODEL') ?: 'qwen2.5:3b');
 
 // ── Apenas POST ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -43,8 +52,8 @@ if (strlen($hash) < 7) {
     jsonResponse(false, null, 'commit_hash inválido', 400);
 }
 
-// ── Detecção do tipo (conventional commits) ───────────────────────
-$skipPrefixes = ['ci:', 'chore:', 'docs:', 'test:', 'build:', 'refactor:', 'style:', 'wip:'];
+// ── Commits puramente internos: não geram patch note na BD ─────────────
+$skipPrefixes = ['ci:', 'chore:', 'docs:', 'test:', 'build:', 'style:', 'wip:'];
 foreach ($skipPrefixes as $prefix) {
     if (stripos($message, $prefix) === 0) {
         jsonResponse(true, [
@@ -58,8 +67,9 @@ foreach ($skipPrefixes as $prefix) {
 }
 
 $type = 'other';
-if (preg_match('/^feat(\([^)]*\))?:/i', $message))   $type = 'feat';
-elseif (preg_match('/^fix(\([^)]*\))?:/i', $message)) $type = 'fix';
+if (preg_match('/^feat(\([^)]*\))?:/i', $message))       $type = 'feat';
+elseif (preg_match('/^fix(\([^)]*\))?:/i', $message))   $type = 'fix';
+elseif (preg_match('/^refactor(\([^)]*\))?:/i', $message)) $type = 'refactor';
 
 // ── Geração do texto estruturado via Ollama ───────────────────────
 //

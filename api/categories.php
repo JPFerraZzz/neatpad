@@ -8,6 +8,10 @@ $db     = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = getInput();
 
+if ($method === 'POST') {
+    rateLimit('categories_create:' . $uid, 40, 3600);
+}
+
 // Sanitização: nome sem tags; cor restrita a #RRGGBB; icon e template a slugs simples
 if (is_array($input)) {
     if (isset($input['name']) && is_string($input['name'])) {
@@ -116,5 +120,6 @@ try {
             jsonResponse(false, null, 'Método não suportado', 405);
     }
 } catch (Exception $e) {
-    jsonResponse(false, null, $e->getMessage(), 500);
+    error_log('[NeatPad categories] ' . $e->getMessage());
+    jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Erro ao processar pedido' : $e->getMessage(), 500);
 }

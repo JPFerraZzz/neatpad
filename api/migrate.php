@@ -84,6 +84,14 @@ try {
         }
     }
 
+    try {
+        $db->exec("ALTER TABLE patch_notes MODIFY COLUMN type VARCHAR(32) NOT NULL DEFAULT 'other'");
+        $report['patch_notes.type_varchar'] = 'verificado';
+    } catch (PDOException $e) {
+        $report['patch_notes.type_varchar'] = 'ignorado';
+        error_log('[NeatPad migrate] patch_notes.type_varchar: ' . $e->getMessage());
+    }
+
     // ── 6. Verificar CASCADE nas FKs (informativo) ────────────────────────
     $fkCheck = $db->query("
         SELECT TABLE_NAME, COLUMN_NAME, CONSTRAINT_NAME, DELETE_RULE
@@ -102,5 +110,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    jsonResponse(false, null, 'Erro na migração: ' . $e->getMessage(), 500);
+    error_log('[NeatPad migrate] ' . $e->getMessage());
+    jsonResponse(false, null, NEATPAD_IS_PRODUCTION ? 'Erro na migração' : ('Erro na migração: ' . $e->getMessage()), 500);
 }

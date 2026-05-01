@@ -137,6 +137,33 @@
             color: var(--text-muted);
             line-height: 1.6;
         }
+        .docs-filter-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+        }
+        .docs-filter-btn {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: var(--radius-pill);
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: var(--font);
+            transition: border-color .15s ease, color .15s ease, background .15s ease;
+        }
+        .docs-filter-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .docs-filter-btn.active {
+            background: var(--primary-weak);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
 
         /* ── Badge de tipo ────────────────────────────────────── */
         .pn-badge {
@@ -151,12 +178,14 @@
             border-radius: var(--radius-pill);
             flex-shrink: 0;
         }
-        .pn-badge--feat   { background: #EDE9FE; color: #6D28D9; }
-        .pn-badge--fix    { background: var(--danger-weak); color: var(--danger); }
-        .pn-badge--other  { background: var(--bg-muted); color: var(--text-muted); }
-        [data-theme="dark"] .pn-badge--feat  { background: #2D1F5E; color: #C4B5FD; }
-        [data-theme="dark"] .pn-badge--fix   { background: var(--danger-weak); color: var(--danger); }
-        [data-theme="dark"] .pn-badge--other { background: var(--bg-muted); color: var(--text-muted); }
+        .pn-badge--feat     { background: #EDE9FE; color: #6D28D9; }
+        .pn-badge--refactor { background: #DBEAFE; color: #1D4ED8; }
+        .pn-badge--fix      { background: var(--danger-weak); color: var(--danger); }
+        .pn-badge--other    { background: var(--bg-muted); color: var(--text-muted); }
+        [data-theme="dark"] .pn-badge--feat     { background: #2D1F5E; color: #C4B5FD; }
+        [data-theme="dark"] .pn-badge--refactor { background: rgba(37,99,235,0.22); color: #93C5FD; }
+        [data-theme="dark"] .pn-badge--fix     { background: var(--danger-weak); color: var(--danger); }
+        [data-theme="dark"] .pn-badge--other   { background: var(--bg-muted); color: var(--text-muted); }
 
         /* ── Card de patch note (lista) ───────────────────────── */
         .pn-list {
@@ -491,13 +520,64 @@
     }
 
     function badgeHtml(type) {
+        const t = String(type || 'other').toLowerCase();
         const map = {
-            feat:  { cls: 'pn-badge--feat',  icon: 'fa-star',         label: 'Nova Funcionalidade' },
-            fix:   { cls: 'pn-badge--fix',   icon: 'fa-wrench',       label: 'Correção' },
-            other: { cls: 'pn-badge--other', icon: 'fa-circle-nodes', label: 'Atualização' },
+            feat:     { cls: 'pn-badge--feat',     icon: 'fa-star',                 label: 'Funcionalidade' },
+            refactor: { cls: 'pn-badge--refactor', icon: 'fa-wand-magic-sparkles', label: 'Melhoria' },
+            fix:      { cls: 'pn-badge--fix',      icon: 'fa-wrench',               label: 'Correção' },
+            other:    { cls: 'pn-badge--other',    icon: 'fa-circle-nodes',         label: 'Outro' },
         };
-        const t = map[type] || map.other;
-        return `<span class="pn-badge ${t.cls}"><i class="fas ${t.icon}"></i>${t.label}</span>`;
+        const meta = map[t] || map.other;
+        return `<span class="pn-badge ${meta.cls}"><i class="fas ${meta.icon}"></i>${meta.label}</span>`;
+    }
+
+    let docsPatchNotes = [];
+    let docsListFilter = 'all';
+
+    function matchesDocsFilter(pn, filter) {
+        const t = String(pn.type || 'other').toLowerCase();
+        if (filter === 'all') return true;
+        if (filter === 'feat') return t === 'feat' || t === 'refactor';
+        if (filter === 'fix') return t === 'fix';
+        if (filter === 'other') return t !== 'feat' && t !== 'refactor' && t !== 'fix';
+        return true;
+    }
+
+    function paintPatchListCards() {
+        const list = document.getElementById('pnList');
+        if (!list) return;
+        const rows = docsPatchNotes.filter(pn => matchesDocsFilter(pn, docsListFilter));
+        if (rows.length === 0) {
+            list.innerHTML = `
+                <div class="docs-state">
+                    <i class="fas fa-filter"></i>
+                    <p>Nenhuma patch note neste filtro.</p>
+                </div>`;
+            return;
+        }
+        list.innerHTML = rows.map(pn => {
+            const short = pn.commit_hash.slice(0, 7);
+            const title   = pn.title   || _firstSentence(pn.generated_notes) || pn.commit_message;
+            const preview = pn.summary || _afterFirstSentence(pn.generated_notes) || '';
+            return `
+                <div class="pn-card" onclick="window.location.href='docs.html?id=${pn.id}'">
+                    <div class="pn-card-top">
+                        ${badgeHtml(pn.type)}
+                        <span class="pn-date"><i class="fas fa-calendar-alt"></i> ${esc(pn.date_formatted)}</span>
+                    </div>
+                    <div class="pn-title">${esc(title)}</div>
+                    ${preview ? `<div class="pn-preview">${esc(preview)}</div>` : ''}
+                    <div class="pn-card-footer">
+                        <a class="pn-sha" href="${esc(pn.commit_url)}" target="_blank" rel="noopener noreferrer"
+                           onclick="event.stopPropagation()">
+                            <i class="fab fa-github"></i>${esc(short)}
+                        </a>
+                        <span class="pn-read-more">
+                            Ver detalhes <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </div>
+                </div>`;
+        }).join('');
     }
 
     // ── Roteamento: lista vs detalhe ──────────────────────────────
@@ -517,7 +597,13 @@
         main.innerHTML = `
             <div class="docs-intro">
                 <h1>Patch Notes</h1>
-                <p>Registo de todas as actualizações, correções e novas funcionalidades do NeatPad.</p>
+                <p>Registo completo de todas as actualizações. Filtra por tipo; ordem: mais recente primeiro.</p>
+            </div>
+            <div class="docs-filter-wrap" id="pnFilters" role="group" aria-label="Filtrar por tipo">
+                <button type="button" class="docs-filter-btn active" data-f="all">Todas</button>
+                <button type="button" class="docs-filter-btn" data-f="feat">Funcionalidades</button>
+                <button type="button" class="docs-filter-btn" data-f="fix">Correcções</button>
+                <button type="button" class="docs-filter-btn" data-f="other">Outras</button>
             </div>
             <div id="pnList" class="pn-list">
                 ${Array(4).fill(0).map(() => `
@@ -531,7 +617,7 @@
         `;
 
         try {
-            const resp = await fetch('api/get_patch_notes.php');
+            const resp = await fetch('api/get_patch_notes.php?limit=100');
             const json = await resp.json();
 
             const list = document.getElementById('pnList');
@@ -541,44 +627,38 @@
                         <i class="fas fa-inbox"></i>
                         <p>Ainda não há patch notes publicadas.</p>
                     </div>`;
+                document.getElementById('pnFilters').style.display = 'none';
                 return;
             }
 
-            list.innerHTML = json.data.map(pn => {
-                const short = pn.commit_hash.slice(0, 7);
+            docsPatchNotes = json.data.slice().sort((a, b) =>
+                String(b.created_at || '').localeCompare(String(a.created_at || ''))
+            );
+            docsListFilter = 'all';
 
-                // Campos estruturados (novos) ou fallback para gerado/mensagem
-                const title   = pn.title   || _firstSentence(pn.generated_notes) || pn.commit_message;
-                const preview = pn.summary || _afterFirstSentence(pn.generated_notes) || '';
+            const filt = document.getElementById('pnFilters');
+            filt.addEventListener('click', (ev) => {
+                const btn = ev.target.closest('[data-f]');
+                if (!btn) return;
+                docsListFilter = btn.getAttribute('data-f') || 'all';
+                filt.querySelectorAll('.docs-filter-btn').forEach(b => b.classList.toggle('active', b === btn));
+                paintPatchListCards();
+            });
 
-                return `
-                    <div class="pn-card" onclick="window.location.href='docs.html?id=${pn.id}'">
-                        <div class="pn-card-top">
-                            ${badgeHtml(pn.type)}
-                            <span class="pn-date"><i class="fas fa-calendar-alt"></i> ${esc(pn.date_formatted)}</span>
-                        </div>
-                        <div class="pn-title">${esc(title)}</div>
-                        ${preview ? `<div class="pn-preview">${esc(preview)}</div>` : ''}
-                        <div class="pn-card-footer">
-                            <a class="pn-sha" href="${esc(pn.commit_url)}" target="_blank" rel="noopener noreferrer"
-                               onclick="event.stopPropagation()">
-                                <i class="fab fa-github"></i>${esc(short)}
-                            </a>
-                            <span class="pn-read-more">
-                                Ver detalhes <i class="fas fa-arrow-right"></i>
-                            </span>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+            paintPatchListCards();
 
         } catch (err) {
-            document.getElementById('pnList').innerHTML = `
+            const list = document.getElementById('pnList');
+            const filt = document.getElementById('pnFilters');
+            if (filt) filt.style.display = 'none';
+            if (list) {
+                list.innerHTML = `
                 <div class="docs-state">
                     <i class="fas fa-triangle-exclamation"></i>
                     <p>Não foi possível carregar as patch notes.<br>
                        <small>${esc(err.message)}</small></p>
                 </div>`;
+            }
         }
     }
 

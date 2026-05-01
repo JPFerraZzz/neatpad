@@ -17,7 +17,7 @@ Options -Indexes
 
 # Bloquear acesso direto a /api/db.php, /api/session_db.php, /api/firebase_verify.php,
 # /api/auth_check.php, /api/migrate.php (são includes, não devem ser chamados directamente)
-<FilesMatch "^(db|session_db|firebase_verify|auth_check|migrate)\.php$">
+<FilesMatch "^(db|session_db|firebase_verify|auth_check|migrate|security|sanitize)\.php$">
     Require all denied
 </FilesMatch>
 

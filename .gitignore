@@ -1,6 +1,12 @@
 # ── Ambiente ─────────────────────────────
 .env
 .env.local
+.env.*
+!.env.example
+
+# Dumps SQL locais (mantém database.sql versionado)
+*.sql
+!database.sql
 
 # ── Credenciais / Segredos (NUNCA COMMITAR) ──────
 # Configuração Firebase real (vive apenas no servidor)
