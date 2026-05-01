@@ -436,7 +436,7 @@ function renderQuickAccess() {
 }
 
 // ============================================================================
-// Hero carrossel — GitHub patch-notes (desktop only, >768px)
+// Hero carrossel — Patch notes da BD (desktop only, >768px)
 // ============================================================================
 const HeroCarousel = (() => {
     let _current = 0;
@@ -473,48 +473,20 @@ const HeroCarousel = (() => {
         if (_timer) { clearInterval(_timer); _timer = null; }
     }
 
-    function _humanizeCommit(msg) {
-        // Remove prefixos convencionais e transforma em texto legível
-        const prefixMap = {
-            fix:      'Correção',
-            feat:     'Nova funcionalidade',
-            feature:  'Nova funcionalidade',
-            chore:    'Manutenção',
-            docs:     'Documentação',
-            style:    'Ajuste de estilo',
-            refactor: 'Refactorização',
-            perf:     'Melhoria de desempenho',
-            test:     'Testes',
-            ci:       'CI/CD',
-            build:    'Build',
-            update:   'Atualização',
-            add:      'Adição',
-            remove:   'Remoção',
-        };
-        const match = msg.match(/^([\w-]+)(?:\([^)]*\))?:\s*(.*)/);
-        if (match) {
-            const key = match[1].toLowerCase();
-            const rest = match[2].trim();
-            const prefix = prefixMap[key] || _capitalize(key);
-            // Traduz as palavras mais comuns da mensagem
-            const body = rest
-                .replace(/sticky bar/gi, 'barra sticky')
-                .replace(/homepage/gi, 'página inicial')
-                .replace(/toolbar/gi, 'barra de ferramentas')
-                .replace(/editor/gi, 'editor')
-                .replace(/mobile/gi, 'mobile')
-                .replace(/dark mode/gi, 'modo escuro')
-                .replace(/font color/gi, 'cor da fonte')
-                .replace(/carousel/gi, 'carrossel')
-                .replace(/carousel/gi, 'carrossel')
-                .replace(/version/gi, 'versão');
-            return `${prefix}: ${body}`;
-        }
-        return _capitalize(msg);
+    function _hcFirstSentence(text) {
+        if (!text) return '';
+        const m = String(text).match(/^[^.\n]+/);
+        return m ? m[0].trim() : String(text).trim();
     }
 
-    function _capitalize(s) {
-        return s ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+    function _hcPatchBadge(type) {
+        const map = {
+            feat:  { cls: 'hc-patch-badge--feat',  icon: 'fa-star',         label: 'Nova Funcionalidade' },
+            fix:   { cls: 'hc-patch-badge--fix',   icon: 'fa-wrench',       label: 'Correção' },
+            other: { cls: 'hc-patch-badge--other', icon: 'fa-circle-nodes', label: 'Atualização' },
+        };
+        const t = map[type] || map.other;
+        return `<span class="hc-patch-badge ${t.cls}"><i class="fas ${t.icon}"></i>${t.label}</span>`;
     }
 
     async function init() {
@@ -524,45 +496,37 @@ const HeroCarousel = (() => {
         if (!track || !dotsEl) return;
 
         try {
-            const resp = await fetch(
-                'https://api.github.com/repos/JPFerraZzz/neatpad/commits?per_page=2',
-                { headers: { 'Accept': 'application/vnd.github.v3+json' } }
-            );
-            if (!resp.ok) throw new Error(`GitHub ${resp.status}`);
-            const commits = await resp.json();
-            if (!Array.isArray(commits) || commits.length === 0) return;
+            const resp = await fetch('api/get_patch_notes.php?limit=2', { credentials: 'same-origin' });
+            const json = await resp.json();
+            if (!json.success || !Array.isArray(json.data) || json.data.length === 0) return;
 
-            commits.forEach(c => {
-                const rawMsg = (c.commit.message || '').split('\n')[0].slice(0, 120);
-                const title  = _humanizeCommit(rawMsg);
-                const date   = _relativeDate(new Date(c.commit.author.date));
-                const sha    = (c.sha || '').slice(0, 7);
-                const url    = c.html_url || 'https://github.com/JPFerraZzz/neatpad/commits/main';
+            json.data.forEach(pn => {
+                const title = pn.title || _hcFirstSentence(pn.generated_notes || '') || pn.commit_message || 'Actualização';
+                const summary = pn.summary || '';
+                const dateStr = pn.date_formatted || '';
+                const id = Number(pn.id);
 
                 const slide = document.createElement('div');
                 slide.className = 'hc-slide hc-patch';
                 slide.innerHTML = `
-                    <span class="hc-patch-badge">
-                        <i class="fab fa-github"></i> Última Atualização
-                    </span>
+                    ${_hcPatchBadge(pn.type || 'other')}
                     <div class="hc-patch-title">${escapeHtml(title)}</div>
+                    ${summary ? `<p class="hc-patch-summary">${escapeHtml(summary)}</p>` : ''}
                     <div class="hc-patch-meta">
-                        <span>${escapeHtml(date)}</span>
-                        <span class="hc-patch-sha">${escapeHtml(sha)}</span>
+                        <span><i class="fas fa-calendar-alt"></i> ${escapeHtml(dateStr)}</span>
                     </div>
-                    <a class="hc-patch-link" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">
-                        Ver commit <i class="fas fa-arrow-right"></i>
+                    <a class="hc-patch-link" href="docs.html?id=${id}">
+                        Ver detalhes <i class="fas fa-arrow-right"></i>
                     </a>
                 `;
                 track.appendChild(slide);
             });
 
-            _total = 1 + commits.length;
+            _total = 1 + json.data.length;
             dotsEl.style.display = 'flex';
             _renderDots();
             _startAuto();
 
-            // Pausa ao passar o rato sobre o hero ou sobre os dots
             const pauseTargets = [
                 document.getElementById('heroCarousel'),
                 dotsEl,
@@ -573,11 +537,10 @@ const HeroCarousel = (() => {
                 el.addEventListener('mouseleave', _startAuto);
             });
         } catch (err) {
-            console.warn('Hero carousel GitHub fetch:', err);
+            console.warn('Hero carousel patch notes:', err);
         }
     }
 
-    // Inicia após autenticação (quando as categorias ficam disponíveis)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
@@ -588,15 +551,91 @@ const HeroCarousel = (() => {
 })();
 window.HeroCarousel = HeroCarousel;
 
-function _relativeDate(date) {
-    const now = Date.now();
-    const diff = Math.floor((now - date.getTime()) / 1000);
-    if (diff < 60)   return 'agora';
-    if (diff < 3600) return `${Math.floor(diff / 60)} min atrás`;
-    if (diff < 86400) return `${Math.floor(diff / 3600)} h atrás`;
-    if (diff < 2592000) return `${Math.floor(diff / 86400)} d atrás`;
-    return date.toLocaleDateString('pt-PT', { day: '2-digit', month: 'short' });
-}
+// ============================================================================
+// Banner novidades → docs (mobile ≤768px)
+// ============================================================================
+(function initDocsMobileBanner() {
+    const LS_DISMISS_AT = 'neatpad_docs_banner_dismiss_at';
+    const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+    function clearBodyClass() {
+        document.body.classList.remove('has-mobile-docs-banner');
+    }
+
+    async function run() {
+        if (window.innerWidth > 768) {
+            clearBodyClass();
+            return;
+        }
+        const el = document.getElementById('docsMobileBanner');
+        if (!el) return;
+
+        try {
+            const resp = await fetch('api/get_patch_notes.php?limit=1', { credentials: 'same-origin' });
+            const json = await resp.json();
+            if (!json.success || !Array.isArray(json.data) || !json.data[0]) {
+                el.setAttribute('hidden', '');
+                clearBodyClass();
+                return;
+            }
+            const latest = json.data[0];
+            const createdMs = new Date(latest.created_at).getTime();
+            if (Number.isNaN(createdMs) || (Date.now() - createdMs) > SEVEN_DAYS_MS) {
+                el.setAttribute('hidden', '');
+                clearBodyClass();
+                return;
+            }
+
+            const dismissedAt = localStorage.getItem(LS_DISMISS_AT) || '';
+            if (dismissedAt && String(latest.created_at) <= dismissedAt) {
+                el.setAttribute('hidden', '');
+                clearBodyClass();
+                return;
+            }
+
+            const detailUrl = `docs.html?id=${encodeURIComponent(latest.id)}`;
+            el.removeAttribute('hidden');
+            el.innerHTML = `
+                <span class="docs-mobile-banner-text">Novidades no NeatPad</span>
+                <a class="docs-mobile-banner-go" href="${detailUrl}" aria-label="Ver novidades">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <button type="button" class="docs-mobile-banner-close" aria-label="Dispensar aviso">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            document.body.classList.add('has-mobile-docs-banner');
+
+            const closeBtn = el.querySelector('.docs-mobile-banner-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    localStorage.setItem(LS_DISMISS_AT, String(latest.created_at));
+                    el.setAttribute('hidden', '');
+                    el.innerHTML = '';
+                    clearBodyClass();
+                });
+            }
+        } catch (e) {
+            el.setAttribute('hidden', '');
+            clearBodyClass();
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', run);
+    } else {
+        setTimeout(run, 0);
+    }
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 768) {
+            const el = document.getElementById('docsMobileBanner');
+            if (el) el.setAttribute('hidden', '');
+            clearBodyClass();
+        } else {
+            run();
+        }
+    });
+})();
 
 // ============================================================================
 // View router (home ⇄ categories)

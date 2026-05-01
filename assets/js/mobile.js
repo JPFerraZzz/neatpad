@@ -173,8 +173,8 @@
             const btn = document.getElementById('settingsBtn');
             if (sheet && sheet.contains(ev.target)) return;
             if (btn && btn.contains(ev.target)) return;
-            // Só fechamos no desktop; no mobile o backdrop já trata
-            if (window.matchMedia('(min-width: 768px)').matches) closeSettings();
+            // Só fechamos no popover desktop (≥1024); em tablet retrato o backdrop trata
+            if (window.matchMedia('(min-width: 1024px)').matches) closeSettings();
         });
 
         document.addEventListener('neatpad:theme-changed', refreshSettings);

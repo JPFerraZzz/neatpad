@@ -2036,6 +2036,9 @@ window.Templates = {
                 </div>
 
                 <style>
+                /* Botão "← Cadernos" só em modo tablet/mobile da shell */
+                #nbBackBtn { display: none !important; }
+
                 /* ── Shell (mobile-first: coluna única até tablet landscape) ── */
                 .nb-shell {
                     display: grid;
@@ -2055,13 +2058,28 @@ window.Templates = {
                     border-bottom: 1px solid var(--border);
                 }
 
-                /* Tablet landscape & desktop: duas colunas (tipo Notion) */
-                @media (min-width: 1024px) {
+                /* Tablet paisagem (1024–1366): sidebar 280px, altura ao viewport */
+                @media (min-width: 1024px) and (max-width: 1366px) {
+                    .nb-shell {
+                        grid-template-columns: 280px 1fr;
+                        grid-template-rows: 1fr;
+                        height: 100%;
+                        min-height: 0;
+                        max-height: 100dvh;
+                        border: none;
+                        border-radius: 0;
+                    }
+                    .nb-shell .nb-sidebar {
+                        max-height: none;
+                        border-right: 1px solid var(--border);
+                        border-bottom: none;
+                    }
+                }
+                /* Desktop grande: coluna 300px (inalterado face ao legado) */
+                @media (min-width: 1367px) {
                     .nb-shell {
                         grid-template-columns: 300px 1fr;
                         grid-template-rows: 1fr;
-                        /* O .modal-body tem flex:1 + (com :has(.nb-shell)) padding:0 overflow:hidden,
-                           portanto basta ocupar 100% da altura disponível. */
                         height: 100%;
                         min-height: 0;
                         border: none;
@@ -2550,8 +2568,8 @@ window.Templates = {
                 }
                 .nb-version-restore:hover { background: var(--primary); color: var(--primary-text); }
 
-                /* ── Navegação mobile em duas camadas (lista ↔ detalhe) ── */
-                @media (max-width: 768px) {
+                /* Tablet retrato + telemóvel: lista ↔ detalhe (drawer lógico) */
+                @media (max-width: 1023px) {
                     .nb-shell.nb-mobile {
                         display: flex;
                         flex-direction: column;
@@ -2574,8 +2592,8 @@ window.Templates = {
                     .nb-shell.nb-mobile--detail .nb-main {
                         display: flex;
                     }
-                    #nbBackBtn {
-                        display: flex;
+                    .nb-shell.nb-mobile--detail #nbBackBtn {
+                        display: flex !important;
                         align-items: center;
                         gap: 8px;
                         padding: 12px 16px;
@@ -2590,10 +2608,10 @@ window.Templates = {
                         text-align: left;
                         font-family: var(--font);
                     }
-                    #nbBackBtn:active {
+                    .nb-shell.nb-mobile--detail #nbBackBtn:active {
                         background: var(--bg-subtle);
                     }
-                    #nbBackBtn i { font-size: 12px; }
+                    .nb-shell.nb-mobile--detail #nbBackBtn i { font-size: 12px; }
                 }
 
                 /* ── Slash menu ────────────────────────── */
@@ -2834,8 +2852,8 @@ window.Templates = {
                 // Already rendered above
             }
 
-            // Mobile: navegação em duas camadas (lista → detalhe)
-            if (window.innerWidth <= 768) {
+            // Tablet retrato e telemóvel: navegação em duas camadas (lista → detalhe)
+            if (window.innerWidth <= 1023) {
                 this._initMobileNav();
             }
         },
@@ -4368,13 +4386,19 @@ window.Templates = {
                     return;
                 }
 
-                // Desktop: render na área #nbContent (comportamento existente)
+                // Desktop / tablet: render na área #nbContent
                 const mainEl = document.getElementById('nbContent');
                 if (mainEl) {
+                    const suppressDetail = this._suppressMobileDetail;
                     mainEl.innerHTML = this.renderNotebookView(notebook);
                     // IntersectionObserver: sticky view bar aparece quando
                     // #nbViewButtons sai do viewport (scroll para baixo).
                     this._setupViewStickyBar();
+                    // Tablet retrato + telemóvel largo: mostrar painel de detalhe (lista ↔ caderno)
+                    const shellAfter = document.querySelector('.nb-shell');
+                    if (shellAfter && window.innerWidth <= 1023 && !suppressDetail) {
+                        shellAfter.classList.add('nb-mobile--detail');
+                    }
                 }
             } catch (err) {
                 console.error(err);
@@ -4411,7 +4435,7 @@ window.Templates = {
                 this._mobileResizeHandler = () => {
                     const sh = document.querySelector('.nb-shell');
                     if (!sh) return;
-                    if (window.innerWidth > 768) {
+                    if (window.innerWidth > 1023) {
                         sh.classList.remove('nb-mobile', 'nb-mobile--detail');
                     } else {
                         // Garante o setup mobile (incluindo botão "Voltar")
@@ -4459,7 +4483,7 @@ window.Templates = {
                 this._nbStickyBarObserver.disconnect();
                 this._nbStickyBarObserver = null;
             }
-            if (window.innerWidth <= 768) return; // só desktop
+            if (window.innerWidth <= 1023) return; // lista mobile/tablet ou editor full-screen
             const sentinel = document.getElementById('nbViewButtons');
             const bar = document.getElementById('nbStickyViewBar');
             if (!sentinel || !bar) return;

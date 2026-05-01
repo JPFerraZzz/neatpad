@@ -176,8 +176,12 @@ body {
 
 body.gate-active > :not(#pwa-install-gate):not(#appSplash) { display: none !important; }
 
-/* Reservar padding inferior só em mobile (desktop não tem bottom bar) */
-@media (min-width: 768px) {
+/* Tablet estreito (768–1023): bottom bar como mobile */
+@media (min-width: 768px) and (max-width: 1023px) {
+    body { padding-bottom: calc(var(--safe-bottom) + var(--bottombar-h)); }
+}
+/* Tablet largo + desktop: sem altura da bottom bar */
+@media (min-width: 1024px) {
     body { padding-bottom: var(--safe-bottom); }
 }
 
@@ -495,11 +499,44 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: .07em;
-    color: var(--primary);
-    background: var(--primary-weak);
     border-radius: 20px;
     padding: 4px 12px;
     width: fit-content;
+}
+.hc-patch-badge--feat {
+    background: #EDE9FE;
+    color: #6D28D9;
+}
+.hc-patch-badge--fix {
+    background: var(--danger-weak);
+    color: var(--danger);
+}
+.hc-patch-badge--other {
+    background: var(--bg-muted);
+    color: var(--text-muted);
+}
+[data-theme="dark"] .hc-patch-badge--feat {
+    background: #2D1F5E;
+    color: #C4B5FD;
+}
+[data-theme="dark"] .hc-patch-badge--fix {
+    background: var(--danger-weak);
+    color: var(--danger);
+}
+[data-theme="dark"] .hc-patch-badge--other {
+    background: var(--bg-muted);
+    color: var(--text-muted);
+}
+.hc-patch-summary {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-muted);
+    max-width: 640px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
 }
 .hc-patch-title {
     font-size: 26px;
@@ -571,6 +608,76 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     background: var(--text-muted);
 }
 
+/* ─ Banner novidades (mobile, max 767px) ───────────────────────── */
+.docs-mobile-banner {
+    display: none;
+}
+@media (max-width: 767px) {
+    .docs-mobile-banner:not([hidden]) {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        position: fixed;
+        left: 0;
+        right: 0;
+        top: calc(var(--header-h) + var(--safe-top));
+        z-index: 480;
+        min-height: 40px;
+        padding: 8px 12px 8px calc(12px + var(--safe-left));
+        padding-right: calc(12px + var(--safe-right));
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border);
+        box-shadow: var(--elev-1);
+    }
+    .docs-mobile-banner-text {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .docs-mobile-banner-go {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius);
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        text-decoration: none;
+        flex-shrink: 0;
+        transition: background .12s ease;
+    }
+    .docs-mobile-banner-go:hover,
+    .docs-mobile-banner-go:focus-visible {
+        background: var(--primary-weak);
+    }
+    .docs-mobile-banner-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: var(--radius-sm);
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+    .docs-mobile-banner-close:hover {
+        background: var(--bg-muted);
+        color: var(--text);
+    }
+    body.has-mobile-docs-banner .main-content {
+        padding-top: 44px;
+    }
+}
+
 /* ─ Desktop (≥1024px) ─────────────────────────────────────────── */
 @media (min-width: 1024px) {
     /* Override da grelha 2 colunas do .hero — cada slide gere o seu layout */
@@ -600,8 +707,8 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     .hc-patch-title { font-size: 32px; }
 }
 
-/* ─ Mobile: oculta slides extra e dots ────────────────────────── */
-@media (max-width: 768px) {
+/* ─ Mobile (<768px): oculta slides extra e dots ─────────────────── */
+@media (max-width: 767px) {
     .hc-slide:not(.hc-slide--main) { display: none; }
     .hc-dots { display: none !important; }
 }
@@ -773,7 +880,8 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 14px;
 }
-@media (min-width: 768px) {
+/* Ícones compactos só em desktop grande */
+@media (min-width: 1367px) {
     .category-action-btn { width: 34px; height: 34px; font-size: 13px; }
 }
 .category-action-btn:hover { background: var(--bg-subtle); color: var(--text); }
@@ -1042,6 +1150,10 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     padding-bottom: calc(var(--safe-bottom) + var(--bottombar-h));
     animation: viewSlideIn 0.18s ease-out;
 }
+/* Sem bottom bar a partir de 1024px — não reservar altura extra no modal */
+@media (min-width: 1024px) {
+    .modal-content { padding-bottom: var(--safe-bottom); }
+}
 @keyframes viewSlideIn {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -1238,7 +1350,8 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
 }
 .bottom-bar button.primary:hover i { background: var(--primary-hover); }
 
-@media (min-width: 768px) {
+/* Bottom bar visível até 1023px (tablet retrato); oculta a partir de 1024 */
+@media (min-width: 1024px) {
     .bottom-bar { display: none !important; }
 }
 
@@ -1477,8 +1590,8 @@ textarea.form-control { min-height: 120px; resize: vertical; line-height: 1.5; }
     background-color: var(--bg-subtle);
 }
 
-/* Desktop: aparece como popover ancorado ao header */
-@media (min-width: 768px) {
+/* Popover de definições: a partir de 1024px (tablet paisagem + desktop) */
+@media (min-width: 1024px) {
     .sheet {
         left: auto;
         right: 24px;
@@ -1653,8 +1766,8 @@ html[data-bg="paper"] body {
 /* ── 14. Animações PC ────────────────────────────────────────────────── */
 
 /*
- * As animações só se aplicam em ≥ 768px para não pesar em mobile.
- * Entram via `@media (min-width: 768px)` em Overrides (secção 16).
+ * As animações só se aplicam em desktop grande (≥1367px) para não pesar em mobile/tablet.
+ * Definidas na secção 16 (DESKTOP).
  */
 
 @keyframes riseIn {
@@ -1688,7 +1801,7 @@ html[data-bg="paper"] body {
 .app-notification--error   { background: var(--danger);  color: #fff; }
 .app-notification--info    { background: var(--info);    color: #fff; }
 
-@media (min-width: 768px) {
+@media (min-width: 1367px) {
     .app-notification { left: auto; right: 24px; bottom: 24px; max-width: 380px; margin: 0; }
 }
 
@@ -1698,10 +1811,128 @@ html[data-bg="paper"] body {
 ::-webkit-scrollbar-thumb:hover { background: var(--border-strong); }
 
 /* ============================================================================
- * 16. DESKTOP (≥ 768px)
+ * 16a. Tablet retrato (768px–1023px, orientation: portrait)
+ *       Largura-only também cobre landscape estreito; portrait explícito
+ *       alinha com iPad/Android em modo vertical.
+ * ==========================================================================*/
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait),
+       (min-width: 768px) and (max-width: 1023px) {
+    :root { --header-h: 56px; --touch-min: 48px; }
+
+    .container { max-width: 100%; padding: 0 18px; }
+    .main-header, .header-content { height: var(--header-h); }
+    .header-content { gap: 10px; padding-inline: 4px; }
+    .logo i { font-size: 20px; }
+    .logo h1 { font-size: 16px; }
+    .main-content { padding: 24px 0 32px; }
+
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        max-width: min(100%, 720px);
+        margin-inline: auto;
+    }
+    .category-card { padding: 16px; }
+    .category-icon { width: 48px; height: 48px; font-size: 24px; }
+    .category-title { font-size: 16px; }
+
+    .form-row { grid-template-columns: 1fr; gap: 12px; }
+    .form-control { font-size: 15px; min-height: 48px; padding: 11px 14px; }
+    textarea.form-control { min-height: 120px; }
+
+    .hero:not(.hero-carousel) {
+        padding: 28px 20px;
+        display: block;
+        max-width: min(100%, 720px);
+        margin-inline: auto;
+    }
+    .hero-title { font-size: 30px; }
+    .hero-stats {
+        margin-top: 20px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+    .stat-card { padding: 12px; }
+    .stat-body strong { font-size: 18px; }
+    .quick-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        max-width: min(100%, 720px);
+        margin-inline: auto;
+    }
+
+    h1 { font-size: 24px; }
+    h2 { font-size: 20px; }
+    h3 { font-size: 17px; }
+
+    .btn-lg { min-height: 48px; padding: 12px 20px; font-size: 15px; }
+}
+
+/* ============================================================================
+ * 16b. Tablet paisagem (1024px–1366px, tipicamente orientation: landscape)
+ * ==========================================================================*/
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape),
+       (min-width: 1024px) and (max-width: 1366px) {
+    :root { --header-h: 60px; --touch-min: 48px; }
+
+    .container { max-width: 100%; padding: 0 20px; width: 100%; }
+    .main-header, .header-content { height: var(--header-h); }
+    .header-content { gap: 12px; padding-inline: 8px; }
+    .logo i { font-size: 21px; }
+    .logo h1 { font-size: 17px; }
+    .main-content { padding: 28px 0 36px; min-height: calc(100dvh - var(--header-h)); box-sizing: border-box; }
+
+    .categories-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 14px;
+    }
+    .category-card { padding: 16px; }
+    .category-icon { width: 48px; height: 48px; font-size: 25px; }
+    .category-title { font-size: 16px; }
+
+    .form-row { grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-control { font-size: 14px; min-height: 44px; padding: 10px 12px; }
+    textarea.form-control { min-height: 130px; }
+
+    .hero:not(.hero-carousel) {
+        padding: 36px 28px;
+        display: grid;
+        grid-template-columns: 1.25fr 1fr;
+        gap: 28px;
+        align-items: center;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .hero-title { font-size: 34px; }
+    .hero-stats {
+        margin-top: 0;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .quick-grid {
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 12px;
+    }
+
+    h1 { font-size: 26px; }
+    h2 { font-size: 21px; }
+    h3 { font-size: 17px; }
+
+    .btn-lg { min-height: 50px; padding: 13px 22px; font-size: 15px; }
+
+    .category-card:hover { transform: translateY(-2px); box-shadow: var(--elev-2); }
+    .quick-card:hover    { transform: translateY(-2px); box-shadow: var(--elev-2); }
+    .stat-card { transition: border-color 0.15s ease, transform 0.15s ease; }
+    .stat-card:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+
+    .modal.active { min-height: 100dvh; }
+}
+
+/* ============================================================================
+ * 16. DESKTOP (≥ 1367px)
  * ==========================================================================*/
 
-@media (min-width: 768px) {
+@media (min-width: 1367px) {
     :root { --header-h: 64px; }
 
     .container { padding: 0 24px; }
