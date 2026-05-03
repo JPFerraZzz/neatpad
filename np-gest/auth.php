@@ -176,10 +176,10 @@ function gest_attempt_login(string $username, string $password): ?string
         error_log('[np-gest] DB: ' . $e->getMessage());
         return 'Serviço indisponível.';
     }
-    if (gest_is_ip_locked($pdo, $ip)) {
-        return 'Demasiadas tentativas. Tenta mais tarde.';
-    }
     try {
+        if (gest_is_ip_locked($pdo, $ip)) {
+            return 'Demasiadas tentativas. Tenta mais tarde.';
+        }
         $st = $pdo->prepare(
             'SELECT id, username, password_hash, role, is_active FROM np_gest_users WHERE username = ? LIMIT 1'
         );
@@ -190,10 +190,19 @@ function gest_attempt_login(string $username, string $password): ?string
         return 'Serviço indisponível.';
     }
     if (!$u || !(int) $u['is_active'] || !password_verify($password, $u['password_hash'])) {
-        gest_register_failed_login($pdo, $ip);
+        try {
+            gest_register_failed_login($pdo, $ip);
+        } catch (Throwable $e) {
+            error_log('[np-gest] login_lock: ' . $e->getMessage());
+            return 'Serviço indisponível.';
+        }
         return 'Credenciais inválidas.';
     }
-    gest_clear_ip_lock($pdo, $ip);
+    try {
+        gest_clear_ip_lock($pdo, $ip);
+    } catch (Throwable $e) {
+        error_log('[np-gest] clear_lock: ' . $e->getMessage());
+    }
     if (function_exists('session_regenerate_id')) {
         @session_regenerate_id(true);
     }
