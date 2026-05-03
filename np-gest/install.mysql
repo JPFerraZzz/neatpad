@@ -1,0 +1,31 @@
+-- NeatPad Studio — esquema inicial (executar na BD neatpad)
+-- Extensão .mysql para não ser ignorada pelo *.sql do .gitignore na raiz.
+
+CREATE TABLE IF NOT EXISTS np_gest_users (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(64) NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin','agent','moderator') NOT NULL DEFAULT 'agent',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL DEFAULT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    UNIQUE KEY uq_username (username),
+    INDEX idx_role (role),
+    INDEX idx_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS np_gest_login_lock (
+    ip VARCHAR(45) NOT NULL PRIMARY KEY,
+    failures INT UNSIGNED NOT NULL DEFAULT 0,
+    locked_until DATETIME NULL DEFAULT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Password inicial: NeatPad@2026 — alterar após primeiro login.
+INSERT INTO np_gest_users (username, password_hash, role, is_active)
+VALUES (
+    'ferraz',
+    '$2y$10$v66QFk1JOhjmcr4OJCkfi.hfFbTVZkXi/rThaRu7yDgM21Rbl0jVG',
+    'admin',
+    1
+) ON DUPLICATE KEY UPDATE username = username;

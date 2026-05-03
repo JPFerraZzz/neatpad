@@ -13,6 +13,8 @@
 assets/js/firebase-config.js
 # Configuração do servidor com credenciais de BD e do projeto Firebase
 config.php
+# Backoffice NeatPad Studio (credenciais locais — nunca commitar)
+np-gest/config.php
 
 # ── Logs e temporários ──────────────────
 *.log
