@@ -1,0 +1,74 @@
+-- NeatPad Studio — utilizadores da app, actividade, auditoria e diagnóstico
+-- Executar na mesma BD que o NeatPad (ex.: neatpad), após install.mysql.
+-- Extensão .mysql para não ser ignorada pelo *.sql na raiz do repo.
+
+CREATE TABLE IF NOT EXISTS np_gest_user_meta (
+    uid VARCHAR(128) NOT NULL,
+    email VARCHAR(255) NOT NULL DEFAULT '',
+    display_name VARCHAR(255) NOT NULL DEFAULT '',
+    role ENUM('user','vip','support') NOT NULL DEFAULT 'user',
+    status ENUM('active','silenced','suspended','deleted') NOT NULL DEFAULT 'active',
+    deleted_at DATETIME NULL DEFAULT NULL,
+    suspension_end DATETIME NULL DEFAULT NULL,
+    silenced_until DATETIME NULL DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_seen DATETIME NULL DEFAULT NULL,
+    notes TEXT NULL,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (uid),
+    INDEX idx_status (status),
+    INDEX idx_email (email(128)),
+    INDEX idx_deleted_at (deleted_at),
+    INDEX idx_last_seen (last_seen)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS np_gest_activity_log (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    uid VARCHAR(128) NOT NULL,
+    action VARCHAR(96) NOT NULL,
+    target_type VARCHAR(48) NULL DEFAULT NULL,
+    target_id VARCHAR(96) NULL DEFAULT NULL,
+    ip VARCHAR(45) NULL DEFAULT NULL,
+    user_agent VARCHAR(512) NULL DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_uid_created (uid, created_at DESC),
+    INDEX idx_action (action(64)),
+    INDEX idx_target (target_type(32), target_id(64))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS np_gest_audit_log (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    gest_user_id INT UNSIGNED NULL DEFAULT NULL,
+    action VARCHAR(96) NOT NULL,
+    target_uid VARCHAR(128) NULL DEFAULT NULL,
+    details TEXT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_gest_created (gest_user_id, created_at DESC),
+    INDEX idx_target_uid (target_uid, created_at DESC),
+    CONSTRAINT fk_audit_gest_user FOREIGN KEY (gest_user_id) REFERENCES np_gest_users (id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS np_gest_user_login_log (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    uid VARCHAR(128) NOT NULL,
+    success TINYINT(1) NOT NULL DEFAULT 1,
+    ip VARCHAR(45) NULL DEFAULT NULL,
+    user_agent VARCHAR(512) NULL DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_uid_created (uid, created_at DESC),
+    INDEX idx_ip_created (ip, created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS np_gest_app_error_log (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    uid VARCHAR(128) NULL DEFAULT NULL,
+    ip VARCHAR(45) NULL DEFAULT NULL,
+    message VARCHAR(2000) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    INDEX idx_uid_created (uid, created_at DESC),
+    INDEX idx_ip_created (ip, created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

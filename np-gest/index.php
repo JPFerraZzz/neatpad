@@ -2,52 +2,39 @@
 declare(strict_types=1);
 $gest_active = 'dashboard';
 require_once __DIR__ . '/auth.php';
-$user = gest_user();
-?>
-<!DOCTYPE html>
-<html lang="pt-PT" data-theme="dark">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>Dashboard — NeatPad Studio</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css">
-</head>
-<body class="gest-body">
-    <header class="gest-topbar">
-        <div class="gest-topbar-brand">
-            <span class="gest-topbar-logo"><i class="fas fa-layer-group" aria-hidden="true"></i></span>
-            <span class="gest-topbar-title">NeatPad Studio</span>
-        </div>
-        <div class="gest-topbar-user">
-            <span class="gest-topbar-name"><?php echo htmlspecialchars($user['username'] ?? '', ENT_QUOTES, 'UTF-8'); ?></span>
-            <span class="gest-badge gest-badge--<?php echo htmlspecialchars($user['role'] ?? 'agent', ENT_QUOTES, 'UTF-8'); ?>">
-                <?php echo htmlspecialchars($user['role'] ?? '', ENT_QUOTES, 'UTF-8'); ?>
-            </span>
-            <a class="gest-btn-logout" href="logout.php">Sair</a>
-        </div>
-    </header>
+require_once __DIR__ . '/inc/shell.php';
+require_once __DIR__ . '/inc/user_repo.php';
 
-    <div class="gest-shell">
-        <?php require __DIR__ . '/sidebar.php'; ?>
-        <main class="gest-main" id="gestMain">
+$user = gest_user();
+
+$dashUsers = '—';
+$dashItems = '—';
+try {
+    $pdo = gest_pdo();
+    $dashUsers = (string) (int) $pdo->query('SELECT COUNT(*) FROM (SELECT DISTINCT user_uid AS u FROM categories) z')->fetchColumn();
+    $dashItems = (string) (int) $pdo->query('SELECT COUNT(*) FROM items')->fetchColumn();
+} catch (Throwable $e) {
+    error_log('[np-gest] dashboard: ' . $e->getMessage());
+}
+
+gest_shell_head('Dashboard');
+?>
             <h1 class="gest-page-title">Dashboard</h1>
-            <p class="gest-page-lead">Resumo operacional. Os valores abaixo são placeholders até integração com dados reais.</p>
+            <p class="gest-page-lead">Resumo operacional. Tickets e restantes módulos serão ligados aqui.</p>
 
             <div class="gest-cards">
                 <article class="gest-card">
                     <div class="gest-card-icon gest-card-icon--users"><i class="fas fa-users"></i></div>
                     <div class="gest-card-body">
-                        <span class="gest-card-label">Total utilizadores</span>
-                        <strong class="gest-card-value">—</strong>
+                        <span class="gest-card-label">Total utilizadores (UIDs com dados)</span>
+                        <strong class="gest-card-value"><?php echo htmlspecialchars($dashUsers, ENT_QUOTES, 'UTF-8'); ?></strong>
                     </div>
                 </article>
                 <article class="gest-card">
                     <div class="gest-card-icon gest-card-icon--items"><i class="fas fa-file-lines"></i></div>
                     <div class="gest-card-body">
                         <span class="gest-card-label">Itens totais</span>
-                        <strong class="gest-card-value">—</strong>
+                        <strong class="gest-card-value"><?php echo htmlspecialchars($dashItems, ENT_QUOTES, 'UTF-8'); ?></strong>
                     </div>
                 </article>
                 <article class="gest-card">
@@ -65,8 +52,5 @@ $user = gest_user();
                     </div>
                 </article>
             </div>
-        </main>
-    </div>
-    <script src="assets/js/app.js"></script>
-</body>
-</html>
+<?php
+gest_shell_foot();

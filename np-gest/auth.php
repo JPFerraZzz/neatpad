@@ -46,6 +46,9 @@ function gest_cfg(): array
 
 function gest_send_security_headers(): void
 {
+    if (php_sapi_name() === 'cli') {
+        return;
+    }
     if (headers_sent()) {
         return;
     }
@@ -284,13 +287,14 @@ function gest_nav_visible(string $key): bool
     $u = gest_user();
     $role = $u['role'] ?? '';
     $map = [
-        'dashboard'   => ['admin', 'agent', 'moderator'],
-        'users'       => ['admin'],
-        'content'     => ['admin', 'agent', 'moderator'],
-        'tickets'     => ['admin', 'agent', 'moderator'],
-        'stats'       => ['admin', 'agent'],
-        'patch_notes' => ['admin', 'moderator'],
-        'settings'    => ['admin'],
+        'dashboard'    => ['admin', 'agent', 'moderator'],
+        'users'        => ['admin', 'agent', 'moderator'],
+        'content'      => ['admin', 'agent', 'moderator'],
+        'tickets'      => ['admin', 'agent', 'moderator'],
+        'stats'        => ['admin', 'agent'],
+        'patch_notes'  => ['admin', 'moderator'],
+        'settings'     => ['admin'],
+        'diagnostics'  => ['admin', 'agent', 'moderator'],
     ];
     return in_array($role, $map[$key] ?? [], true);
 }
@@ -303,9 +307,29 @@ function gest_require_nav(string $key): void
     }
 }
 
-gest_send_security_headers();
-gest_start_session();
+function gest_csrf_token(): string
+{
+    gest_start_session();
+    if (empty($_SESSION['gest_csrf'])) {
+        $_SESSION['gest_csrf'] = bin2hex(random_bytes(32));
+    }
+    return (string) $_SESSION['gest_csrf'];
+}
 
-if (!gest_is_public_script()) {
-    gest_require_login();
+function gest_verify_csrf(?string $token): bool
+{
+    gest_start_session();
+    $s = (string) ($_SESSION['gest_csrf'] ?? '');
+    return $s !== '' && is_string($token) && hash_equals($s, $token);
+}
+
+$gestSkipSession = php_sapi_name() === 'cli'
+    && basename((string) ($_SERVER['SCRIPT_FILENAME'] ?? '')) === 'cron_purge_soft_deleted.php';
+
+if (!$gestSkipSession) {
+    gest_send_security_headers();
+    gest_start_session();
+    if (!gest_is_public_script()) {
+        gest_require_login();
+    }
 }

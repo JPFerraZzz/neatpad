@@ -75,18 +75,31 @@ try {
     exit(1);
 }
 
-$need = ['np_gest_users', 'np_gest_login_lock'];
+$need = [
+    'np_gest_users',
+    'np_gest_login_lock',
+    'np_gest_user_meta',
+    'np_gest_activity_log',
+    'np_gest_audit_log',
+    'np_gest_user_login_log',
+    'np_gest_app_error_log',
+];
 foreach ($need as $t) {
     $st = $pdo->query(
         "SELECT 1 FROM information_schema.tables WHERE table_schema = " . $pdo->quote($db['name']) . " AND table_name = " . $pdo->quote($t)
     );
     $ok = $st && $st->fetchColumn();
-    echo "tabela {$t}: " . ($ok ? 'OK' : 'EM FALTA — corre install.mysql nesta BD') . "\n";
+    $hint = match ($t) {
+        'np_gest_users', 'np_gest_login_lock' => 'np-gest/install.mysql',
+        default => 'np-gest/install_users.mysql',
+    };
+    echo "tabela {$t}: " . ($ok ? 'OK' : "EM FALTA — corre {$hint} nesta BD") . "\n";
     if (!$ok) {
-        echo "\nExemplo (ajusta user/host):\n";
+        echo "\nExemplo:\n";
         echo "  mysql -h HOST -u USER -p {$db['name']} < np-gest/install.mysql\n";
+        echo "  mysql -h HOST -u USER -p {$db['name']} < np-gest/install_users.mysql\n";
         exit(1);
     }
 }
 
-echo "\nTudo OK para login e bloqueio por IP. Se o browser ainda falhar, verifica o utilizador do PHP (ex.: www-data) e open_basedir.\n";
+echo "\nTudo OK para login, utilizadores e diagnóstico.\n";

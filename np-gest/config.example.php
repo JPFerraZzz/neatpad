@@ -8,6 +8,8 @@
  * para um ficheiro PHP que devolve o mesmo array (legível pelo www-data).
  *
  * Diagnóstico no servidor: php np-gest/check_setup.php
+ *
+ * Módulo utilizadores: executar também np-gest/install_users.mysql na mesma BD.
  */
 declare(strict_types=1);
 

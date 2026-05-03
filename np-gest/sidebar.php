@@ -4,13 +4,14 @@ declare(strict_types=1);
 $u = gest_user();
 $role = $u['role'] ?? '';
 $nav = [
-    'dashboard'   => ['label' => 'Dashboard',    'icon' => 'fa-chart-pie',      'href' => 'index.php'],
-    'users'       => ['label' => 'Utilizadores', 'icon' => 'fa-users',          'href' => '#'],
-    'content'     => ['label' => 'Conteúdos',    'icon' => 'fa-folder-open',   'href' => '#'],
-    'tickets'     => ['label' => 'Tickets',      'icon' => 'fa-ticket',         'href' => '#'],
-    'stats'       => ['label' => 'Estatísticas', 'icon' => 'fa-chart-line',     'href' => '#'],
-    'patch_notes' => ['label' => 'Patch Notes',  'icon' => 'fa-scroll',         'href' => '#'],
-    'settings'    => ['label' => 'Definições',   'icon' => 'fa-sliders',        'href' => '#'],
+    'dashboard'    => ['label' => 'Dashboard',     'icon' => 'fa-chart-pie',      'href' => 'index.php'],
+    'users'        => ['label' => 'Utilizadores',  'icon' => 'fa-users',          'href' => 'users.php'],
+    'content'      => ['label' => 'Conteúdos',     'icon' => 'fa-folder-open',    'href' => '#'],
+    'tickets'      => ['label' => 'Tickets',       'icon' => 'fa-ticket',         'href' => '#'],
+    'stats'        => ['label' => 'Estatísticas',  'icon' => 'fa-chart-line',     'href' => '#'],
+    'patch_notes'  => ['label' => 'Patch Notes',   'icon' => 'fa-scroll',         'href' => '#'],
+    'diagnostics'  => ['label' => 'Diagnóstico',   'icon' => 'fa-stethoscope',    'href' => 'diagnostics.php'],
+    'settings'     => ['label' => 'Definições',    'icon' => 'fa-sliders',        'href' => '#'],
 ];
 ?>
 <aside class="gest-sidebar" aria-label="Navegação">
