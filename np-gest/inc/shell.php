@@ -51,6 +51,7 @@ function gest_shell_foot(array $scripts = []): void
         $s = htmlspecialchars($src, ENT_QUOTES, 'UTF-8');
         echo '<script src="' . $s . '"></script>' . "\n";
     } ?>
+    <script src="assets/js/realtime.js"></script>
 </body>
 </html>
     <?php

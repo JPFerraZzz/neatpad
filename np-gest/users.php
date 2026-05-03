@@ -78,9 +78,12 @@ function gest_sort_href(string $col): string
 gest_shell_head('Utilizadores');
 $csrf = gest_csrf_token();
 ?>
-            <div class="gest-page-head">
-                <h1 class="gest-page-title">Utilizadores</h1>
-                <p class="gest-page-lead">Contas da app NeatPad (Firebase UID). Importa <code>np-gest/install_users.mysql</code> na BD se ainda não existirem as tabelas <code>np_gest_*</code>.</p>
+            <div class="gest-page-head gest-page-head--row">
+                <div>
+                    <h1 class="gest-page-title">Utilizadores</h1>
+                    <p class="gest-page-lead">Contas da app NeatPad (Firebase UID). Importa <code>np-gest/install_users.mysql</code> na BD se ainda não existirem as tabelas <code>np_gest_*</code>.</p>
+                </div>
+                <span id="gestLiveDot" class="gest-live-dot gest-live-dot--sub" aria-label="Actualização em tempo real">● Ao vivo</span>
             </div>
 
             <form class="gest-filters" method="get" action="users.php">
@@ -138,7 +141,7 @@ $csrf = gest_csrf_token();
             <p class="gest-muted-line">Total: <?php echo (int) $total; ?> · Página <?php echo (int) $q['page']; ?> de <?php echo (int) $pages; ?></p>
 
             <div class="gest-table-wrap">
-                <table class="gest-table">
+                <table class="gest-table" id="gestUsersTable">
                     <thead>
                         <tr>
                             <th></th>
@@ -156,14 +159,22 @@ $csrf = gest_csrf_token();
                         <?php foreach ($rows as $r):
                             $initial = gest_avatar_letter((string) $r['display_name'], (string) $r['email']);
                             $uidu = rawurlencode((string) $r['uid']);
+                            $uidRaw = (string) $r['uid'];
+                            $st = (string) $r['status'];
+                            $isOnline = !empty($r['last_seen'])
+                                && $st === 'active'
+                                && (strtotime((string) $r['last_seen']) >= time() - 300);
                             ?>
-                            <tr>
-                                <td class="gest-table__avatar"><span class="gest-avatar" title="<?php echo htmlspecialchars((string) $r['uid'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($initial, ENT_QUOTES, 'UTF-8'); ?></span></td>
+                            <tr data-gest-uid="<?php echo htmlspecialchars($uidRaw, ENT_QUOTES, 'UTF-8'); ?>">
+                                <td class="gest-table__avatar"><span class="gest-avatar" title="<?php echo htmlspecialchars($uidRaw, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($initial, ENT_QUOTES, 'UTF-8'); ?></span></td>
                                 <td><?php echo htmlspecialchars((string) $r['display_name'] ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td class="gest-table__mono"><?php echo htmlspecialchars((string) $r['email'] ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><span class="gest-tag gest-tag--role"><?php echo htmlspecialchars((string) $r['app_role'], ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                <td><span class="gest-tag gest-tag--<?php echo htmlspecialchars((string) $r['status'], ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) $r['status'], ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                <td class="gest-table__date"><?php echo htmlspecialchars(substr((string) ($r['last_act'] ?? ''), 0, 16) ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td class="gest-cell-status"><span class="gest-tag gest-tag--<?php echo htmlspecialchars($st, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($st, ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                <td class="gest-table__date gest-cell-lastact">
+                                    <span class="gest-cell-lastact__time"><?php echo htmlspecialchars(substr((string) ($r['last_act'] ?? ''), 0, 16) ?: '—', ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <span class="gest-online-badge"<?php echo $isOnline ? '' : ' hidden'; ?>>● Online</span>
+                                </td>
                                 <td class="gest-table__date"><?php echo htmlspecialchars(substr((string) ($r['reg_at'] ?? ''), 0, 10) ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><?php echo (int) $r['item_count']; ?></td>
                                 <td class="gest-table__actions">

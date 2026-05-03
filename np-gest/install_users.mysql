@@ -72,3 +72,6 @@ CREATE TABLE IF NOT EXISTS np_gest_app_error_log (
     INDEX idx_uid_created (uid, created_at DESC),
     INDEX idx_ip_created (ip, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Sem INSERT de utilizadores fictícios. Remove meta de teste (prefixos óbvios) se existir:
+DELETE FROM np_gest_user_meta WHERE uid REGEXP '^(test_|demo_|dummy_)';

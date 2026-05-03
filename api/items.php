@@ -6,6 +6,8 @@ require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/sanitize.php';
 
 $db     = getDB();
+require_once __DIR__ . '/../np-gest/inc/app_last_seen.php';
+neatpad_touch_last_seen($db, $uid);
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = getInput();
 

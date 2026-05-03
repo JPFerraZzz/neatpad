@@ -31,6 +31,8 @@ if ($method === 'POST') {
 // GET — estado da sessão
 if ($method === 'GET') {
     if (!empty($_SESSION['uid'])) {
+        require_once __DIR__ . '/../np-gest/inc/app_last_seen.php';
+        neatpad_touch_last_seen(getDB(), (string) $_SESSION['uid']);
         echo json_encode([
             'success' => true,
             'data'    => [
@@ -89,6 +91,9 @@ if ($method === 'POST') {
         // Tolerante a updates de browser e à transição browser→PWA standalone.
         $_SESSION['fp']    = uaFamilyFingerprint();
         $_SESSION['login_at'] = time();
+
+        require_once __DIR__ . '/../np-gest/inc/app_last_seen.php';
+        neatpad_touch_last_seen(getDB(), (string) $_SESSION['uid']);
 
         echo json_encode([
             'success' => true,
