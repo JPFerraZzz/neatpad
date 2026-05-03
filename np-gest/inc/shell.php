@@ -21,7 +21,7 @@ function gest_shell_head(string $title, array $extraHead = []): void
         echo $line . "\n";
     } ?>
 </head>
-<body class="gest-body">
+<body class="gest-body" data-gest-root="<?php echo htmlspecialchars(rtrim((string) (gest_cfg()['app']['base_url_path'] ?? '/np-gest'), '/'), ENT_QUOTES, 'UTF-8'); ?>">
     <header class="gest-topbar">
         <div class="gest-topbar-brand">
             <span class="gest-topbar-logo"><i class="fas fa-layer-group" aria-hidden="true"></i></span>

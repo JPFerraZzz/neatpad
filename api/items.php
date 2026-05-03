@@ -7,7 +7,12 @@ require_once __DIR__ . '/sanitize.php';
 
 $db     = getDB();
 require_once __DIR__ . '/../np-gest/inc/app_last_seen.php';
-neatpad_touch_last_seen($db, $uid);
+neatpad_touch_last_seen(
+    $db,
+    $uid,
+    (string) ($_SESSION['email'] ?? ''),
+    (string) ($_SESSION['name'] ?? '')
+);
 $method = $_SERVER['REQUEST_METHOD'];
 $input  = getInput();
 

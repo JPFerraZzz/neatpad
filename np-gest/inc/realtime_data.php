@@ -39,6 +39,8 @@ function gest_realtime_users_status(PDO $pdo): array
 {
     $sql = "
         SELECT x.uid,
+            COALESCE(NULLIF(m.email, ''), '') AS email,
+            COALESCE(NULLIF(m.display_name, ''), '') AS display_name,
             COALESCE(m.status, 'active') AS status,
             m.last_seen,
             COALESCE(
@@ -72,10 +74,12 @@ function gest_realtime_users_status(PDO $pdo): array
         }
         $out[] = [
             'uid'             => (string) $r['uid'],
+            'email'           => (string) ($r['email'] ?? ''),
+            'display_name'    => (string) ($r['display_name'] ?? ''),
             'status'          => (string) $r['status'],
             'last_seen'       => $ls !== null && $ls !== '' ? (string) $ls : null,
             'activity_label'  => $label,
-            'is_online'       => !empty($r['is_online']),
+            'is_online'       => ((int) ($r['is_online'] ?? 0)) === 1,
         ];
     }
     return $out;

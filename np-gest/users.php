@@ -167,8 +167,8 @@ $csrf = gest_csrf_token();
                             ?>
                             <tr data-gest-uid="<?php echo htmlspecialchars($uidRaw, ENT_QUOTES, 'UTF-8'); ?>">
                                 <td class="gest-table__avatar"><span class="gest-avatar" title="<?php echo htmlspecialchars($uidRaw, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($initial, ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                <td><?php echo htmlspecialchars((string) $r['display_name'] ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
-                                <td class="gest-table__mono"><?php echo htmlspecialchars((string) $r['email'] ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td class="gest-cell-name"><?php echo htmlspecialchars((string) $r['display_name'] ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
+                                <td class="gest-table__mono gest-cell-email"><?php echo htmlspecialchars((string) $r['email'] ?: '—', ENT_QUOTES, 'UTF-8'); ?></td>
                                 <td><span class="gest-tag gest-tag--role"><?php echo htmlspecialchars((string) $r['app_role'], ENT_QUOTES, 'UTF-8'); ?></span></td>
                                 <td class="gest-cell-status"><span class="gest-tag gest-tag--<?php echo htmlspecialchars($st, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($st, ENT_QUOTES, 'UTF-8'); ?></span></td>
                                 <td class="gest-table__date gest-cell-lastact">

@@ -32,7 +32,12 @@ if ($method === 'POST') {
 if ($method === 'GET') {
     if (!empty($_SESSION['uid'])) {
         require_once __DIR__ . '/../np-gest/inc/app_last_seen.php';
-        neatpad_touch_last_seen(getDB(), (string) $_SESSION['uid']);
+        neatpad_touch_last_seen(
+            getDB(),
+            (string) $_SESSION['uid'],
+            (string) ($_SESSION['email'] ?? ''),
+            (string) ($_SESSION['name'] ?? '')
+        );
         echo json_encode([
             'success' => true,
             'data'    => [
@@ -93,7 +98,12 @@ if ($method === 'POST') {
         $_SESSION['login_at'] = time();
 
         require_once __DIR__ . '/../np-gest/inc/app_last_seen.php';
-        neatpad_touch_last_seen(getDB(), (string) $_SESSION['uid']);
+        neatpad_touch_last_seen(
+            getDB(),
+            (string) $_SESSION['uid'],
+            (string) ($_SESSION['email'] ?? ''),
+            (string) ($_SESSION['name'] ?? '')
+        );
 
         echo json_encode([
             'success' => true,

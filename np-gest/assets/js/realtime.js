@@ -3,12 +3,24 @@
 
     var INTERVAL_MS = 30000;
 
+    function apiRootPrefix() {
+        var r = document.body ? document.body.getAttribute('data-gest-root') : '';
+        if (!r) return '';
+        if (r.charAt(0) !== '/') {
+            r = '/' + r;
+        }
+        return r.replace(/\/$/, '') + '/';
+    }
+
     function apiUrl(type) {
-        return 'api/realtime.php?type=' + encodeURIComponent(type);
+        return apiRootPrefix() + 'api/realtime.php?type=' + encodeURIComponent(type);
     }
 
     function fetchJson(url) {
         return fetch(url, { credentials: 'same-origin' }).then(function (r) {
+            if (!r.ok) {
+                return { success: false };
+            }
             return r.json().catch(function () {
                 return { success: false };
             });
@@ -56,15 +68,31 @@
         return null;
     }
 
+    function isTruthyOnline(raw) {
+        return raw === true || raw === 1 || raw === '1';
+    }
+
     function applyUserRow(u) {
         var tr = findRow(u.uid);
         if (!tr) return;
 
+        var st = (u.status || 'active').toString().toLowerCase();
         var stEl = tr.querySelector('.gest-cell-status .gest-tag');
         if (stEl) {
-            var st = u.status || 'active';
             stEl.className = 'gest-tag gest-tag--' + st;
             stEl.textContent = st;
+        }
+
+        var nameEl = tr.querySelector('.gest-cell-name');
+        if (nameEl && Object.prototype.hasOwnProperty.call(u, 'display_name')) {
+            var dn = (u.display_name || '').toString().trim();
+            nameEl.textContent = dn || '—';
+        }
+
+        var emailEl = tr.querySelector('.gest-cell-email');
+        if (emailEl && Object.prototype.hasOwnProperty.call(u, 'email')) {
+            var em = (u.email || '').toString().trim();
+            emailEl.textContent = em || '—';
         }
 
         var timeEl = tr.querySelector('.gest-cell-lastact__time');
@@ -72,7 +100,16 @@
 
         var badge = tr.querySelector('.gest-online-badge');
         if (badge) {
-            badge.hidden = !u.is_online;
+            var online = st === 'active' && isTruthyOnline(u.is_online);
+            badge.hidden = !online;
+        }
+
+        var av = tr.querySelector('.gest-avatar');
+        if (av && u.display_name) {
+            var t = u.display_name.toString().trim();
+            if (t) {
+                av.textContent = t.charAt(0).toUpperCase();
+            }
         }
     }
 
