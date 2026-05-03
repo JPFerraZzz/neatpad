@@ -5,7 +5,30 @@
  */
 declare(strict_types=1);
 
-if (!is_readable(__DIR__ . '/config.php')) {
+$gestConfigPrimary = __DIR__ . '/config.php';
+$gestConfigFromEnv = trim((string) (getenv('NP_GEST_CONFIG_PATH') ?: ''));
+$gestConfigCandidates = [];
+if ($gestConfigFromEnv !== '') {
+    $gestConfigCandidates[] = $gestConfigFromEnv;
+}
+$gestConfigCandidates[] = $gestConfigPrimary;
+
+$gestConfigResolved = null;
+foreach ($gestConfigCandidates as $gestConfigTry) {
+    if (is_readable($gestConfigTry)) {
+        $gestConfigResolved = $gestConfigTry;
+        break;
+    }
+}
+
+if ($gestConfigResolved === null) {
+    error_log(sprintf(
+        '[np-gest] config ilegível. primary=%s exists=%s readable=%s | NP_GEST_CONFIG_PATH=%s',
+        $gestConfigPrimary,
+        file_exists($gestConfigPrimary) ? '1' : '0',
+        is_readable($gestConfigPrimary) ? '1' : '0',
+        $gestConfigFromEnv !== '' ? '(definido)' : '(vazio)'
+    ));
     if (!headers_sent()) {
         header('Content-Type: text/plain; charset=utf-8', true, 503);
     }
@@ -13,7 +36,7 @@ if (!is_readable(__DIR__ . '/config.php')) {
 }
 
 /** @var array $GEST_CFG */
-$GEST_CFG = require __DIR__ . '/config.php';
+$GEST_CFG = require $gestConfigResolved;
 
 function gest_cfg(): array
 {

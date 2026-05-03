@@ -3,6 +3,11 @@
  * NeatPad Studio — configuração (exemplo).
  * Copiar para config.php no servidor e preencher valores.
  * Não commitar config.php.
+ *
+ * Alternativa (Docker / segredos): definir NP_GEST_CONFIG_PATH com caminho absoluto
+ * para um ficheiro PHP que devolve o mesmo array (legível pelo www-data).
+ *
+ * Diagnóstico no servidor: php np-gest/check_setup.php
  */
 declare(strict_types=1);
 
