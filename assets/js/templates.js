@@ -2880,7 +2880,16 @@ window.Templates = {
             const p = pc[notebook.priority] || pc.low;
 
             let htmlContent = notebook.content || '';
-            if (htmlContent && !htmlContent.trim().startsWith('<')) {
+            // Deteção fiável de HTML: se o conteúdo contém qualquer tag HTML, é
+            // tratado como HTML e NUNCA escapado. Só texto simples (notas antigas
+            // sem marcação) é convertido em parágrafos.
+            //
+            // Antes usava-se `startsWith('<')`, que classificava mal o HTML de um
+            // contenteditable (que começa muitas vezes por um nó de texto, ex.:
+            // "Olá<div>linha</div>") como texto simples, escapava as tags reais e
+            // mostrava-as como texto literal no caderno. Ver docs/legacy-bugs.md.
+            const looksLikeHtml = /<[a-z!\/][^>]*>/i.test(htmlContent);
+            if (htmlContent && !looksLikeHtml) {
                 htmlContent = htmlContent
                     .split('\n')
                     .map(line => line.trim() ? `<p>${escapeHtml(line)}</p>` : '<br>')

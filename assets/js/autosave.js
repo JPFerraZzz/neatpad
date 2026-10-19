@@ -255,27 +255,28 @@ window.Autosave = {
         overlay.id = 'draft-recovery-overlay';
         overlay.innerHTML = `
             <div style="
-                position:fixed; inset:0; background:rgba(0,0,0,0.5);
+                position:fixed; inset:0; background:var(--overlay, rgba(0,0,0,0.5));
                 display:flex; align-items:center; justify-content:center;
-                z-index:100000; font-family:system-ui,sans-serif;">
+                z-index:100000; font-family:var(--font, system-ui,sans-serif);">
                 <div style="
-                    background:#fff; border-radius:16px; padding:32px;
-                    max-width:480px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                    background:var(--bg-surface,#fff); border-radius:var(--radius-xl,16px); padding:32px;
+                    max-width:480px; width:90%; box-shadow:var(--elev-3, 0 20px 60px rgba(0,0,0,0.3));
+                    border:1px solid var(--border,transparent);">
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-                        <div style="width:44px;height:44px;border-radius:12px;background:#fef3e2;
+                        <div style="width:44px;height:44px;border-radius:12px;background:var(--bg-subtle,#fef3e2);
                                     display:flex;align-items:center;justify-content:center;">
-                            <i class="fas fa-exclamation-triangle" style="color:#e67e22;font-size:20px;"></i>
+                            <i class="fas fa-exclamation-triangle" style="color:var(--warning,#e67e22);font-size:20px;"></i>
                         </div>
                         <div>
-                            <h3 style="margin:0;font-size:18px;color:#1a1f36;">Draft encontrado</h3>
-                            <p style="margin:2px 0 0;font-size:13px;color:#8892a4;">${age}</p>
+                            <h3 style="margin:0;font-size:18px;color:var(--text,#1a1f36);">Draft encontrado</h3>
+                            <p style="margin:2px 0 0;font-size:13px;color:var(--text-subtle,#8892a4);">${age}</p>
                         </div>
                     </div>
-                    <p style="color:#4a5568;font-size:14px;line-height:1.6;margin-bottom:8px;">
+                    <p style="color:var(--text-muted,#4a5568);font-size:14px;line-height:1.6;margin-bottom:8px;">
                         Existe um rascunho local que não foi guardado no servidor. Pode ter sido causado por um crash ou falha de conexão.
                     </p>
-                    <div style="background:#f7f8fc;border-radius:8px;padding:12px;margin-bottom:20px;
-                                font-size:13px;color:#4a5568;border:1px solid #e2e8f0;">
+                    <div style="background:var(--bg-subtle,#f7f8fc);border-radius:8px;padding:12px;margin-bottom:20px;
+                                font-size:13px;color:var(--text-muted,#4a5568);border:1px solid var(--border,#e2e8f0);">
                         <strong>Prévia:</strong> ${previewText}…
                     </div>
                     <div style="display:flex;gap:10px;justify-content:flex-end;">
