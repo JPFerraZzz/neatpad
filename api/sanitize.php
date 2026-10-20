@@ -151,6 +151,14 @@ function neatpad_walk_and_sanitize(DOMNode $node, DOMDocument $doc): void {
             }
 
             if (!in_array($tag, NEATPAD_ALLOWED_TAGS, true)) {
+                // Elementos cujo conteúdo nunca deve sobreviver: removidos com os filhos.
+                if (in_array($tag, ['script', 'style', 'iframe', 'object', 'embed', 'template', 'noscript', 'svg', 'math', 'form', 'textarea', 'select', 'button'], true)) {
+                    $child->parentNode->removeChild($child);
+                    continue;
+                }
+                // Os filhos que vão subir de nível também têm de ser sanitizados, senão
+                // <foo><img onerror=...></foo> passaria sem filtragem.
+                neatpad_walk_and_sanitize($child, $doc);
                 // Move filhos para fora e remove o nó
                 while ($child->firstChild) {
                     $child->parentNode->insertBefore($child->firstChild, $child);
