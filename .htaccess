@@ -11,7 +11,7 @@ Options -Indexes
 
 # ── Bloquear acesso direto a ficheiros sensíveis ────────────────────
 # .htaccess, .env, configs, SQL, scripts de setup, docs internos
-<FilesMatch "^(\.htaccess|\.env.*|config\.php|.*\.example\.(php|js)|.*\.sql|setup-linux\.sh|composer\.(json|lock)|README\.md|\.gitignore)$">
+<FilesMatch "^(\.htaccess|\.env.*|config\.php|.*\.example\.(php|js)|.*\.(sql|mysql)|setup-linux\.sh|composer\.(json|lock)|README\.md|\.gitignore)$">
     Require all denied
 </FilesMatch>
 

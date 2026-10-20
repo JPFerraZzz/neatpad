@@ -14,11 +14,10 @@ require_once __DIR__ . '/db.php';
 // Secret obrigatório em produção; em desenvolvimento permite fallback local inseguro.
 $webhookSecret = getenv('WEBHOOK_SECRET');
 if ($webhookSecret === false || $webhookSecret === '') {
-    if (NEATPAD_IS_PRODUCTION) {
-        error_log('[NeatPad webhook] WEBHOOK_SECRET em falta em produção');
-        jsonResponse(false, null, 'Serviço indisponível', 503);
-    }
-    $webhookSecret = 'neatpad-dev-webhook-insecure';
+    // Sem segredo configurado o endpoint fica desligado em qualquer ambiente
+    // (antes usava um segredo por defeito público no repositório).
+    error_log('[NeatPad webhook] WEBHOOK_SECRET em falta');
+    jsonResponse(false, null, 'Serviço indisponível', 503);
 }
 define('WEBHOOK_SECRET', $webhookSecret);
 define('OLLAMA_HOST',  getenv('OLLAMA_HOST')  ?: '172.17.0.1');
