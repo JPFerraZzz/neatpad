@@ -2866,6 +2866,18 @@ window.Templates = {
             });
         },
 
+        // Conteúdo guardado é HTML do editor ou texto simples legado. O contenteditable
+        // do Chrome gera "texto<div>..</div>", que não começa por "<", por isso a
+        // deteção olha para a presença de qualquer tag e não só para o primeiro carácter.
+        _contentToHtml(raw) {
+            const content = raw || '';
+            if (!content || /<\/?[a-z][^>]*>/i.test(content)) return content;
+            return content
+                .split('\n')
+                .map(line => line.trim() ? `<p>${escapeHtml(line)}</p>` : '<br>')
+                .join('');
+        },
+
         renderNotebookView(notebook) {
             if (!notebook) {
                 return `
@@ -2879,13 +2891,7 @@ window.Templates = {
             const pc = this._priorityConfig;
             const p = pc[notebook.priority] || pc.low;
 
-            let htmlContent = notebook.content || '';
-            if (htmlContent && !htmlContent.trim().startsWith('<')) {
-                htmlContent = htmlContent
-                    .split('\n')
-                    .map(line => line.trim() ? `<p>${escapeHtml(line)}</p>` : '<br>')
-                    .join('');
-            }
+            let htmlContent = this._contentToHtml(notebook.content);
             // Em modo de visualização não queremos áreas editáveis (heranças
             // do editor: callouts, tabelas, etc.). Removemos o atributo;
             // a estrutura visual mantém-se. Em modo de edição, _normalizeCallouts
@@ -4604,11 +4610,7 @@ window.Templates = {
             // Garante que não fica toolbar mobile anterior (da sessão anterior)
             document.getElementById('nbMobileToolbar')?.remove();
 
-            let htmlContent = notebook.content || '';
-            if (htmlContent && !htmlContent.trim().startsWith('<')) {
-                htmlContent = htmlContent.split('\n')
-                    .map(l => l.trim() ? `<p>${escapeHtml(l)}</p>` : '<br>').join('');
-            }
+            let htmlContent = this._contentToHtml(notebook.content);
             // Strip contenteditable (re-aplicado por _normalizeCallouts)
             htmlContent = htmlContent.replace(/\s+contenteditable\s*=\s*("[^"]*"|'[^']*'|\S+)/gi, '');
 
