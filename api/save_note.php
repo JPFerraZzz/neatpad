@@ -20,6 +20,9 @@ if (empty($input['item_id'])) {
 $itemId     = (int) $input['item_id'];
 $content    = $input['content'] ?? null;
 $savedBy    = $input['saved_by'] ?? 'autosave';
+if (!in_array($savedBy, ['autosave', 'manual', 'manual_snapshot'], true)) {
+    $savedBy = 'autosave';
+}
 $isSnapshot = ($savedBy === 'manual_snapshot');
 
 if (!$isSnapshot && $content === null) {
@@ -38,27 +41,32 @@ if (!$isSnapshot && is_string($content)) {
 try {
     $db = getDB();
 
+    // A transação abre antes da leitura e o item fica bloqueado (FOR UPDATE): sem isto,
+    // dois saves em paralelo liam o mesmo estado, geravam o mesmo número de versão
+    // e um deles sobrescrevia o outro.
+    $db->beginTransaction();
+
     // Verificar que o item pertence ao utilizador autenticado
     $stmt = $db->prepare("
         SELECT i.id, i.content FROM items i
         JOIN categories c ON c.id = i.category_id
         WHERE i.id = ? AND c.user_uid = ?
+        FOR UPDATE
     ");
     $stmt->execute([$itemId, $uid]);
     $item = $stmt->fetch();
 
     if (!$item) {
+        $db->rollBack();
         jsonResponse(false, null, 'Item não encontrado', 404);
     }
-
-    $db->beginTransaction();
 
     if ($isSnapshot) {
         if (empty($item['content'])) {
             $db->rollBack();
             jsonResponse(false, null, 'Item sem conteúdo para guardar como versão', 400);
         }
-        $versionName = isset($input['version_name']) ? trim((string) $input['version_name']) : null;
+        $versionName = isset($input['version_name']) ? mb_substr(trim(strip_tags((string) $input['version_name'])), 0, 255) : null;
         if ($versionName === '') $versionName = null;
 
         $stmt = $db->prepare("SELECT COALESCE(MAX(version), 0) + 1 AS next_version FROM note_versions WHERE item_id = ?");
@@ -92,12 +100,13 @@ try {
         $stmt = $db->prepare("INSERT INTO note_versions (item_id, content, version, saved_by) VALUES (:item_id, :content, :version, :saved_by)");
         $stmt->execute(['item_id' => $itemId, 'content' => $item['content'], 'version' => $nextVersion, 'saved_by' => $savedBy]);
 
+        // Só as versões automáticas são podadas; as manuais (com nome) ficam sempre.
         $stmt = $db->prepare("
             DELETE FROM note_versions
-            WHERE item_id = ?
+            WHERE item_id = ? AND saved_by = 'autosave'
             AND id NOT IN (
                 SELECT id FROM (
-                    SELECT id FROM note_versions WHERE item_id = ? ORDER BY version DESC LIMIT 50
+                    SELECT id FROM note_versions WHERE item_id = ? AND saved_by = 'autosave' ORDER BY version DESC LIMIT 50
                 ) AS keep_versions
             )
         ");
