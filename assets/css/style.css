@@ -2048,3 +2048,20 @@ html[data-bg="paper"] body {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ── Toque (tablet e telemóvel) ───────────────────────────────
+   Alvos de pelo menos 44px e campos a 16px (abaixo disso o iOS faz zoom ao focar).
+   Os botões de editar/eliminar da lista de cadernos deixam de depender de hover. */
+@media (pointer: coarse) {
+    .btn, .btn-sm, .popup-close, .sheet-close, .modal-close, .nb-version-close,
+    .nb-version-restore, .note-action-btn, .excel-action-btn, .category-action-btn,
+    .nb-btn-sm, .nb-tool, .nb-mtool, .nbe-topbar-btn, .nbe-kbtn {
+        min-height: 44px !important;
+        min-width: 44px !important;
+    }
+    .form-control, .nb-search, .nb-rich-editor, .nbe-sheet-search,
+    input:not([type="checkbox"]):not([type="radio"]):not([type="color"]), select, textarea {
+        font-size: 16px !important;
+    }
+    .nb-item-btns { opacity: 1 !important; }
+}
