@@ -5,8 +5,8 @@
 -- aplicável; endpoints apagam dependências explicitamente quando necessário.
 -- Não existe soft delete (deleted_at) neste schema.
 
-DROP DATABASE IF EXISTS neatpad;
-CREATE DATABASE neatpad CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+-- Não faz DROP DATABASE: correr este ficheiro num servidor com dados já não os apaga.
+CREATE DATABASE IF NOT EXISTS neatpad CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE neatpad;
 
 -- ── 1. Categorias ───────────────────────────────
@@ -71,6 +71,22 @@ CREATE TABLE note_versions (
     FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
     INDEX idx_item_version (item_id, version DESC),
     INDEX idx_item_created (item_id, created_at DESC)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ── 6. Patch notes (geradas a partir dos commits) ─
+CREATE TABLE IF NOT EXISTS patch_notes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    commit_hash VARCHAR(40) NOT NULL,
+    commit_message VARCHAR(500) NOT NULL,
+    generated_notes TEXT,
+    type VARCHAR(32) NOT NULL DEFAULT 'other',
+    title VARCHAR(500) DEFAULT NULL,
+    summary TEXT DEFAULT NULL,
+    changes_list JSON DEFAULT NULL,
+    impact TEXT DEFAULT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_commit_hash (commit_hash),
+    INDEX idx_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ── Verificação ─────────────────────────────────
