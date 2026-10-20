@@ -9,7 +9,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     jsonResponse(false, null, 'Método não suportado', 405);
 }
 
-rateLimit('save_note:' . $uid, 200, 3600);
+// Com debounce de 2,5 s um limite de 200/h cortava os saves ao fim de ~8 minutos de escrita
+rateLimit('save_note:' . $uid, 1500, 3600);
 
 $input = getInput();
 
@@ -35,7 +36,7 @@ if (!$isSnapshot && is_string($content)) {
     if (strlen($content) > 1048576) {
         jsonResponse(false, null, 'Conteúdo demasiado grande', 413);
     }
-    $content = neatpad_sanitize_html($content);
+    // A sanitização HTML depende do tipo da categoria e faz-se depois de ler o item
 }
 
 try {
@@ -48,7 +49,7 @@ try {
 
     // Verificar que o item pertence ao utilizador autenticado
     $stmt = $db->prepare("
-        SELECT i.id, i.content FROM items i
+        SELECT i.id, i.content, c.template_type FROM items i
         JOIN categories c ON c.id = i.category_id
         WHERE i.id = ? AND c.user_uid = ?
         FOR UPDATE
@@ -59,6 +60,11 @@ try {
     if (!$item) {
         $db->rollBack();
         jsonResponse(false, null, 'Item não encontrado', 404);
+    }
+
+    // Só os cadernos guardam HTML; nos outros tipos o texto simples seria estragado
+    if (!$isSnapshot && is_string($content) && $item['template_type'] === 'notebooks') {
+        $content = neatpad_sanitize_html($content);
     }
 
     if ($isSnapshot) {
