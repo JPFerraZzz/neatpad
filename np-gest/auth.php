@@ -59,14 +59,19 @@ function gest_send_security_headers(): void
 
 function gest_client_ip(): string
 {
+    // Só confia em X-Forwarded-For vindo de proxy privado e usa a última entrada
+    // (a primeira é controlada pelo cliente e permitia contornar o bloqueio de login).
+    $remote = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     $fwd = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-    if ($fwd !== '') {
-        $first = trim(explode(',', $fwd)[0]);
-        if ($first !== '') {
-            return $first;
+    $isPrivateProxy = filter_var($remote, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+    if ($fwd !== '' && $isPrivateProxy) {
+        $parts = array_map('trim', explode(',', $fwd));
+        $last = end($parts);
+        if ($last !== '' && filter_var($last, FILTER_VALIDATE_IP) !== false) {
+            return $last;
         }
     }
-    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    return $remote;
 }
 
 function gest_pdo(): PDO
