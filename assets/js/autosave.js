@@ -7,7 +7,13 @@ window.Autosave = {
 
     _timers: {},
     _lastSaved: {},
+    // Conteúdo ainda não confirmado pelo servidor, por item: { itemId, content, opts, since }
+    _pending: {},
+    _retryTimers: {},
     DEBOUNCE_MS: 2500,
+    // Sem isto, quem escreve com pausas menores que o debounce nunca chegava a gravar
+    MAX_WAIT_MS: 15000,
+    RETRY_MS: 10000,
     DRAFT_PREFIX: 'ferraz_draft_',
 
     // ── Status indicator ────────────────────────
@@ -129,12 +135,16 @@ window.Autosave = {
             // Guardar draft local imediatamente
             this.saveDraft(itemId, content);
 
-            // Debounce do save remoto
+            // Debounce do save remoto, com tempo máximo de espera
             if (this._timers[key]) clearTimeout(this._timers[key]);
+            const since = this._pending[key] ? this._pending[key].since : Date.now();
+            this._pending[key] = { itemId, content, opts, since };
+            const wait = Math.max(0, Math.min(this.DEBOUNCE_MS, this.MAX_WAIT_MS - (Date.now() - since)));
 
             this._timers[key] = setTimeout(() => {
+                delete this._timers[key];
                 this._saveToServer(itemId, content, opts);
-            }, this.DEBOUNCE_MS);
+            }, wait);
         };
     },
 
@@ -163,11 +173,38 @@ window.Autosave = {
      */
     unregister(itemId) {
         const key = String(itemId);
+        // Fechar o editor não pode deitar fora o que foi escrito nos últimos segundos
+        this.flush(key);
         if (this._timers[key]) {
             clearTimeout(this._timers[key]);
             delete this._timers[key];
         }
+        clearTimeout(this._retryTimers[key]);
+        delete this._retryTimers[key];
+        delete this._pending[key];
         delete this._lastSaved[key];
+    },
+
+    /** Descarta o que estava pendente (ex: depois de um save manual bem-sucedido). */
+    discardPending(itemId) {
+        const key = String(itemId);
+        if (this._timers[key]) { clearTimeout(this._timers[key]); delete this._timers[key]; }
+        delete this._pending[key];
+    },
+
+    /**
+     * Envia já o conteúdo pendente de um item (ou de todos). `keepalive` deixa o pedido
+     * sobreviver ao fecho do separador (pagehide).
+     */
+    flush(itemKey, keepalive = false) {
+        const keys = itemKey ? [String(itemKey)] : Object.keys(this._pending);
+        for (const key of keys) {
+            const p = this._pending[key];
+            if (!p) continue;
+            if (this._timers[key]) { clearTimeout(this._timers[key]); delete this._timers[key]; }
+            if (this._lastSaved[key] === p.content) { delete this._pending[key]; continue; }
+            this._saveToServer(p.itemId, p.content, { ...p.opts, keepalive });
+        }
     },
 
     // ── API call ────────────────────────────────
@@ -188,6 +225,7 @@ window.Autosave = {
             const response = await fetch(`${API_URL}/save_note.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                keepalive: !!opts.keepalive && content.length < 60000,
                 body: JSON.stringify({
                     item_id:  itemId,
                     content:  content,
@@ -195,6 +233,14 @@ window.Autosave = {
                 }),
             });
 
+            if (response.status === 401) {
+                const e = new Error('Sessão expirada. Volta a iniciar sessão; o texto está guardado neste dispositivo.');
+                e.noRetry = true;
+                throw e;
+            }
+            if (response.status === 429) {
+                throw new Error('Demasiados guardados seguidos. A tentar de novo em instantes.');
+            }
             if (!response.ok) {
                 throw new Error(`HTTP ${response.status}`);
             }
@@ -203,7 +249,14 @@ window.Autosave = {
 
             if (data.success) {
                 this._lastSaved[key] = content;
-                this.clearDraft(itemId);
+                // Só limpa o rascunho e o pendente se não houve escrita nova durante o pedido
+                const pend = this._pending[key];
+                if (!pend || pend.content === content) {
+                    delete this._pending[key];
+                    this.clearDraft(itemId);
+                }
+                clearTimeout(this._retryTimers[key]);
+                delete this._retryTimers[key];
                 this._showStatus('saved', savedBy === 'manual' ? 'Guardado manualmente' : 'Guardado automaticamente');
                 if (opts.onSaved) opts.onSaved(data);
             } else {
@@ -211,7 +264,17 @@ window.Autosave = {
             }
         } catch (err) {
             console.error('Autosave error:', err);
-            this._showStatus('error', 'Erro ao guardar — draft local mantido');
+            const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+            this._showStatus(offline ? 'offline' : 'error',
+                offline ? 'Sem ligação — a tentar de novo quando voltar' : (err.message && !/^HTTP|Failed to fetch|NetworkError/i.test(err.message) ? err.message : 'Erro ao guardar — a tentar de novo'));
+            // Tenta outra vez enquanto o editor estiver aberto (o rascunho local fica como cópia)
+            if (!err.noRetry && this._pending[key] && !this._retryTimers[key]) {
+                this._retryTimers[key] = setTimeout(() => {
+                    delete this._retryTimers[key];
+                    const p = this._pending[key];
+                    if (p) this._saveToServer(p.itemId, p.content, p.opts);
+                }, this.RETRY_MS);
+            }
             // Draft local já está guardado, serve como backup
             if (opts.onError) opts.onError(err);
         }
@@ -455,3 +518,10 @@ window.Autosave = {
         }
     },
 };
+
+// Não perder texto ao sair, trocar de separador ou voltar a ter rede
+window.addEventListener('pagehide', () => Autosave.flush(null, true));
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') Autosave.flush(null, true);
+});
+window.addEventListener('online', () => Autosave.flush());
