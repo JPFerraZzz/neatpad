@@ -1,7 +1,7 @@
 # NeatPad Studio — pasta np-gest
 Options -Indexes
 
-<FilesMatch "^(config|auth)\.php$">
+<FilesMatch "^(config|auth)\.php$|\.(mysql|sql)$">
     Require all denied
 </FilesMatch>
 

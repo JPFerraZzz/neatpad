@@ -20,12 +20,10 @@ if ($method === 'POST') {
     rateLimit('items_create:' . $uid, 80, 3600);
 }
 
-// Sanitiza conteúdo rich-text quando o pedido vem com `content` HTML
-if (is_array($input) && isset($input['content']) && is_string($input['content'])) {
-    if (strlen($input['content']) > 1048576) {
-        jsonResponse(false, null, 'Conteúdo demasiado grande', 413);
-    }
-    $input['content'] = neatpad_sanitize_html($input['content']);
+// Limite defensivo de tamanho do conteúdo
+if (is_array($input) && isset($input['content']) && is_string($input['content'])
+    && strlen($input['content']) > 1048576) {
+    jsonResponse(false, null, 'Conteúdo demasiado grande', 413);
 }
 // Sanitiza títulos e campos textuais simples (remove tags por completo)
 foreach (['title'] as $textField) {
@@ -48,6 +46,18 @@ function ownedItemExists(PDO $db, int $itemId, string $uid): bool {
     ");
     $stmt->execute([$itemId, $uid]);
     return (bool) $stmt->fetch();
+}
+
+/**
+ * Só os cadernos guardam HTML. Nos restantes tipos o conteúdo é texto simples (o cliente
+ * escapa-o ao mostrar), por isso passá-lo pelo sanitizador HTML estragava texto como
+ * "List<String>" ou "a & b".
+ */
+function sanitizeContentForCategory(PDO $db, $content, int $categoryId): string {
+    $content = (string) ($content ?? '');
+    $stmt = $db->prepare("SELECT template_type FROM categories WHERE id = ?");
+    $stmt->execute([$categoryId]);
+    return $stmt->fetchColumn() === 'notebooks' ? neatpad_sanitize_html($content) : $content;
 }
 
 try {
@@ -99,6 +109,7 @@ try {
                 jsonResponse(false, null, 'Categoria não encontrada', 404);
             }
             $metadata = isset($input['metadata']) ? json_encode($input['metadata'], JSON_UNESCAPED_UNICODE) : null;
+            $input['content'] = sanitizeContentForCategory($db, $input['content'] ?? '', (int)$input['category_id']);
             $stmt = $db->prepare("
                 INSERT INTO items (category_id, title, content, status, priority, due_date, metadata)
                 VALUES (:category_id, :title, :content, :status, :priority, :due_date, :metadata)
@@ -134,7 +145,19 @@ try {
             if (!ownedItemExists($db, (int)$input['id'], $uid)) {
                 jsonResponse(false, null, 'Item não encontrado', 404);
             }
-            $metadata = isset($input['metadata']) ? json_encode($input['metadata'], JSON_UNESCAPED_UNICODE) : null;
+            // PUT parcial: campos em falta mantêm o valor atual (antes eram repostos
+            // a '', 'pending', 'medium' e NULL, apagando conteúdo e metadata).
+            $stmt = $db->prepare("SELECT * FROM items WHERE id = ?");
+            $stmt->execute([$input['id']]);
+            $current = $stmt->fetch();
+            $has = fn(string $k) => array_key_exists($k, $input);
+            $metadata = $has('metadata')
+                ? ($input['metadata'] === null ? null : json_encode($input['metadata'], JSON_UNESCAPED_UNICODE))
+                : $current['metadata'];
+            $content = $has('content')
+                ? sanitizeContentForCategory($db, $input['content'], (int)$current['category_id'])
+                : $current['content'];
+            $dueDate = $has('due_date') ? (!empty($input['due_date']) ? $input['due_date'] : null) : $current['due_date'];
             $stmt = $db->prepare("
                 UPDATE items
                 SET title = :title, content = :content, status = :status,
@@ -143,11 +166,11 @@ try {
             ");
             $stmt->execute([
                 'id'       => $input['id'],
-                'title'    => $input['title'],
-                'content'  => $input['content']  ?? '',
-                'status'   => $input['status']   ?? 'pending',
-                'priority' => $input['priority'] ?? 'medium',
-                'due_date' => !empty($input['due_date']) ? $input['due_date'] : null,
+                'title'    => $has('title') ? $input['title'] : $current['title'],
+                'content'  => $content,
+                'status'   => $input['status']   ?? $current['status'],
+                'priority' => $input['priority'] ?? $current['priority'],
+                'due_date' => $dueDate,
                 'metadata' => $metadata,
             ]);
 

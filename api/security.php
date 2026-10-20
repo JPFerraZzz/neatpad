@@ -16,13 +16,21 @@
 
 require_once __DIR__ . '/db.php';
 
+/**
+ * IP do cliente. X-Forwarded-For só é considerado quando o pedido chega de um proxy
+ * privado/loopback, e nesse caso usa-se a ÚLTIMA entrada (a que o nosso proxy acrescentou).
+ * A primeira entrada é escolhida pelo cliente, por isso permitia contornar os rate limits.
+ */
 function clientIp(): string {
+    $remote = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
     $fwd = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
-    if ($fwd) {
-        $first = trim(explode(',', $fwd)[0]);
-        if ($first) return $first;
+    $isPrivateProxy = filter_var($remote, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+    if ($fwd !== '' && $isPrivateProxy) {
+        $parts = array_map('trim', explode(',', $fwd));
+        $last = end($parts);
+        if ($last !== '' && filter_var($last, FILTER_VALIDATE_IP) !== false) return $last;
     }
-    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    return $remote;
 }
 
 function sendSecureHeaders(): void {

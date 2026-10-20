@@ -11,7 +11,7 @@
  * ==========================================================================*/
 
 // Bump em cada deploy para forçar novo cache (YYYYMMDDHHmm ou sequencial).
-const BUILD_DATE = '20260430200000';
+const BUILD_DATE = '20261020230000';
 const CACHE_NAME   = 'neatpad-v' + BUILD_DATE;
 const STATIC_CACHE = `${CACHE_NAME}-static`;
 const RUNTIME_CACHE = `${CACHE_NAME}-runtime`;

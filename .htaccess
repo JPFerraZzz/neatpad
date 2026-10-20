@@ -11,7 +11,7 @@ Options -Indexes
 
 # ── Bloquear acesso direto a ficheiros sensíveis ────────────────────
 # .htaccess, .env, configs, SQL, scripts de setup, docs internos
-<FilesMatch "^(\.htaccess|\.env.*|config\.php|.*\.example\.(php|js)|.*\.sql|setup-linux\.sh|composer\.(json|lock)|README\.md|\.gitignore)$">
+<FilesMatch "^(\.htaccess|\.env.*|config\.php|.*\.example\.(php|js)|.*\.(sql|mysql)|setup-linux\.sh|composer\.(json|lock)|README\.md|\.gitignore)$">
     Require all denied
 </FilesMatch>
 
@@ -65,10 +65,18 @@ RedirectMatch 404 /docs(/|$)
     ExpiresByType image/gif "access plus 1 year"
     ExpiresByType image/png "access plus 1 year"
     ExpiresByType image/svg+xml "access plus 1 month"
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/javascript "access plus 1 month"
-    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType text/css "access plus 0 seconds"
+    ExpiresByType application/javascript "access plus 0 seconds"
+    ExpiresByType text/javascript "access plus 0 seconds"
     ExpiresByType application/manifest+json "access plus 1 week"
+</IfModule>
+
+# CSS e JS sem versão no URL: o browser revalida sempre (ETag), por isso um deploy
+# chega logo aos utilizadores em vez de até um mês depois.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
 </IfModule>
 
 # Service Worker NUNCA é cacheado pelo browser (atualizações imediatas)
