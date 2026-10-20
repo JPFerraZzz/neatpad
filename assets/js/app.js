@@ -831,7 +831,7 @@ function renderSimpleItems(container, items) {
                             </button>
                         </div>
                     </div>
-                    ${item.content ? `<div class="item-content">${escapeHtml(item.content).substring(0, 200)}...</div>` : ''}
+                    ${item.content ? `<div class="item-content">${escapeHtml(item.content.substring(0, 200))}...</div>` : ''}
                     <div style="margin-top: 10px; display: flex; gap: 10px;">
                         <span class="item-badge badge-${item.status}">${getStatusLabel(item.status)}</span>
                         <span class="item-badge badge-${item.priority}">${getPriorityLabel(item.priority)}</span>
@@ -857,6 +857,11 @@ async function openItemEditor(itemId = null) {
         title.textContent = 'Editar Item';
         const items = await fetchItems(AppState.currentCategory.id);
         AppState.currentItem = items.find(i => i.id == itemId);
+        // Se o pedido falhou, abrir o formulário vazio faria o "Guardar" criar um item duplicado
+        if (!AppState.currentItem) {
+            showNotification('Não foi possível abrir o item. Tenta de novo.', 'error');
+            return;
+        }
     } else {
         title.textContent = 'Novo Item';
     }
@@ -962,6 +967,12 @@ function handleSimpleItemSubmit(event) {
 // ====================================
 // Funções Auxiliares
 // ====================================
+
+// Pré-visualização em texto de conteúdo HTML (cadernos): tira as tags antes de cortar.
+function htmlTextPreview(html, max) {
+    const t = (new DOMParser().parseFromString(String(html || ''), 'text/html').body.textContent || '').replace(/\s+/g, ' ').trim();
+    return escapeHtml(t.length > max ? t.slice(0, max) + '…' : t);
+}
 
 function escapeHtml(text) {
     const map = {
@@ -1165,7 +1176,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fechar view / popup com ESC
     document.addEventListener('keydown', (e) => {
-        if (e.key !== 'Escape') return;
+        if (e.key !== 'Escape' || e.defaultPrevented) return;
+        // Esc que fecha o menu "/" ou a caixa de confirmação não deve fechar também o modal por baixo
+        const confirmModal = document.getElementById('appConfirmModal');
+        if (confirmModal && !confirmModal.hasAttribute('hidden')) return;
+        if (window.Templates && Templates.notebooks && Templates.notebooks._slashMenuOpen) return;
         const popup = document.querySelector('.popup-modal.active');
         if (popup) { closeCategoryModal(); return; }
         // Fecha a view mais interna (editor > itens > versões)

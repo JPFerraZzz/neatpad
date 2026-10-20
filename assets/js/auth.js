@@ -134,6 +134,9 @@ auth.onIdTokenChanged((user) => {
         const nameEl = document.getElementById('userDisplayName');
         if (nameEl && !nameEl.textContent.trim()) nameEl.textContent = user.displayName;
     }
+    // Se o bootstrap já tem sessão PHP válida não a recriamos a cada carregamento ou rotação
+    // do token: cada POST regenera o id da sessão e conta para o limite de 10 logins / 5 min.
+    if (window.__currentUser) return;
     createPhpSession(user).catch(() => { /* silencioso: bootstrap trata se falhar */ });
 });
 

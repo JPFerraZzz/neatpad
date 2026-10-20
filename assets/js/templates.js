@@ -35,7 +35,7 @@ window.Templates = {
                                     </button>
                                 </div>
                             </div>
-                            <div class="note-content">${escapeHtml(item.content || '').substring(0, 150)}${item.content && item.content.length > 150 ? '...' : ''}</div>
+                            <div class="note-content">${escapeHtml((item.content || '').substring(0, 150))}${item.content && item.content.length > 150 ? '...' : ''}</div>
                             <div class="note-footer">
                                 <small>${new Date(item.updated_at).toLocaleDateString('pt-PT')}</small>
                             </div>
@@ -365,7 +365,7 @@ window.Templates = {
                 return `
                     <div class="task-card priority-${task.priority}" onclick="Templates.tasks.openTaskDetail(${task.id})">
                         <div class="task-title">${escapeHtml(task.title)}</div>
-                        ${task.content ? `<div style="font-size: 13px; color: #7f8c8d; margin-top: 5px; line-height:1.4;">${escapeHtml(task.content).substring(0, 90)}${task.content.length > 90 ? '...' : ''}</div>` : ''}
+                        ${task.content ? `<div style="font-size: 13px; color: #7f8c8d; margin-top: 5px; line-height:1.4;">${escapeHtml(task.content.substring(0, 90))}${task.content.length > 90 ? '...' : ''}</div>` : ''}
                         ${task.subtask_count > 0 ? `
                             <div class="task-progress">
                                 <span>${task.completed_subtasks}/${task.subtask_count} subtarefas</span>
@@ -441,9 +441,9 @@ window.Templates = {
                                     </span>
                                     ${isOverdue ? `<span style="background:#fdf2f2; color:#e74c3c; padding:4px 12px; border-radius:20px; font-size:13px; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Atrasada</span>` : ''}
                                 </div>
-                                <h2 style="color:white; font-size:22px; margin:0; line-height:1.3;">${escapeHtml(task.title)}</h2>
+                                <h2 style="color:var(--text); font-size:22px; margin:0; line-height:1.3;">${escapeHtml(task.title)}</h2>
                             </div>
-                            <button class="modal-close" onclick="document.getElementById('taskDetailModal').remove()" style="color:white; font-size:22px;">
+                            <button class="modal-close" onclick="document.getElementById('taskDetailModal').remove()" style="color:var(--text); font-size:22px;">
                                 <i class="fas fa-times"></i>
                             </button>
                         </div>
@@ -1081,7 +1081,7 @@ window.Templates = {
                                         <i class="fas fa-book-open"></i> ${escapeHtml(nb.title)}
                                     </h4>
                                     <div class="item-actions">
-                                        <button class="category-action-btn" onclick="event.stopPropagation(); openItemEditor(${nb.id})" title="Editar">
+                                        <button class="category-action-btn" onclick="event.stopPropagation(); document.getElementById('courseNotebooksModal')?.remove(); openItemEditor(${nb.id})" title="Editar">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="category-action-btn delete" onclick="event.stopPropagation(); Templates.course.unlinkNotebook(${courseId}, ${nb.id})" title="Desassociar">
@@ -1089,7 +1089,7 @@ window.Templates = {
                                         </button>
                                     </div>
                                 </div>
-                                ${nb.content ? `<div class="item-content">${escapeHtml(nb.content).substring(0, 150)}...</div>` : '<em style="color: #95a5a6;">Caderno vazio</em>'}
+                                ${nb.content ? `<div class="item-content">${htmlTextPreview(nb.content, 150)}</div>` : '<em style="color: #95a5a6;">Caderno vazio</em>'}
                                 <div style="margin-top: 10px;">
                                     <small style="color: #7f8c8d;">
                                         <i class="fas fa-clock"></i> ${new Date(nb.updated_at).toLocaleDateString('pt-PT')}
@@ -1525,8 +1525,9 @@ window.Templates = {
                     category_id: AppState.currentCategory.id,
                     title: document.getElementById('courseTitle').value,
                     content: document.getElementById('courseDescription').value || '',
-                    status: 'in_progress',
-                    priority: 'medium',
+                    // Em edição mantém o estado atual (antes repunha "em progresso" e apagava "concluído")
+                    status: (AppState.currentItem && AppState.currentItem.status) || 'in_progress',
+                    priority: (AppState.currentItem && AppState.currentItem.priority) || 'medium',
                     metadata: {
                         platform: document.getElementById('coursePlatform').value || '',
                         progress: finalProgress,
@@ -4158,20 +4159,6 @@ window.Templates = {
             if (saveBtn) { saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A guardar…'; saveBtn.disabled = true; }
 
             try {
-                // Unregister autosave before manual save
-                if (window.Autosave) Autosave.unregister(notebookId);
-                this._autosaveTrigger = null;
-                // Limpa também o sync da toolbar (vamos sair do modo de edição)
-                if (this._toolbarSyncHandler) {
-                    document.removeEventListener('selectionchange', this._toolbarSyncHandler);
-                    richEditor.removeEventListener('keyup', this._toolbarSyncHandler);
-                    richEditor.removeEventListener('mouseup', this._toolbarSyncHandler);
-                    this._toolbarSyncHandler = null;
-                }
-                // Fecha slash menu (se aberto) e desmonta toolbar mobile
-                if (this._slashMenuOpen) this._closeSlashMenu();
-                this._unmountMobileToolbar();
-
                 // Save directly via save_note.php (versioning + content)
                 const response = await fetch(`${API_URL}/save_note.php`, {
                     method: 'POST',
@@ -4187,6 +4174,21 @@ window.Templates = {
 
                 // Clear local draft
                 if (window.Autosave) Autosave.clearDraft(notebookId);
+
+                // Só desmonta o autosave e a toolbar depois de gravar com sucesso:
+                // se o pedido falhar o editor continua aberto e protegido.
+                if (window.Autosave) { Autosave.discardPending(notebookId); Autosave.unregister(notebookId); }
+                this._autosaveTrigger = null;
+                // Limpa também o sync da toolbar (vamos sair do modo de edição)
+                if (this._toolbarSyncHandler) {
+                    document.removeEventListener('selectionchange', this._toolbarSyncHandler);
+                    richEditor.removeEventListener('keyup', this._toolbarSyncHandler);
+                    richEditor.removeEventListener('mouseup', this._toolbarSyncHandler);
+                    this._toolbarSyncHandler = null;
+                }
+                // Fecha slash menu (se aberto) e desmonta toolbar mobile
+                if (this._slashMenuOpen) this._closeSlashMenu();
+                this._unmountMobileToolbar();
 
                 showNotification('Caderno guardado!', 'success');
 
@@ -4695,7 +4697,7 @@ window.Templates = {
             if (!this._mbeResizeForDesktop) {
                 this._mbeResizeForDesktop = () => {
                     if (window.innerWidth > 768 && this._mobileEditorActive) {
-                        this._closeMobileEditor(false);
+                        this._closeMobileEditor(true);
                     }
                 };
                 window.addEventListener('resize', this._mbeResizeForDesktop);
